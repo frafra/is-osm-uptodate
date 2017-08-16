@@ -15,7 +15,7 @@
 $ uwsgi --ini uwsgi.ini
 ```
 
-Open http://localhost:8000 and click on the refresh button.
+Open http://localhost:8000.
 
 ### Command line interface
 

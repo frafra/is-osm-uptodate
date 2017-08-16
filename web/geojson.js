@@ -77,3 +77,5 @@ function getNodes() {
     nodes.addTo(map);
   });
 }
+
+getNodes();
