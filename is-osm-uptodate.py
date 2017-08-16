@@ -48,6 +48,7 @@ executable = COMMAND_TEMPLATE.split()[0]
 if not shutil.which(executable):
     raise FileNotFoundError("{} is missing".format(executable))
 
+@hug.cli()
 @hug.get('/getNodes')
 def getNodes(minx: hug.types.float_number,
         maxx: hug.types.float_number,
@@ -65,3 +66,6 @@ def getNodes(minx: hug.types.float_number,
             cursor.execute(QUERY)
             result = cursor.fetchone()[0]
     return json.loads(result)
+
+if __name__ == '__main__':
+    getNodes.interface.cli()
