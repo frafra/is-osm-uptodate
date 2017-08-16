@@ -1,6 +1,6 @@
 let map = L.map('map');
 
-let custom_attribution = `${document.title} (made by <a href="https://frafra.eu">Frafra</a>)`;
+let custom_attribution = `${document.title} (<a href="https://github.com/frafra/is-osm-uptodate">source code</a>)`;
 let OpenStreetMapLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   attribution: `${custom_attribution} | &copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap contributors</a>`,
   maxZoom: 19,
