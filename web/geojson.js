@@ -1,4 +1,5 @@
 let map = L.map('map');
+let hash = new L.Hash(map);
 
 let custom_attribution = `${document.title} (<a href="https://github.com/frafra/is-osm-uptodate">source code</a>)`;
 let OpenStreetMapLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -8,7 +9,6 @@ let OpenStreetMapLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}
 });
 
 OpenStreetMapLayer.addTo(map);
-map.setView([45.46423, 9.19073], 18); // Duomo di Milano
 
 L.easyButton('fa-refresh', (btn, map) => {
     getNodes();
@@ -112,4 +112,9 @@ function getNodes() {
   });
 }
 
-getNodes();
+if (!document.location.hash) {
+  map.setView([45.46423, 9.19073], 18); // Duomo di Milano
+  getNodes();
+}
+
+map.on('load', getNodes);
