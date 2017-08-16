@@ -21,6 +21,12 @@ info.onAdd = map => {
 };
 info.update = message => {
     this.div.innerHTML = message;
+    this.div.innerHTML += `
+      <div class="bar">
+        <span>Old</span>
+        <span class="colors"></span>
+        <span>New</span>
+      </div>`;
 };
 info.addTo(map);
 
@@ -85,10 +91,10 @@ function getNodes() {
             `
             let now = new Date(feature.properties.timestamp);
             let seconds = now.getTime()-oldest.getTime();
-            let computed = 100*seconds/range;
+            let computed = 240*seconds/range;
             let marker = L.circleMarker(latlng, {
               radius: 5,
-              fillColor: colorsys.hsv_to_hex(200, 100, computed),
+              fillColor: `hsl(${computed}, 100%, 50%)`,
               color: "#555",
               weight: 1,
               opacity: 1,

@@ -18,3 +18,17 @@ ul {
     box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
     border-radius: 5px;
 }
+
+.bar * {
+  display: table-cell;
+}
+.bar *:first-child {
+  padding-right: .5em;
+}
+.bar *:last-child {
+  padding-left: .5em;
+}
+.colors {
+  width: 100%;
+  background: linear-gradient(to right, hsl(0, 100%, 50%), hsl(60, 100%, 50%), hsl(120, 100%, 50%), hsl(180, 100%, 50%), hsl(240, 100%, 50%));
+}
