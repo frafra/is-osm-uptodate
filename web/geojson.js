@@ -26,6 +26,11 @@ info.addTo(map);
 
 let nodes = L.geoJSON();
 
+function openOldestMarker() {
+  map.panTo(window.oldestMarker.getLatLng());
+  window.oldestMarker.openPopup();
+}
+
 function getNodes() {
   info.update('Loading nodes...');
   let bounds = map.getBounds();
@@ -39,13 +44,19 @@ function getNodes() {
   }).then(results => {
     nodes.remove();
     let oldest = new Date();
+    let oldestNode;
     for (let index in results.features) {
       let feature = results.features[index];
       let date = new Date(feature.properties.timestamp);
-      if (date < oldest) oldest = date;
+      if (date < oldest) {
+        oldest = date;
+        oldestNode = feature;
+      }
     }
     let timestamp = oldest.toISOString().slice(0, 10);
-    info.update(`Oldest node: ${timestamp}`);
+    info.update(`Oldest node:
+      <a href="javascript:openOldestMarker();">#${oldestNode.properties.node_id}</a>
+      (${timestamp})`);
     let range = (new Date()).getTime()-oldest.getTime();
     nodes = L.geoJSON(results, {
         pointToLayer: (feature, latlng) => {
@@ -84,6 +95,9 @@ function getNodes() {
               fillOpacity: 1
             });
             marker.bindPopup(popup);
+            if (feature.properties.node_id == oldestNode.properties.node_id) {
+              window.oldestMarker = marker;
+            }
             return marker;
         }
     });
