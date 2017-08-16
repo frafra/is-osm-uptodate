@@ -21,12 +21,6 @@ info.onAdd = map => {
 };
 info.update = message => {
   this.div.innerHTML = message;
-  this.div.innerHTML += `
-    <div class="bar">
-      <span>Old</span>
-      <span class="colors"></span>
-      <span>New</span>
-    </div>`;
 };
 info.addTo(map);
 
@@ -60,9 +54,16 @@ function getNodes() {
       }
     }
     let timestamp = oldest.toISOString().slice(0, 10);
-    info.update(`Oldest node:
+    info.update(`
+      Oldest node:
       <a href="javascript:openOldestMarker();">#${oldestNode.properties.node_id}</a>
-      (${timestamp})`);
+      (${timestamp})
+      <div class="bar">
+        <span>Old</span>
+        <span class="colors"></span>
+        <span>New</span>
+      </div>
+    `);
     let range = (new Date()).getTime()-oldest.getTime();
     nodes = L.geoJSON(results, {
         pointToLayer: (feature, latlng) => {
