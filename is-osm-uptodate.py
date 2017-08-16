@@ -49,7 +49,7 @@ if not shutil.which(executable):
     raise FileNotFoundError("{} is missing".format(executable))
 
 @hug.cli()
-@hug.get('/getNodes')
+@hug.get('/api/getNodes')
 def getNodes(minx: hug.types.float_number,
         maxx: hug.types.float_number,
         miny: hug.types.float_number,

@@ -22,7 +22,7 @@ function getNodes() {
   let east = bounds.getEast();
   let south = bounds.getSouth();
   let north = bounds.getNorth();
-  let url = `//${location.hostname}:8000/getNodes?minx=${west}&maxx=${east}&miny=${south}&maxy=${north}`;
+  let url = `/api/getNodes?minx=${west}&maxx=${east}&miny=${south}&maxy=${north}`;
   fetch(url).then(response => {
     return response.json();
   }).then(results => {

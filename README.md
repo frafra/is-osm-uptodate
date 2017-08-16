@@ -4,6 +4,7 @@
 
 - [Python 3](https://www.python.org/)
   - [hug](http://www.hug.rest/)
+  - [uWSGI](https://uwsgi-docs.readthedocs.io/)
 - [spatialite-tools](https://www.gaia-gis.it/fossil/spatialite-tools/index)
 
 ## How to use
@@ -11,12 +12,10 @@
 ### Web interface
 
 ```
-$ hug -f is-osm-uptodate.py &
-$ cd web
-$ python3 -m http.server 8001
+$ uwsgi --ini uwsgi.ini
 ```
 
-Open http://localhost:8001 and click on the refresh button.
+Open http://localhost:8000 and click on the refresh button.
 
 ### Command line interface
 
