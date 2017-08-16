@@ -16,17 +16,17 @@ L.easyButton('fa-refresh', (btn, map) => {
 
 let info = L.control();
 info.onAdd = map => {
-    this.div = L.DomUtil.create('div', 'info');
-    return this.div;
+  this.div = L.DomUtil.create('div', 'info');
+  return this.div;
 };
 info.update = message => {
-    this.div.innerHTML = message;
-    this.div.innerHTML += `
-      <div class="bar">
-        <span>Old</span>
-        <span class="colors"></span>
-        <span>New</span>
-      </div>`;
+  this.div.innerHTML = message;
+  this.div.innerHTML += `
+    <div class="bar">
+      <span>Old</span>
+      <span class="colors"></span>
+      <span>New</span>
+    </div>`;
 };
 info.addTo(map);
 
