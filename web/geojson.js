@@ -14,9 +14,20 @@ L.easyButton('fa-refresh', (btn, map) => {
     getNodes();
 }).addTo(map);
 
+let info = L.control();
+info.onAdd = map => {
+    this.div = L.DomUtil.create('div', 'info');
+    return this.div;
+};
+info.update = message => {
+    this.div.innerHTML = message;
+};
+info.addTo(map);
+
 let nodes = L.geoJSON();
 
 function getNodes() {
+  info.update('Loading nodes...');
   let bounds = map.getBounds();
   let west = bounds.getWest();
   let east = bounds.getEast();
@@ -33,6 +44,8 @@ function getNodes() {
       let date = new Date(feature.properties.timestamp);
       if (date < oldest) oldest = date;
     }
+    let timestamp = oldest.toISOString().slice(0, 10);
+    info.update(`Oldest node: ${timestamp}`);
     let range = (new Date()).getTime()-oldest.getTime();
     nodes = L.geoJSON(results, {
         pointToLayer: (feature, latlng) => {
