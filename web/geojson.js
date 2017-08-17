@@ -109,6 +109,9 @@ function getNodes() {
         }
     });
     nodes.addTo(map);
+  }).catch(error => {
+    info.update('Error!');
+    console.log(error);
   });
 }
 
