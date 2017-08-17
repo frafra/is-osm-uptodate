@@ -45,10 +45,6 @@ function getNodes() {
   }).then(results => {
     nodes.remove();
     rectangle.remove();
-    rectangle = L.rectangle(bounds, {
-      color: "#ff7800", fill: false, weight: 3
-    });
-    rectangle.addTo(map);
     let oldest = new Date();
     let oldestNode;
     for (let index in results.features) {
@@ -115,6 +111,10 @@ function getNodes() {
         }
     });
     nodes.addTo(map);
+    rectangle = L.rectangle(bounds, {
+      color: "#ff7800", fill: false, weight: 3
+    });
+    rectangle.addTo(map);
   }).catch(error => {
     info.update('Error!');
     console.log(error);
