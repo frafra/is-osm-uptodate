@@ -26,5 +26,17 @@ Open http://localhost:8000. Try to change the location and click on the refresh 
 Example:
 
 ```
+$ ./is-osm-uptodate.py -h
+usage: is-osm-uptodate.py [-h] [-o OUTPUT] minx maxx miny maxy
+
+positional arguments:
+  minx                  A float number
+  maxx                  A float number
+  miny                  A float number
+  maxy                  A float number
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -o OUTPUT, --output OUTPUT
 $ ./is-osm-uptodate.py 9.073334 9.106293 45.795177 45.817913
 ```
