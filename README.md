@@ -4,6 +4,8 @@ This application helps you find which nodes have not been edited for a long time
 
 Demo: https://is-osm-uptodate.frafra.eu/
 
+Page on OSM wiki: https://wiki.openstreetmap.org/wiki/Is_OSM_up-to-date
+
 ## Dependencies
 
 - [Python 3](https://www.python.org/)
