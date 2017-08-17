@@ -25,6 +25,7 @@ info.update = message => {
 info.addTo(map);
 
 let nodes = L.geoJSON();
+let rectangle = L.layerGroup();
 
 function openOldestMarker() {
   map.panTo(window.oldestMarker.getLatLng());
@@ -43,6 +44,11 @@ function getNodes() {
     return response.json();
   }).then(results => {
     nodes.remove();
+    rectangle.remove();
+    rectangle = L.rectangle(bounds, {
+      color: "#ff7800", fill: false, weight: 3
+    });
+    rectangle.addTo(map);
     let oldest = new Date();
     let oldestNode;
     for (let index in results.features) {
