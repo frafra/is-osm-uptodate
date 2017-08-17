@@ -23,15 +23,12 @@ SELECT json_object(
         'version', version,
         'attributes', json(attributes)))))
  FROM osm_nodes
- LEFT JOIN
+ INNER JOIN
       (SELECT node_id AS id,
               json_group_object(k, v) AS attributes
          FROM osm_node_tags
         GROUP BY node_id)
- ON node_id = id
-WHERE node_id NOT IN
-      (SELECT node_id
-        FROM osm_way_refs);
+ ON node_id = id;
 """
 
 COMMAND_TEMPLATE = """
