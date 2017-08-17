@@ -19,16 +19,17 @@ ul {
   border-radius: 5px;
 }
 
+.bar {
+  display: flex;
+}
+
 .bar * {
-  display: table-cell;
+  margin: auto;
+
 }
-.bar *:first-child {
-  padding-right: .5em;
-}
-.bar *:last-child {
-  padding-left: .5em;
-}
+
 .colors {
-  width: 100%;
+  width: 125px;
+  height: 1em;
   background: linear-gradient(to right, hsl(0, 100%, 50%), hsl(60, 100%, 50%), hsl(120, 100%, 50%), hsl(180, 100%, 50%), hsl(240, 100%, 50%));
 }
