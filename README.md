@@ -1,5 +1,9 @@
 # Is OSM up-to-date?
 
+This application helps you find which nodes have not been edited for a long time.
+
+Demo: https://is-osm-uptodate.frafra.eu/
+
 ## Dependencies
 
 - [Python 3](https://www.python.org/)
@@ -15,7 +19,7 @@
 $ uwsgi --ini uwsgi.ini
 ```
 
-Open http://localhost:8000.
+Open http://localhost:8000. Try to change the location and click on the refresh button in order to get the nodes for the new bounding box.
 
 ### Command line interface
 
