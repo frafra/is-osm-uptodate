@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+__version__ = "1.0"
+
 import hug
 
 import gzip
@@ -70,12 +72,17 @@ def getData(
         maxx: hug.types.float_number,
         miny: hug.types.float_number,
         maxy: hug.types.float_number,
+        request,
         output=hug.output_format.json):
     with NamedTemp() as db, NamedTemp(suffix='.osm') as osm:
-        request = urllib.request.Request(
+        customRequest = urllib.request.Request(
             REQUEST_TEMPLATE.format(**locals()),
-            headers={"Accept-Encoding":"gzip"})
-        with urllib.request.urlopen(request) as response:
+            headers={
+                "User-Agent":"Is-OSM-uptodate/%s" % __version__,
+                "Referer":request.headers.get('REFERER'),
+                "Accept-Encoding":"gzip",
+            })
+        with urllib.request.urlopen(customRequest) as response:
             gzipFile = gzip.GzipFile(fileobj=response)
             shutil.copyfileobj(gzipFile, osm)
         command = shlex.split(COMMAND_TEMPLATE.format(osm.name, db.name))
