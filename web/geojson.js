@@ -57,6 +57,7 @@ L.control.layers({}, overlays, {collapsed:false}).addTo(map);
 nodes.addTo(map);
 
 function openOldestMarker() {
+  nodes.addTo(map);
   map.panTo(window.oldestMarker.getLatLng());
   window.oldestMarker.openPopup();
 }
