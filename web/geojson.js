@@ -21,6 +21,16 @@ function setColor(event) {
   tiles.style.filter = `grayscale(${100-colour}%)`;
 }
 
+function getTimestamp(date) {
+  return date.toISOString().slice(0, 10);
+}
+
+function getTimestampFromFeature(feature) {
+  let date = new Date(feature.properties.timestamp);
+  return getTimestamp(date);
+}
+
+let oldest = new Date();
 let info = L.control();
 info.onAdd = map => {
   this.div = L.DomUtil.create('div', 'info');
@@ -28,12 +38,14 @@ info.onAdd = map => {
   return this.div;
 };
 info.update = message => {
+  oldestTimestamp = getTimestamp(oldest);
+  todayTimestamp = getTimestamp(new Date());
   this.div.innerHTML = `
     ${message}
     <div class="bar">
-      <span>Old</span>
+      <span>${oldestTimestamp}</span>
       <span class="colors"></span>
-      <span>New</span>
+      <span>${todayTimestamp}</span>
     </div>
     <hr/>
     <div class="slider">
@@ -95,11 +107,6 @@ function generatePopup(feature) {
   return popup;
 }
 
-function getTimestamp(feature) {
-  let date = new Date(feature.properties.timestamp);
-  return date.toISOString().slice(0, 10);
-}
-
 function getData() {
   info.update(`
     <div style="text-align: center">
@@ -119,7 +126,6 @@ function getData() {
     nodes.clearLayers();
     ways.clearLayers();
     rectangle.remove();
-    let oldest = new Date();
     let oldestNode;
     let oldestWay;
     for (let index in results.features) {
@@ -134,8 +140,8 @@ function getData() {
         }
       }
     }
-    let nodeTimestamp = getTimestamp(oldestNode);
-    let wayTimestamp = getTimestamp(oldestWay);
+    let nodeTimestamp = getTimestampFromFeature(oldestNode);
+    let wayTimestamp = getTimestampFromFeature(oldestWay);
     info.update(`
       <table>
         <tr>

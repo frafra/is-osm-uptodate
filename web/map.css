@@ -28,14 +28,15 @@ ul {
   display: flex;
 }
 
-.bar * {
-  margin: auto;
-
+.info > *, .bar * {
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .colors {
-  width: 125px;
+  width: 100px;
   height: 1em;
+  margin: auto .5em;
   background: linear-gradient(to right, hsl(0, 100%, 50%), hsl(60, 100%, 50%), hsl(120, 100%, 50%), hsl(180, 100%, 50%), hsl(240, 100%, 50%));
 }
 
