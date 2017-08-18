@@ -76,6 +76,7 @@ function getNodes() {
                <a href="https://wiki.openstreetmap.org/wiki/Tag:${key}%3D${value}" target="_blank">${value}</a></li>`;
             }
             attributes_list += `</ul>`;
+            let position = location.hash.substr(1);
             let popup = `
               <h3 style="text-align: center">Node #${feature.properties.node_id}</h3>
               <b>Last edit</b>: ${feature.properties.timestamp}<br>
@@ -87,7 +88,7 @@ function getNodes() {
                 ${attributes_list}
               <br>
               <div style="text-align: center">
-                <a href="https://www.openstreetmap.org/edit?node=${feature.properties.node_id}" target="_blank">Edit <a> |
+                <a href="https://www.openstreetmap.org/edit?node=${feature.properties.node_id}#map=${position}" target="_blank">Edit <a> |
                 <a href="https://www.openstreetmap.org/node/${feature.properties.node_id}/history" target="_blank">History</a> |
                 <a href="https://www.openstreetmap.org/node/${feature.properties.node_id}" target="_blank">Details<a>
               </div>
