@@ -126,18 +126,26 @@ function getData() {
     nodes.clearLayers();
     ways.clearLayers();
     rectangle.remove();
+    let oldestNodeDate = new Date();
+    let oldestWayDate = new Date();
     let oldestNode;
     let oldestWay;
     for (let index in results.features) {
       let feature = results.features[index];
       let date = new Date(feature.properties.timestamp);
-      if (date < oldest) {
-        oldest = date;
-        if (feature.geometry.type == 'Point') {
+      if (feature.geometry.type == 'Point') {
+        if (date < oldestNodeDate) {
+          oldestNodeDate = date;
           oldestNode = feature;
-        } else {
+        }
+      } else {
+        if (date < oldestWayDate) {
+          oldestWayDate = date;
           oldestWay = feature;
         }
+      }
+      if (date < oldest) {
+        oldest = date;
       }
     }
     let nodeTimestamp = getTimestampFromFeature(oldestNode);
