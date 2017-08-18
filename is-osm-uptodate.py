@@ -20,18 +20,39 @@ SELECT json_object(
       'properties', json_object(
         'uid', uid,
         'user', user,
-        'node_id', node_id,
+        'id', id,
         'timestamp', timestamp,
         'version', version,
         'attributes', json(attributes)))))
- FROM osm_nodes
- INNER JOIN
-      (SELECT node_id AS id,
-              json_group_object(k, v) AS attributes
-         FROM osm_node_tags
-        GROUP BY node_id)
- ON node_id = id
-WHERE MbrWithin(Geometry, BuildMbr(?, ?, ?, ?));
+ FROM
+    (SELECT node_id AS id, uid, user, timestamp, version, Geometry, attributes
+      FROM osm_nodes
+     INNER JOIN
+          (SELECT node_id AS id,
+                  json_group_object(k, v) AS attributes
+             FROM osm_node_tags
+            GROUP BY node_id)
+     ON node_id = id
+    WHERE MbrWithin(Geometry, BuildMbr(?, ?, ?, ?))
+    UNION ALL
+    SELECT w.way_id AS id, uid, user, timestamp, version, Geometry, attributes
+      FROM
+        (SELECT way_id as wr, MakeLine(Geometry) AS Geometry
+           FROM
+            (SELECT way_id, n.node_id, Geometry
+               FROM osm_way_refs AS wr
+               JOIN osm_nodes AS n
+                 ON n.node_id = wr.node_id)
+         GROUP BY way_id)
+     JOIN osm_ways AS w
+     ON w.way_id = wr
+    LEFT JOIN
+          (SELECT way_id AS id,
+                  json_group_object(k, v) AS attributes
+             FROM osm_way_tags
+            GROUP BY way_id)
+     ON w.way_id = id
+     ORDER BY timestamp DESC)
 """
 
 REQUEST_TEMPLATE = ("https://api.openstreetmap.org"
@@ -43,8 +64,9 @@ if not shutil.which(executable):
     raise FileNotFoundError("{} is missing".format(executable))
 
 @hug.cli()
-@hug.get('/api/getNodes')
-def getNodes(minx: hug.types.float_number,
+@hug.get('/api/getData')
+def getData(
+        minx: hug.types.float_number,
         maxx: hug.types.float_number,
         miny: hug.types.float_number,
         maxy: hug.types.float_number,

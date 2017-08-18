@@ -7,6 +7,11 @@ html, body, #map {
   width: 100vw;
 }
 
+h3 {
+  text-align: center;
+  text-transform: capitalize;
+}
+
 ul {
   margin: 0;
   padding-left: 2em;
@@ -32,4 +37,13 @@ ul {
   width: 125px;
   height: 1em;
   background: linear-gradient(to right, hsl(0, 100%, 50%), hsl(60, 100%, 50%), hsl(120, 100%, 50%), hsl(180, 100%, 50%), hsl(240, 100%, 50%));
+}
+
+.slider {
+  display: flex;
+  align-items: center;
+}
+
+.slider input {
+  flex-grow: 1;
 }
