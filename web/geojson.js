@@ -14,9 +14,11 @@ L.easyButton('fa-refresh', (btn, map) => {
     getData();
 }).addTo(map);
 
+let colour = 100;
 function setColor(event) {
   let tiles = document.getElementsByClassName('leaflet-tile-container')[0];
-  tiles.style.filter = `grayscale(${100-event.target.value}%)`;
+  colour = event.target.value;
+  tiles.style.filter = `grayscale(${100-colour}%)`;
 }
 
 let info = L.control();
@@ -36,7 +38,7 @@ info.update = message => {
     <hr/>
     <div class="slider">
       Colour
-      <input type="range" id="grayscale" value="100"/>
+      <input type="range" id="grayscale" value="${colour}"/>
     </div>
   `;
   document.getElementById('grayscale').addEventListener('input', setColor);
