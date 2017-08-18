@@ -29,7 +29,7 @@ info.onAdd = map => {
 };
 info.update = message => {
   this.div.innerHTML = `
-    <div style="text-align: center">${message}</div>
+    ${message}
     <div class="bar">
       <span>Old</span>
       <span class="colors"></span>
@@ -58,8 +58,12 @@ nodes.addTo(map);
 
 function openOldestMarker() {
   nodes.addTo(map);
-  map.panTo(window.oldestMarker.getLatLng());
   window.oldestMarker.openPopup();
+}
+
+function openOldestWay() {
+  ways.addTo(map);
+  window.oldestWay.openPopup();
 }
 
 function generatePopup(feature) {
@@ -91,8 +95,18 @@ function generatePopup(feature) {
   return popup;
 }
 
+function getTimestamp(feature) {
+  let date = new Date(feature.properties.timestamp);
+  return date.toISOString().slice(0, 10);
+}
+
 function getData() {
-  info.update('Loading data...');
+  info.update(`
+    <div style="text-align: center">
+      <strong>Loading</strong>
+      <div>Please wait...</div>
+    </div>`
+  );
   let bounds = map.getBounds();
   let west = bounds.getWest();
   let east = bounds.getEast();
@@ -107,20 +121,34 @@ function getData() {
     rectangle.remove();
     let oldest = new Date();
     let oldestNode;
+    let oldestWay;
     for (let index in results.features) {
       let feature = results.features[index];
-      if (feature.geometry.type !== 'Point') continue;
       let date = new Date(feature.properties.timestamp);
       if (date < oldest) {
         oldest = date;
-        oldestNode = feature;
+        if (feature.geometry.type == 'Point') {
+          oldestNode = feature;
+        } else {
+          oldestWay = feature;
+        }
       }
     }
-    let timestamp = oldest.toISOString().slice(0, 10);
+    let nodeTimestamp = getTimestamp(oldestNode);
+    let wayTimestamp = getTimestamp(oldestWay);
     info.update(`
-      Oldest node:
-      <a href="javascript:openOldestMarker();">#${oldestNode.properties.id}</a>
-      (${timestamp})
+      <table>
+        <tr>
+          <td>Oldest node</td>
+          <td><a href="javascript:openOldestMarker();">#${oldestNode.properties.id}</a></td>
+          <td>(${nodeTimestamp})</td>
+        </tr>
+        <tr>
+          <td>Oldest way</td>
+          <td><a href="javascript:openOldestWay();">#${oldestWay.properties.id}</a></td>
+          <td>(${wayTimestamp})</td>
+        </tr>
+      </table>
     `);
     let range = (new Date()).getTime()-oldest.getTime();
     L.geoJSON(results, {
@@ -152,6 +180,9 @@ function getData() {
           layer.options.color = `hsla(${computed}, 100%, 50%, 0.5)`;
           let popup = generatePopup(feature);
           layer.bindPopup(popup);
+          if (feature.properties.id == oldestWay.properties.id) {
+            window.oldestWay = layer;
+          }
           ways.addLayer(layer);
         }
     });
@@ -160,7 +191,12 @@ function getData() {
     });
     rectangle.addTo(map);
   }).catch(error => {
-    info.update('Error!');
+    info.update(`
+      <div style="text-align: center">
+        <strong>Error</strong>
+        <div>Please <a href="javascript:getData();">try again</a>.</div>
+      </div>
+    `);
     console.log(error);
   });
 }
