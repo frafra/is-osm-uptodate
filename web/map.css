@@ -1,3 +1,7 @@
+.leaflet-tile-container {
+  filter: grayscale(0%);
+}
+
 html, body, #map {
   margin: 0;
   height: 100%;
