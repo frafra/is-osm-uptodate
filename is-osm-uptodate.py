@@ -72,14 +72,16 @@ def getData(
         maxx: hug.types.float_number,
         miny: hug.types.float_number,
         maxy: hug.types.float_number,
-        request,
+        referer="http://localhost:8000/",
         output=hug.output_format.json):
+    if type(referer) is not str:
+        referer = referer.headers.get('REFERER')
     with NamedTemp() as db, NamedTemp(suffix='.osm') as osm:
         customRequest = urllib.request.Request(
             REQUEST_TEMPLATE.format(**locals()),
             headers={
                 "User-Agent":"Is-OSM-uptodate/%s" % __version__,
-                "Referer":request.headers.get('REFERER'),
+                "Referer":referer,
                 "Accept-Encoding":"gzip",
             })
         with urllib.request.urlopen(customRequest) as response:
@@ -96,4 +98,4 @@ def getData(
     return json.loads(result)
 
 if __name__ == '__main__':
-    getNodes.interface.cli()
+    getData.interface.cli()

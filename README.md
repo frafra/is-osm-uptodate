@@ -29,7 +29,7 @@ Example:
 
 ```
 $ ./is-osm-uptodate.py -h
-usage: is-osm-uptodate.py [-h] [-o OUTPUT] minx maxx miny maxy
+usage: is-osm-uptodate.py [-h] [-r REFERER] [-o OUTPUT] minx maxx miny maxy
 
 positional arguments:
   minx                  A float number
@@ -39,6 +39,7 @@ positional arguments:
 
 optional arguments:
   -h, --help            show this help message and exit
+  -r REFERER, --referer REFERER
   -o OUTPUT, --output OUTPUT
 $ ./is-osm-uptodate.py 9.073334 9.106293 45.795177 45.817913
 ```
