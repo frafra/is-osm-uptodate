@@ -126,6 +126,7 @@ function getData() {
     nodes.clearLayers();
     ways.clearLayers();
     rectangle.remove();
+    oldest = new Date();
     let oldestNodeDate = new Date();
     let oldestWayDate = new Date();
     let oldestNode;
