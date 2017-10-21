@@ -88,6 +88,7 @@ def getData(
         with urllib.request.urlopen(customRequest) as response:
             gzipFile = gzip.GzipFile(fileobj=response)
             shutil.copyfileobj(gzipFile, osm)
+        osm.flush()
         command = shlex.split(COMMAND_TEMPLATE.format(osm.name, db.name))
         subprocess.run(command, stdout=subprocess.DEVNULL, check=True)
         with sqlite3.connect(db.name) as conn:
