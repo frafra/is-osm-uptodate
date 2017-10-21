@@ -14,47 +14,48 @@ from tempfile import NamedTemporaryFile as NamedTemp
 import urllib.request
 
 QUERY = """
+  WITH nodes_attrs AS
+       (SELECT node_id, json_group_object(k, v) AS attributes
+          FROM osm_node_tags
+         GROUP BY node_id),
+       ways_attrs AS
+       (SELECT way_id, json_group_object(k, v) AS attributes
+          FROM osm_way_tags
+         GROUP BY way_id),
+       ways_lines AS
+       (SELECT way_id, MakeLine(Geometry) AS Geometry
+          FROM osm_way_refs
+               JOIN osm_nodes
+               ON osm_nodes.node_id = osm_way_refs.node_id
+         GROUP BY way_id)
 SELECT json_object(
-  'type', 'FeatureCollection',
-  'features', json_group_array(json_object(
-      'geometry', json(asGeoJSON(Geometry)),
-      'type', 'Feature',
-      'properties', json_object(
-        'uid', uid,
-        'user', user,
-        'id', id,
-        'timestamp', timestamp,
-        'version', version,
-        'attributes', json(attributes)))))
- FROM
-    (SELECT node_id AS id, uid, user, timestamp, version, Geometry, attributes
-      FROM osm_nodes
-     INNER JOIN
-          (SELECT node_id AS id,
-                  json_group_object(k, v) AS attributes
-             FROM osm_node_tags
-            GROUP BY node_id)
-     ON node_id = id
+         'type', 'FeatureCollection',
+         'features', json_group_array(json_object(
+             'geometry', json(asGeoJSON(Geometry)),
+             'type', 'Feature',
+             'properties', json_object(
+               'uid', uid,
+               'user', user,
+               'id', id,
+               'timestamp', timestamp,
+               'version', version,
+               'attributes', json(attributes)))))
+  FROM
+  (SELECT osm_nodes.node_id AS id, uid, user,
+          timestamp, version, Geometry, attributes
+     FROM nodes_attrs
+          INNER JOIN osm_nodes
+          ON osm_nodes.node_id = nodes_attrs.node_id
     WHERE MbrWithin(Geometry, BuildMbr(?, ?, ?, ?))
     UNION ALL
-    SELECT w.way_id AS id, uid, user, timestamp, version, Geometry, attributes
-      FROM
-        (SELECT way_id as wr, MakeLine(Geometry) AS Geometry
-           FROM
-            (SELECT way_id, n.node_id, Geometry
-               FROM osm_way_refs AS wr
-               JOIN osm_nodes AS n
-                 ON n.node_id = wr.node_id)
-         GROUP BY way_id)
-     JOIN osm_ways AS w
-     ON w.way_id = wr
-    LEFT JOIN
-          (SELECT way_id AS id,
-                  json_group_object(k, v) AS attributes
-             FROM osm_way_tags
-            GROUP BY way_id)
-     ON w.way_id = id
-     ORDER BY timestamp DESC)
+   SELECT ways_lines.way_id, uid, user,
+          timestamp, version, Geometry, attributes
+     FROM ways_lines
+          JOIN osm_ways
+          ON ways_lines.way_id = osm_ways.way_id
+          LEFT JOIN ways_attrs
+          ON ways_lines.way_id = ways_attrs.way_id
+    ORDER BY timestamp DESC)
 """
 
 REQUEST_TEMPLATE = ("https://api.openstreetmap.org"
