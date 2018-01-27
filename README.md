@@ -15,6 +15,13 @@ Page on OSM wiki: https://wiki.openstreetmap.org/wiki/Is_OSM_up-to-date
 
 ## How to use
 
+## Docker image
+
+```
+# docker build --tag=is-osm-uptodate .
+# docker run --detach is-osm-uptodate
+```
+
 ### Web interface
 
 ```
