@@ -13,20 +13,24 @@ Page on OSM wiki: https://wiki.openstreetmap.org/wiki/Is_OSM_up-to-date
   - [uWSGI](https://uwsgi-docs.readthedocs.io/)
 - [spatialite-tools](https://www.gaia-gis.it/fossil/spatialite-tools/index)
 
-## How to use
+## Setup
 
-## Docker image
-
-```
-# docker build --tag=is-osm-uptodate .
-# docker run --detach is-osm-uptodate
-```
-
-### Web interface
+### uwsgi
 
 ```
 $ uwsgi --ini uwsgi.ini
 ```
+
+### Docker image
+
+```
+$ docker build --tag=is-osm-uptodate .
+$ docker run --publish 8000:8000 --detach is-osm-uptodate
+```
+
+## How to use
+
+### Web interface
 
 Open http://localhost:8000. Try to change the location and click on the refresh button in order to get the nodes for the new bounding box.
 
