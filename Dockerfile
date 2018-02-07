@@ -2,7 +2,7 @@ FROM fedora
 LABEL maintainer="fraph24@gmail.com"
 
 RUN dnf -y update && dnf clean all
-RUN dnf -y install uwsgi-plugin-python3 spatialite-tools && dnf clean all
+RUN dnf -y install uwsgi-plugin-python3 mailcap spatialite-tools && dnf clean all
 
 ADD . /src
 
