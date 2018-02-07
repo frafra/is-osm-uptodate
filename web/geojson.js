@@ -1,7 +1,7 @@
 let map = L.map('map');
 let hash = new L.Hash(map);
 
-let custom_attribution = `${document.title} (<a href="https://github.com/frafra/is-osm-uptodate">source code</a>)`;
+let custom_attribution = `<a href="https://wiki.openstreetmap.org/wiki/Is_OSM_up-to-date">${document.title}</a> (<a href="https://github.com/frafra/is-osm-uptodate">source code</a>)`;
 let OpenStreetMapLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   attribution: `${custom_attribution} | &copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap contributors</a>`,
   maxZoom: 19,
