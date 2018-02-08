@@ -5,7 +5,6 @@ __version__ = "1.0"
 import hug
 
 import gzip
-import json
 import shlex
 import shutil
 import sqlite3
@@ -97,7 +96,7 @@ def getData(
             cursor = conn.cursor()
             cursor.execute(QUERY, (minx, miny, maxx, maxy))
             result = cursor.fetchone()[0]
-    return json.loads(result)
+    return result
 
 if __name__ == '__main__':
     getData.interface.cli()
