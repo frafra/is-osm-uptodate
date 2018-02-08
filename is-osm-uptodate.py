@@ -102,11 +102,15 @@ def pipeline(hostname, port, path_list, headers={}):
         bodies = recv_future.result()
         return bodies
 
-nodes = {}
+def generateHeaders(referer):
+    return {
+        "User-Agent":"Is-OSM-uptodate/%s" % __version__,
+        "Referer":referer,
+        "Accept-Encoding":"gzip",
+    }
 
-@hug.cli()
-@hug.get('/api/getData')
-def getData(
+@hug.get('/api/getDataMinimal')
+def getDataMinimal(
         minx: hug.types.float_number,
         miny: hug.types.float_number,
         maxx: hug.types.float_number,
@@ -115,15 +119,10 @@ def getData(
         output=hug.output_format.json):
     if type(referer) is not str:
         referer = referer.headers.get('REFERER')
-    headers = {
-        "User-Agent":"Is-OSM-uptodate/%s" % __version__,
-        "Referer":referer,
-        "Accept-Encoding":"gzip",
-    }
     with NamedTemp() as db, NamedTemp(suffix='.osm') as osm:
         customRequest = urllib.request.Request(
             REQUEST_TEMPLATE.format(**locals()),
-            headers=headers)
+            headers=generateHeaders(referer))
         with urllib.request.urlopen(customRequest) as response:
             gzipFile = gzip.GzipFile(fileobj=response)
             shutil.copyfileobj(gzipFile, osm)
@@ -136,6 +135,23 @@ def getData(
             cursor = conn.cursor()
             cursor.execute(QUERY, (minx, miny, maxx, maxy))
             result = json.loads(cursor.fetchone()[0])
+    return result
+
+nodes = {} # cache
+
+@hug.cli()
+@hug.get('/api/getData')
+def getData(
+        minx: hug.types.float_number,
+        miny: hug.types.float_number,
+        maxx: hug.types.float_number,
+        maxy: hug.types.float_number,
+        referer="http://localhost:8000/",
+        output=hug.output_format.json):
+    if type(referer) is not str:
+        referer = referer.headers.get('REFERER')
+    args = [minx, miny, maxx, maxy]
+    result = getDataMinimal(*args, referer=referer, output=output)
     urls = []
     for feature in result['features']:
         if feature['geometry']['type'] == 'Point':
@@ -144,7 +160,7 @@ def getData(
                 continue
             if feature['properties']['version'] > 1:
                 urls.append(HISTORY_TEMPLATE.format(node_id))
-    for response in pipeline(SERVER, PORT, urls, headers):
+    for response in pipeline(SERVER, PORT, urls, generateHeaders(referer)):
         tree = ElementTree.XML(response.decode('utf8'))
         users = []
         for node in tree.findall('node'):
