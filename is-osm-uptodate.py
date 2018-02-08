@@ -69,8 +69,8 @@ if not shutil.which(executable):
 @hug.get('/api/getData')
 def getData(
         minx: hug.types.float_number,
-        maxx: hug.types.float_number,
         miny: hug.types.float_number,
+        maxx: hug.types.float_number,
         maxy: hug.types.float_number,
         referer="http://localhost:8000/",
         output=hug.output_format.json):

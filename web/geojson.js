@@ -116,10 +116,10 @@ function getData() {
   );
   let bounds = map.getBounds();
   let west = bounds.getWest();
-  let east = bounds.getEast();
   let south = bounds.getSouth();
+  let east = bounds.getEast();
   let north = bounds.getNorth();
-  let url = `/api/getData?minx=${west}&maxx=${east}&miny=${south}&maxy=${north}`;
+  let url = `/api/getData?minx=${west}&miny=${south}&maxx=${east}&maxy=${north}`;
   fetch(url).then(response => {
     return response.json();
   }).then(results => {

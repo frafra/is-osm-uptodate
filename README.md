@@ -40,17 +40,17 @@ Example:
 
 ```
 $ ./is-osm-uptodate.py -h
-usage: is-osm-uptodate.py [-h] [-r REFERER] [-o OUTPUT] minx maxx miny maxy
+usage: is-osm-uptodate.py [-h] [-r REFERER] [-o OUTPUT] minx miny maxx maxy
 
 positional arguments:
   minx                  A float number
-  maxx                  A float number
   miny                  A float number
+  maxx                  A float number
   maxy                  A float number
 
 optional arguments:
   -h, --help            show this help message and exit
   -r REFERER, --referer REFERER
   -o OUTPUT, --output OUTPUT
-$ ./is-osm-uptodate.py 9.073334 9.106293 45.795177 45.817913
+$ ./is-osm-uptodate.py 9.188295196 45.4635324507 9.1926242813 45.4649771956
 ```
