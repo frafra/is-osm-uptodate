@@ -216,7 +216,7 @@ function getData() {
 }
 
 if (!document.location.hash) {
-  map.setView([45.46423, 9.19073], 18); // Duomo di Milano
+  map.setView([45.46423, 9.19073], 19); // Duomo di Milano
   getData();
 }
 
