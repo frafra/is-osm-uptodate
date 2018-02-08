@@ -10,6 +10,7 @@ Page on OSM wiki: https://wiki.openstreetmap.org/wiki/Is_OSM_up-to-date
 
 - [Python 3](https://www.python.org/)
   - [hug](http://www.hug.rest/)
+  - [dugong](https://bitbucket.org/nikratio/python-dugong)
   - [uWSGI](https://uwsgi-docs.readthedocs.io/)
 - [spatialite-tools](https://www.gaia-gis.it/fossil/spatialite-tools/index)
 
