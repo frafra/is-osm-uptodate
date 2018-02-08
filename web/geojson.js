@@ -16,7 +16,7 @@ L.easyButton('fa-refresh', (btn, map) => {
 
 let colour = 100;
 function setColor(event) {
-  let tiles = document.styleSheets[3].cssRules[0];
+  let tiles = document.styleSheets[4].cssRules[0];
   colour = event.target.value;
   tiles.style.filter = `grayscale(${100-colour}%)`;
 }
