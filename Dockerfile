@@ -6,7 +6,7 @@ RUN dnf -y install uwsgi-plugin-python3 mailcap spatialite-tools && dnf clean al
 
 ADD . /src
 
-RUN echo -e '#!/bin/sh\nexport PYTHONPATH="/usr/local/lib/python3.6/site-packages"\nuwsgi --ini /src/uwsgi.ini --chdir /src' > /src/run.sh; chmod +x /src/run.sh; pip3 install hug 
+RUN echo -e '#!/bin/sh\nexport PYTHONPATH="/usr/local/lib/python3.6/site-packages"\nuwsgi --ini /src/uwsgi.ini --chdir /src' > /src/run.sh; chmod +x /src/run.sh; pip3 install --requirement /src/requirements.txt
 
 EXPOSE 8000
 

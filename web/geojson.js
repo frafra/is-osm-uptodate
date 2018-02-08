@@ -89,12 +89,11 @@ function generatePopup(feature) {
   let position = location.hash.substr(1);
   let type = feature.geometry.type == 'Point' ? 'node' : 'way';
   let popup = `
-    <h3>${type} #${feature.properties.id}</h3>
-    <b>Last edit</b>: ${feature.properties.timestamp}<br>
-    <b>User</b>:
-      <a href="https://www.openstreetmap.org/user/${feature.properties.user}" target="_blank">${feature.properties.user}</a>
-      (${feature.properties.uid})<br>
-    <b>Version</b>: ${feature.properties.version}<br>
+    <b>Last edit</b>: ${feature.properties.timestamp} (by
+      <a href="https://www.openstreetmap.org/user/${feature.properties.user}" target="_blank">${feature.properties.user}</a>)<br>
+    <b>Created at</b>: ${feature.properties.created}<br>
+    <b>Current version</b>: ${feature.properties.version}<br>
+    <b>Contributors</b>: ${feature.properties.contributors}<br>
     <b>Attributes:</b>
       ${attributes_list}
     <br>

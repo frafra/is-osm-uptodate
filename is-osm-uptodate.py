@@ -1,16 +1,22 @@
 #!/usr/bin/env python3
 
-__version__ = "1.0"
+__version__ = "1.1"
 
+import dugong
 import hug
 
+import asyncio
+import atexit
 import gzip
+import json
 import shlex
 import shutil
 import sqlite3
+import ssl
 import subprocess
 from tempfile import NamedTemporaryFile as NamedTemp
 import urllib.request
+from xml.etree import ElementTree
 
 QUERY = """
   WITH nodes_attrs AS
@@ -57,13 +63,46 @@ SELECT json_object(
     ORDER BY timestamp DESC)
 """
 
-REQUEST_TEMPLATE = ("https://api.openstreetmap.org"
-    "/api/0.6/map?bbox={minx},{miny},{maxx},{maxy}")
+SERVER = "api.openstreetmap.org"
+PROTOCOL, PORT = "https://", 443
+REQUEST_TEMPLATE = PROTOCOL+SERVER+"/api/0.6/map?bbox={minx},{miny},{maxx},{maxy}"
+HISTORY_TEMPLATE = "/api/0.6/node/{}/history"
 COMMAND_TEMPLATE = "spatialite_osm_raw -o {} -d {}"
 
 executable = COMMAND_TEMPLATE.split()[0]
 if not shutil.which(executable):
     raise FileNotFoundError("{} is missing".format(executable))
+
+# https://pythonhosted.org/dugong/tutorial.html#pipelining-with-coroutines
+# https://pythonhosted.org/dugong/tutorial.html#ssl-connections
+def pipeline(hostname, port, path_list, headers={}):
+    loop = asyncio.get_event_loop()
+    atexit.register(loop.close)
+    ssl_context = ssl.SSLContext(ssl.PROTOCOL_SSLv23)
+    ssl_context.options |= ssl.OP_NO_SSLv2
+    ssl_context.verify_mode = ssl.CERT_REQUIRED
+    ssl_context.set_default_verify_paths()
+    with dugong.HTTPConnection(hostname, port, ssl_context=ssl_context) as conn:
+        def send_requests():
+            for path in path_list:
+                yield from conn.co_send_request('GET', path, headers=headers)
+        def read_responses():
+            bodies = []
+            for path in path_list:
+                resp = yield from conn.co_read_response()
+                assert resp.status == 200
+                buf = yield from conn.co_readall()
+                bodies.append(buf)
+            return bodies
+        send_crt = send_requests()
+        recv_crt = read_responses()
+        send_future = dugong.AioFuture(send_crt, loop=loop)
+        recv_future = dugong.AioFuture(recv_crt, loop=loop)
+        loop.run_until_complete(recv_future)
+        bodies = recv_future.result()
+        return bodies
+
+nodes = {}
 
 @hug.cli()
 @hug.get('/api/getData')
@@ -76,14 +115,15 @@ def getData(
         output=hug.output_format.json):
     if type(referer) is not str:
         referer = referer.headers.get('REFERER')
+    headers = {
+        "User-Agent":"Is-OSM-uptodate/%s" % __version__,
+        "Referer":referer,
+        "Accept-Encoding":"gzip",
+    }
     with NamedTemp() as db, NamedTemp(suffix='.osm') as osm:
         customRequest = urllib.request.Request(
             REQUEST_TEMPLATE.format(**locals()),
-            headers={
-                "User-Agent":"Is-OSM-uptodate/%s" % __version__,
-                "Referer":referer,
-                "Accept-Encoding":"gzip",
-            })
+            headers=headers)
         with urllib.request.urlopen(customRequest) as response:
             gzipFile = gzip.GzipFile(fileobj=response)
             shutil.copyfileobj(gzipFile, osm)
@@ -95,7 +135,39 @@ def getData(
             conn.load_extension('mod_spatialite')
             cursor = conn.cursor()
             cursor.execute(QUERY, (minx, miny, maxx, maxy))
-            result = cursor.fetchone()[0]
+            result = json.loads(cursor.fetchone()[0])
+    urls = []
+    for feature in result['features']:
+        if feature['geometry']['type'] == 'Point':
+            node_id = feature['properties']['id']
+            if node_id in nodes:
+                continue
+            if feature['properties']['version'] > 1:
+                urls.append(HISTORY_TEMPLATE.format(node_id))
+    for response in pipeline(SERVER, PORT, urls, headers):
+        tree = ElementTree.XML(response.decode('utf8'))
+        users = []
+        for node in tree.findall('node'):
+            users.append([node.get('user'), node.get('uid')])
+        node_id =  int(tree.find('node').get('id'))
+        created = tree.find('node').get('timestamp')
+        nodes[node_id] = {
+            'created':created,
+            'contributors':len(set([user[1] for user in users])),
+        }
+    for feature in result['features']:
+        if feature['geometry']['type'] == 'Point':
+            node_id = feature['properties']['id']
+            if feature['properties']['version'] > 1:
+                feature['properties'].update({
+                    'created':nodes[node_id]['created'],
+                    'contributors':nodes[node_id]['contributors'],
+                })
+            else:
+                feature['properties'].update({
+                    'created':feature['properties']['timestamp'],
+                    'contributors':1,
+                })
     return result
 
 if __name__ == '__main__':
