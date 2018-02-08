@@ -21,6 +21,11 @@ Page on OSM wiki: https://wiki.openstreetmap.org/wiki/Is_OSM_up-to-date
 $ uwsgi --ini uwsgi.ini
 ```
 
+It could be needed to export `PYTHONPATH` before running uwsgi. Example:
+```
+$ export PYTHONPATH="/usr/local/lib/python3.6/site-packages"
+```
+
 ### Docker image
 
 ```
@@ -54,3 +59,9 @@ optional arguments:
   -o OUTPUT, --output OUTPUT
 $ ./is-osm-uptodate.py 9.188295196 45.4635324507 9.1926242813 45.4649771956
 ```
+
+## Common issues
+
+### Error - Please try again
+
+Try a smaller region or wait for a while. Be sure to have a stable connection.
