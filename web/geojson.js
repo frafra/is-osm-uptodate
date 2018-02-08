@@ -21,16 +21,52 @@ function setColor(event) {
   tiles.style.filter = `grayscale(${100-colour}%)`;
 }
 
-function getTimestamp(date) {
-  return date.toISOString().slice(0, 10);
+let mode = 'lastedit';
+let buttonModes = document.querySelectorAll('#mode input');
+for (let i=0; i<buttonModes.length; i++) {
+  buttonModes[i].onchange = event => {
+    mode = event.target.id;
+    parseData();
+  }
+}
+let modes = {
+    lastedit: {
+        defaultValue: new Date(),
+        getValue: feature => new Date(feature.properties.timestamp),
+        prettyValue: date => date.toISOString().slice(0, 10),
+        inverted: false
+    },
+    creation: {
+        defaultValue: new Date(),
+        getValue: feature => new Date(feature.properties.created),
+        prettyValue: date => date.toISOString().slice(0, 10),
+        inverted: false
+    },
+    revisions: {
+        defaultValue: 1,
+        getValue: feature => feature.properties.version,
+        prettyValue: value => value,
+        inverted: false
+    },
+    frequency: {
+        defaultValue: 0,
+        getValue: feature => {
+          let milliseconds = new Date()-new Date(feature.properties.created)
+          return milliseconds/1000/60/60/24/feature.properties.version;
+        },
+        prettyValue: value => {
+          let days = Math.floor(value);
+          if (days < 1) return 'daily';
+          if (days < 365) return `every ${days} days`;
+          let years = Math.floor(value/365);
+          return `every ${years} year(s)`;
+        },
+        inverted: true
+    }
 }
 
-function getTimestampFromFeature(feature) {
-  let date = new Date(feature.properties.timestamp);
-  return getTimestamp(date);
-}
-
-let oldest = new Date();
+let minimumValue = modes[mode].defaultValue;
+let maximumValue = modes[mode].defaultValue;
 let info = L.control();
 info.onAdd = map => {
   this.div = L.DomUtil.create('div', 'info');
@@ -38,14 +74,19 @@ info.onAdd = map => {
   return this.div;
 };
 info.update = message => {
-  oldestTimestamp = getTimestamp(oldest);
-  todayTimestamp = getTimestamp(new Date());
+  if (!modes[mode].inverted) {
+    minimumValuePretty = modes[mode].prettyValue(minimumValue);
+    maximumValuePretty = modes[mode].prettyValue(maximumValue);
+  } else {
+    minimumValuePretty = modes[mode].prettyValue(maximumValue);
+    maximumValuePretty = modes[mode].prettyValue(minimumValue);
+  }
   this.div.innerHTML = `
     ${message}
     <div class="bar">
-      <span>${oldestTimestamp}</span>
+      <span>${minimumValuePretty}</span>
       <span class="colors"></span>
-      <span>${todayTimestamp}</span>
+      <span>${maximumValuePretty}</span>
     </div>
     <hr/>
     <div class="slider">
@@ -68,14 +109,14 @@ let overlays = {
 L.control.layers({}, overlays, {collapsed:false}).addTo(map);
 nodes.addTo(map);
 
-function openOldestMarker() {
+function openNodeMarker() {
   nodes.addTo(map);
-  window.oldestMarker.openPopup();
+  window.nodeMarker.openPopup();
 }
 
-function openOldestWay() {
+function openWayMarker() {
   ways.addTo(map);
-  window.oldestWay.openPopup();
+  window.wayMarker.openPopup();
 }
 
 function generatePopup(feature) {
@@ -107,6 +148,7 @@ function generatePopup(feature) {
   return popup;
 }
 
+let bounds;
 function getData() {
   info.update(`
     <div style="text-align: center">
@@ -114,7 +156,7 @@ function getData() {
       <div>Please wait...</div>
     </div>`
   );
-  let bounds = map.getBounds();
+  bounds = map.getBounds();
   let west = bounds.getWest();
   let south = bounds.getSouth();
   let east = bounds.getEast();
@@ -122,90 +164,7 @@ function getData() {
   let url = `/api/getData?minx=${west}&miny=${south}&maxx=${east}&maxy=${north}`;
   fetch(url).then(response => {
     return response.json();
-  }).then(results => {
-    nodes.clearLayers();
-    ways.clearLayers();
-    rectangle.remove();
-    oldest = new Date();
-    let oldestNodeDate = new Date();
-    let oldestWayDate = new Date();
-    let oldestNode;
-    let oldestWay;
-    for (let index in results.features) {
-      let feature = results.features[index];
-      let date = new Date(feature.properties.timestamp);
-      if (feature.geometry.type == 'Point') {
-        if (date < oldestNodeDate) {
-          oldestNodeDate = date;
-          oldestNode = feature;
-        }
-      } else {
-        if (date < oldestWayDate) {
-          oldestWayDate = date;
-          oldestWay = feature;
-        }
-      }
-      if (date < oldest) {
-        oldest = date;
-      }
-    }
-    let nodeTimestamp = getTimestampFromFeature(oldestNode);
-    let wayTimestamp = getTimestampFromFeature(oldestWay);
-    info.update(`
-      <table>
-        <tr>
-          <td>Oldest node</td>
-          <td><a href="javascript:openOldestMarker();">#${oldestNode.properties.id}</a></td>
-          <td>(${nodeTimestamp})</td>
-        </tr>
-        <tr>
-          <td>Oldest way</td>
-          <td><a href="javascript:openOldestWay();">#${oldestWay.properties.id}</a></td>
-          <td>(${wayTimestamp})</td>
-        </tr>
-      </table>
-    `);
-    let range = (new Date()).getTime()-oldest.getTime();
-    L.geoJSON(results, {
-        pointToLayer: (feature, latlng) => {
-            let now = new Date(feature.properties.timestamp);
-            let seconds = now.getTime()-oldest.getTime();
-            let computed = 240*seconds/range;
-            let marker = L.circleMarker(latlng, {
-              radius: 5,
-              fillColor: `hsl(${computed}, 100%, 50%)`,
-              color: "#555",
-              weight: 1,
-              opacity: 1,
-              fillOpacity: 1
-            });
-            let popup = generatePopup(feature);
-            marker.bindPopup(popup);
-            if (feature.properties.id == oldestNode.properties.id) {
-              window.oldestMarker = marker;
-            }
-            nodes.addLayer(marker);
-            return marker;
-        },
-        onEachFeature: (feature, layer) => {
-          if (feature.geometry.type !== 'LineString') return;
-          let now = new Date(feature.properties.timestamp);
-          let seconds = now.getTime()-oldest.getTime();
-          let computed = 240*seconds/range;
-          layer.options.color = `hsla(${computed}, 100%, 50%, 0.5)`;
-          let popup = generatePopup(feature);
-          layer.bindPopup(popup);
-          if (feature.properties.id == oldestWay.properties.id) {
-            window.oldestWay = layer;
-          }
-          ways.addLayer(layer);
-        }
-    });
-    rectangle = L.rectangle(bounds, {
-      color: "#ff7800", fill: false, weight: 3
-    });
-    rectangle.addTo(map);
-  }).catch(error => {
+  }).then(parseData).catch(error => {
     info.update(`
       <div style="text-align: center">
         <strong>Error</strong>
@@ -214,6 +173,139 @@ function getData() {
     `);
     console.log(error);
   });
+}
+
+let results;
+function parseData(data) {
+  results = data ? data : results;
+  nodes.clearLayers();
+  ways.clearLayers();
+  rectangle.remove();
+  minimumValue = modes[mode].defaultValue;
+  maximumValue = modes[mode].defaultValue;
+  let minimumNodeValue = modes[mode].defaultValue;
+  let minimumWayValue = modes[mode].defaultValue;
+  let maximumNodeValue = modes[mode].defaultValue;
+  let maximumWayValue = modes[mode].defaultValue;
+  let minimumNode;
+  let minimumWay;
+  let maximumNode;
+  let maximumWay;
+  let defaultValue = modes[mode].defaultValue
+  for (let index in results.features) {
+    let feature = results.features[index];
+    let value = modes[mode].getValue(feature);
+    if (feature.geometry.type == 'Point') {
+      if (value <= minimumNodeValue || minimumNodeValue == defaultValue) {
+        minimumNodeValue = value;
+        minimumNode = feature;
+      }
+      if (value > maximumNodeValue || maximumNodeValue == defaultValue) {
+        maximumNodeValue = value;
+        maximumNode = feature;
+      }
+    } else {
+      if (value <= minimumWayValue || minimumWayValue == defaultValue) {
+        minimumWayValue = value;
+        minimumWay = feature;
+      }
+      if (value > maximumWayValue || maximumWay == defaultValue) {
+        maximumWayValue = value;
+        maximumWay = feature;
+      }
+    }
+    if (value <= minimumValue) {
+      minimumValue = value;
+    }
+    if (value > maximumValue) {
+      maximumValue = value;
+    }
+  }
+  let nodePrettyValue;
+  let wayPrettyValue;
+  let nodePrettyId;
+  let wayPrettyId;
+  if (!modes[mode].inverted) {
+    nodePrettyValue = modes[mode].prettyValue(modes[mode].getValue(minimumNode));
+    wayPrettyValue = modes[mode].prettyValue(modes[mode].getValue(minimumWay));
+    nodePrettyId = minimumNode.properties.id;
+    wayPrettyId = minimumWay.properties.id;
+  } else {
+    nodePrettyValue = modes[mode].prettyValue(modes[mode].getValue(maximumNode));
+    wayPrettyValue = modes[mode].prettyValue(modes[mode].getValue(maximumWay));
+    nodePrettyId = maximumNode.properties.id;
+    wayPrettyId = maximumWay.properties.id;
+  }
+  info.update(`
+    <table>
+      <tr>
+        <td>Worst node</td>
+        <td><a href="javascript:openNodeMarker();">#${nodePrettyId}</a></td>
+        <td>(${nodePrettyValue})</td>
+      </tr>
+      <tr>
+        <td>Worst way</td>
+        <td><a href="javascript:openWayMarker();">#${wayPrettyId}</a></td>
+        <td>(${wayPrettyValue})</td>
+      </tr>
+    </table>
+  `);
+  let range;
+  if (modes[mode].inverted) range = minimumValue-maximumValue;
+  else range = maximumValue-minimumValue;
+  L.geoJSON(results, {
+    pointToLayer: (feature, latlng) => {
+      let value = modes[mode].getValue(feature);
+      let computed;
+      if (modes[mode].inverted) computed = 240*(value-maximumValue)/range
+      else computed = 240*(value-minimumValue)/range;
+      let marker = L.circleMarker(latlng, {
+        radius: 5,
+        fillColor: `hsl(${computed}, 100%, 50%)`,
+        color: "#555",
+        weight: 1,
+        opacity: 1,
+        fillOpacity: 1
+      });
+      let popup = generatePopup(feature);
+      marker.bindPopup(popup);
+      if (!modes[mode].inverted) {
+        if (feature.properties.id == minimumNode.properties.id) {
+          window.nodeMarker = marker;
+        }
+      } else {
+        if (feature.properties.id == maximumNode.properties.id) {
+          window.nodeMarker = marker;
+        }
+      }
+      nodes.addLayer(marker);
+      return marker;
+    },
+    onEachFeature: (feature, layer) => {
+      if (feature.geometry.type !== 'LineString') return;
+      let value = modes[mode].getValue(feature);
+      let computed;
+      if (modes[mode].inverted) computed = 240*(value-maximumValue)/range
+      else computed = 240*(value-minimumValue)/range;
+      layer.options.color = `hsla(${computed}, 100%, 50%, 0.5)`;
+      let popup = generatePopup(feature);
+      layer.bindPopup(popup);
+      if (!modes[mode].inverted) {
+        if (feature.properties.id == minimumWay.properties.id) {
+          window.wayMarker = layer;
+        }
+      } else {
+        if (feature.properties.id == maximumWay.properties.id) {
+          window.wayMarker = layer;
+        }
+      }
+      ways.addLayer(layer);
+    }
+  });
+  rectangle = L.rectangle(bounds, {
+    color: "#ff7800", fill: false, weight: 3
+  });
+  rectangle.addTo(map);
 }
 
 if (!document.location.hash) {

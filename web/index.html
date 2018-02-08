@@ -11,9 +11,28 @@
       integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN"
       crossorigin="anonymous"/>
     <link rel="stylesheet" href="https://unpkg.com/leaflet-easybutton@2.0.0/src/easy-button.css"/>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+      integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+      crossorigin="anonymous"/>
     <link rel="stylesheet" href="map.css"/>
   </head>
   <body>
+    <div id="bar">
+      <div id="mode" class="btn-group btn-group-toggle" data-toggle="buttons">
+        <label class="btn btn-secondary active">
+          <input type="radio" name="options" id="lastedit" autocomplete="off" checked> Last edit
+        </label>
+        <label class="btn btn-secondary">
+          <input type="radio" name="options" id="creation" autocomplete="off"> Creation time
+        </label>
+        <label class="btn btn-secondary">
+          <input type="radio" name="options" id="revisions" autocomplete="off"> Revisions
+        </label>
+        <label class="btn btn-secondary">
+          <input type="radio" name="options" id="frequency" autocomplete="off"> Update frequency
+        </label>
+      </div>
+    </div>
     <div id="map"></div>
     <script src="https://unpkg.com/leaflet@1.2.0/dist/leaflet.js"
       integrity="sha512-lInM/apFSqyy1o6s89K4iQUKg6ppXEgsVxT35HbzUupEVRh2Eu9Wdl4tHj7dZO0s1uvplcYGmt3498TtHq+log=="
@@ -22,6 +41,9 @@
       integrity="sha256-xFr923AFMh1B7s9GIWcWodj1t7IPr0QYKEJx40rDcYY="
       crossorigin="anonymous"></script>
     <script src="https://unpkg.com/leaflet-easybutton@2.0.0/src/easy-button.js"></script>
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
     <script src="geojson.js"></script>
   </body>
 </html>
