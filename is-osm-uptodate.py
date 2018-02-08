@@ -66,7 +66,7 @@ SELECT json_object(
 SERVER = "api.openstreetmap.org"
 PROTOCOL, PORT = "https://", 443
 REQUEST_TEMPLATE = PROTOCOL+SERVER+"/api/0.6/map?bbox={minx},{miny},{maxx},{maxy}"
-HISTORY_TEMPLATE = "/api/0.6/node/{}/history"
+HISTORY_TEMPLATE = "/api/0.6/{}/{}/history"
 COMMAND_TEMPLATE = "spatialite_osm_raw -o {} -d {}"
 
 executable = COMMAND_TEMPLATE.split()[0]
@@ -137,7 +137,7 @@ def getDataMinimal(
             result = json.loads(cursor.fetchone()[0])
     return result
 
-nodes = {} # cache
+features = {} # cache
 
 @hug.cli()
 @hug.get('/api/getData')
@@ -155,35 +155,38 @@ def getData(
     urls = []
     for feature in result['features']:
         if feature['geometry']['type'] == 'Point':
-            node_id = feature['properties']['id']
-            if node_id in nodes:
-                continue
-            if feature['properties']['version'] > 1:
-                urls.append(HISTORY_TEMPLATE.format(node_id))
+            osmType = 'node'
+        else:
+            osmType = 'way'
+        feature_id = feature['properties']['id']
+        if feature_id in features:
+            continue
+        if feature['properties']['version'] > 1:
+            urls.append(HISTORY_TEMPLATE.format(osmType, feature_id))
     responses = pipeline(SERVER, PORT, urls, generateHeaders(referer))
     for response in responses:
         tree = ElementTree.XML(response.decode('utf8'))
         users = set()
-        for node in tree.findall('node'):
-            users.add(node.get('user'))
-        node_id =  int(tree.find('node').get('id'))
-        created = tree.find('node').get('timestamp')
-        nodes[node_id] = {
+        osmType = 'way' if tree.find('way') else 'node'
+        for feature in tree.findall(osmType):
+            users.add(feature.get('user'))
+        feature_id =  int(tree.find(osmType).get('id'))
+        created = tree.find(osmType).get('timestamp')
+        features[feature_id] = {
             'created':created,
             'users':users,
             'contributors':len(users),
         }
     for feature in result['features']:
-        if feature['geometry']['type'] == 'Point':
-            node_id = feature['properties']['id']
-            if feature['properties']['version'] > 1:
-                feature['properties'].update(nodes[node_id])
-            else:
-                feature['properties'].update({
-                    'created':feature['properties']['timestamp'],
-                    'users':[feature['properties']['user']],
-                    'contributors':1,
-                })
+        feature_id = feature['properties']['id']
+        if feature['properties']['version'] > 1:
+            feature['properties'].update(features[feature_id])
+        else:
+            feature['properties'].update({
+                'created':feature['properties']['timestamp'],
+                'users':[feature['properties']['user']],
+                'contributors':1,
+            })
     return result
 
 if __name__ == '__main__':
