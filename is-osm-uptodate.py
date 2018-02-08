@@ -160,28 +160,28 @@ def getData(
                 continue
             if feature['properties']['version'] > 1:
                 urls.append(HISTORY_TEMPLATE.format(node_id))
-    for response in pipeline(SERVER, PORT, urls, generateHeaders(referer)):
+    responses = pipeline(SERVER, PORT, urls, generateHeaders(referer))
+    for response in responses:
         tree = ElementTree.XML(response.decode('utf8'))
-        users = []
+        users = set()
         for node in tree.findall('node'):
-            users.append([node.get('user'), node.get('uid')])
+            users.add(node.get('user'))
         node_id =  int(tree.find('node').get('id'))
         created = tree.find('node').get('timestamp')
         nodes[node_id] = {
             'created':created,
-            'contributors':len(set([user[1] for user in users])),
+            'users':users,
+            'contributors':len(users),
         }
     for feature in result['features']:
         if feature['geometry']['type'] == 'Point':
             node_id = feature['properties']['id']
             if feature['properties']['version'] > 1:
-                feature['properties'].update({
-                    'created':nodes[node_id]['created'],
-                    'contributors':nodes[node_id]['contributors'],
-                })
+                feature['properties'].update(nodes[node_id])
             else:
                 feature['properties'].update({
                     'created':feature['properties']['timestamp'],
+                    'users':[feature['properties']['user']],
                     'contributors':1,
                 })
     return result
