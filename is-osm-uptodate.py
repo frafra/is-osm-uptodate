@@ -102,6 +102,11 @@ def pipeline(hostname, port, path_list, headers={}):
         bodies = recv_future.result()
         return bodies
 
+def chunks(l, n):
+    """Yield successive n-sized chunks from l."""
+    for i in range(0, len(l), n):
+        yield l[i:i + n]
+
 def generateHeaders(referer):
     return {
         "User-Agent":"Is-OSM-uptodate/%s" % __version__,
@@ -163,7 +168,9 @@ def getData(
             continue
         if feature['properties']['version'] > 1:
             urls.append(HISTORY_TEMPLATE.format(osmType, feature_id))
-    responses = pipeline(SERVER, PORT, urls, generateHeaders(referer))
+    responses = []
+    for chunk in chunks(urls, 100):
+        responses.extend(pipeline(SERVER, PORT, chunk, generateHeaders(referer)))
     for response in responses:
         tree = ElementTree.XML(response.decode('utf8'))
         users = set()
