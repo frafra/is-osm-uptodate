@@ -15,6 +15,7 @@ import sqlite3
 import ssl
 import subprocess
 from tempfile import NamedTemporaryFile as NamedTemp
+import time
 import urllib.request
 from xml.etree import ElementTree
 
@@ -68,6 +69,7 @@ PROTOCOL, PORT = "https://", 443
 REQUEST_TEMPLATE = PROTOCOL+SERVER+"/api/0.6/map?bbox={minx},{miny},{maxx},{maxy}"
 HISTORY_TEMPLATE = "/api/0.6/{}/{}/history"
 COMMAND_TEMPLATE = "spatialite_osm_raw -o {} -d {}"
+CACHE_REFRESH = 60*60*24
 
 executable = COMMAND_TEMPLATE.split()[0]
 if not shutil.which(executable):
@@ -142,7 +144,8 @@ def getDataMinimal(
             result = json.loads(cursor.fetchone()[0])
     return result
 
-features = {} # cache
+featuresTime = time.time()
+features = {}
 
 @hug.cli()
 @hug.get('/api/getData')
@@ -153,11 +156,15 @@ def getData(
         maxy: hug.types.float_number,
         referer="http://localhost:8000/",
         output=hug.output_format.json):
+    global features, featuresTime
     if type(referer) is not str:
         referer = referer.headers.get('REFERER')
     args = [minx, miny, maxx, maxy]
     result = getDataMinimal(*args, referer=referer, output=output)
     urls = []
+    if time.time()-featuresTime > CACHE_REFRESH:
+        featuresTime = time.time()
+        features = {}
     for feature in result['features']:
         if feature['geometry']['type'] == 'Point':
             osmType = 'node'
