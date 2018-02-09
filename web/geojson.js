@@ -48,6 +48,12 @@ let modes = {
         prettyValue: value => value,
         inverted: false
     },
+    contributors: {
+        defaultValue: 1,
+        getValue: feature => feature.properties.contributors,
+        prettyValue: value => value,
+        inverted: false
+    },
     frequency: {
         defaultValue: 0,
         getValue: feature => {
