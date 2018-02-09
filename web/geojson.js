@@ -121,8 +121,8 @@ let ways = L.layerGroup();
 let rectangle = L.layerGroup();
 
 let overlays = {
-  "Nodes":nodes,
-  "Ways":ways,
+  '<i class="fas fa-dot-circle"></i> Nodes':nodes,
+  '<i class="fas fa-road"></i> Ways':ways,
 }
 L.control.layers({}, overlays, {collapsed:false}).addTo(map);
 nodes.addTo(map);
