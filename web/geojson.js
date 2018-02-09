@@ -186,7 +186,7 @@ function getData() {
     info.update(`
       <div style="text-align: center">
         <strong>Error</strong>
-        <div>Please <a href="javascript:getData();">try again</a>.</div>
+        <div>Please try again or zoom in.</div>
       </div>
     `);
     console.log(error);
