@@ -7,38 +7,36 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.2.0/dist/leaflet.css"
       integrity="sha512-M2wvCLH6DSRazYeZRIm1JnYyh22purTM+FDB5CsyxtQJYeKq83arPe5wgbNmcFXGqiSH2XR8dT/fJISVA1r/zQ=="
       crossorigin=""/>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"
-      integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN"
-      crossorigin="anonymous"/>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet-easybutton@2.0.0/src/easy-button.css"/>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
       integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
       crossorigin="anonymous"/>
     <link rel="stylesheet" href="map.css"/>
+    <script defer src="https://use.fontawesome.com/releases/v5.0.6/js/all.js"></script>
   </head>
   <body>
     <nav id="bar" class="navbar navbar-expand-lg navbar-light bg-secondary">
       <div id="mode" class="btn-group btn-group-toggle" data-toggle="buttons">
         <label class="btn btn-secondary active">
-          <input type="radio" name="options" id="lastedit" autocomplete="off" checked> Last edit
+          <input type="radio" name="options" id="lastedit" autocomplete="off" checked><i class="fas fa-fast-forward"></i> Last edit
         </label>
         <label class="btn btn-secondary">
-          <input type="radio" name="options" id="creation" autocomplete="off"> Creation time
+          <input type="radio" name="options" id="creation" autocomplete="off"><i class="fas fa-fast-backward"></i> First edit
         </label>
         <label class="btn btn-secondary">
-          <input type="radio" name="options" id="revisions" autocomplete="off"> Revisions
+          <input type="radio" name="options" id="revisions" autocomplete="off"><i class="fas fa-clone"></i> Revisions
         </label>
         <label class="btn btn-secondary">
-          <input type="radio" name="options" id="contributors" autocomplete="off"> Contributors
+          <input type="radio" name="options" id="contributors" autocomplete="off"><i class="fas fa-users"></i> Contributors
         </label>
         <label class="btn btn-secondary">
-          <input type="radio" name="options" id="frequency" autocomplete="off"> Update frequency
+          <input type="radio" name="options" id="frequency" autocomplete="off"><i class="fas fa-stopwatch"></i> Update frequency
         </label>
       </div>
       <form class="form-inline">
         <input id="search" class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
-        <button id="go" class="btn btn-success" type="submit">Go</button>
+        <button id="go" class="btn btn-success" type="submit"><i class="fas fa-arrow-circle-right"></i> Go</button>
       </form>
+      <button id="fetch" class="btn btn-success"><i class="fas fa-sync-alt"></i> Fetch data</button>
     </nav>
     <div id="map"></div>
     <script src="https://unpkg.com/leaflet@1.2.0/dist/leaflet.js"
@@ -47,7 +45,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-hash/0.2.1/leaflet-hash.min.js"
       integrity="sha256-xFr923AFMh1B7s9GIWcWodj1t7IPr0QYKEJx40rDcYY="
       crossorigin="anonymous"></script>
-    <script src="https://unpkg.com/leaflet-easybutton@2.0.0/src/easy-button.js"></script>
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>

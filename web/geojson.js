@@ -10,17 +10,14 @@ let OpenStreetMapLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}
 
 OpenStreetMapLayer.addTo(map);
 
-L.easyButton('fa-refresh', (btn, map) => {
-    getData();
-}).addTo(map);
-
 let colour = 100;
 function setColor(event) {
-  let tiles = document.styleSheets[4].cssRules[0];
+  let tiles = document.styleSheets[3].cssRules[0];
   colour = event.target.value;
   tiles.style.filter = `grayscale(${100-colour}%)`;
 }
 
+document.getElementById('fetch').onclick = getData;
 document.getElementById('go').onclick = event => {
   let text = document.getElementById('search').value;
   fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${text}&limit=1`).then(response => {
