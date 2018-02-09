@@ -21,6 +21,21 @@ function setColor(event) {
   tiles.style.filter = `grayscale(${100-colour}%)`;
 }
 
+document.getElementById('go').onclick = event => {
+  let text = document.getElementById('search').value;
+  fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${text}&limit=1`).then(response => {
+    return response.json();
+  }).then(result => {
+    let place = result[0];
+    let corner1 = L.latLng(place.boundingbox[0], place.boundingbox[2]);
+    let corner2 = L.latLng(place.boundingbox[1], place.boundingbox[3]);
+    let boundingbox = L.latLngBounds(corner1, corner2);
+    map.fitBounds(boundingbox);
+  }).catch(error => {
+    console.log(error);
+  });
+}
+
 let mode = 'lastedit';
 let buttonModes = document.querySelectorAll('#mode input');
 for (let i=0; i<buttonModes.length; i++) {
