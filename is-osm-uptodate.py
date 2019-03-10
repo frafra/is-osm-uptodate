@@ -117,6 +117,11 @@ def generateHeaders(referer):
         "Accept-Encoding":"gzip",
     }
 
+def set_default(obj):
+    if isinstance(obj, set):
+        return list(obj)
+    raise TypeError
+
 @hug.get('/api/getDataMinimal')
 def getDataMinimal(
         minx: hug.types.float_number,
@@ -143,7 +148,7 @@ def getDataMinimal(
             cursor = conn.cursor()
             cursor.execute(QUERY, (minx, miny, maxx, maxy))
             result = json.loads(cursor.fetchone()[0])
-    return result
+    return json.dumps(result, default=set_default)
 
 featuresTime = time.time()
 features = {}
@@ -161,7 +166,7 @@ def getData(
     if type(referer) is not str:
         referer = referer.headers.get('REFERER')
     args = [minx, miny, maxx, maxy]
-    result = getDataMinimal(*args, referer=referer, output=output)
+    result = json.loads(getDataMinimal(*args, referer=referer))
     urls = []
     if time.time()-featuresTime > CACHE_REFRESH:
         featuresTime = time.time()
@@ -207,8 +212,7 @@ def getData(
                 datetime.now()-
                 datetime.fromisoformat(created.rstrip('Z'))
             ).total_seconds()/feature['properties']['version']
-
-    return result
+    return json.dumps(result, default=set_default)
 
 if __name__ == '__main__':
     getData.interface.cli()
