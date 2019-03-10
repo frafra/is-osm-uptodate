@@ -208,10 +208,10 @@ def getData(
                 'contributors':1,
             })
         created = feature['properties']['created']
-        feature['properties']['average_update_time'] = (
+        feature['properties']['average_update_days'] = (
                 datetime.now()-
                 datetime.fromisoformat(created.rstrip('Z'))
-            ).total_seconds()/feature['properties']['version']
+            ).days/feature['properties']['version']
     return json.dumps(result, default=set_default)
 
 if __name__ == '__main__':
