@@ -7,6 +7,7 @@ import hug
 
 import asyncio
 import atexit
+from datetime import datetime
 import gzip
 import json
 import shlex
@@ -201,6 +202,12 @@ def getData(
                 'users':[feature['properties']['user']],
                 'contributors':1,
             })
+        created = feature['properties']['created']
+        feature['properties']['average_update_time'] = (
+                datetime.now()-
+                datetime.fromisoformat(created.rstrip('Z'))
+            ).total_seconds()/feature['properties']['version']
+
     return result
 
 if __name__ == '__main__':
