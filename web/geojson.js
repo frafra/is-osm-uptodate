@@ -10,11 +10,20 @@ let OpenStreetMapLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}
 
 OpenStreetMapLayer.addTo(map);
 
-let colour = 100;
+let colour = 0;
+let style = document.createElement('style');
+document.head.appendChild(style);
+map.whenReady(applyColor);
+function applyColor() {
+  while (style.sheet.cssRules.length) {
+    style.sheet.deleteRule(0);
+  }
+  style.sheet.insertRule(`.leaflet-tile-container { filter: grayscale(${100-colour}%); }`, 0);
+}
+
 function setColor(event) {
-  let tiles = document.styleSheets[3].cssRules[0];
   colour = event.target.value;
-  tiles.style.filter = `grayscale(${100-colour}%)`;
+  applyColor();
 }
 
 document.getElementById('fetch').onclick = getData;
