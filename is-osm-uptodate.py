@@ -148,7 +148,7 @@ def getDataMinimal(
             cursor = conn.cursor()
             cursor.execute(QUERY, (minx, miny, maxx, maxy))
             result = json.loads(cursor.fetchone()[0])
-    return json.dumps(result, default=set_default)
+    return result
 
 featuresTime = time.time()
 features = {}
@@ -166,7 +166,7 @@ def getData(
     if type(referer) is not str:
         referer = referer.headers.get('REFERER')
     args = [minx, miny, maxx, maxy]
-    result = json.loads(getDataMinimal(*args, referer=referer))
+    result = getDataMinimal(*args, referer=referer)
     urls = []
     if time.time()-featuresTime > CACHE_REFRESH:
         featuresTime = time.time()
@@ -212,7 +212,7 @@ def getData(
                 datetime.now()-
                 datetime.fromisoformat(created.rstrip('Z'))
             ).days/feature['properties']['version']
-    return json.dumps(result, default=set_default)
+    return result
 
 if __name__ == '__main__':
     getData.interface.cli()
