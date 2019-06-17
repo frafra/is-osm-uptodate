@@ -1,13 +1,19 @@
-FROM fedora
+FROM python:3.7
 LABEL maintainer="fraph24@gmail.com"
 
-RUN dnf -y update && dnf clean all
-RUN dnf -y install uwsgi-plugin-python3 mailcap spatialite-tools && dnf clean all
-
+ADD requirements.txt /src/requirements.txt
+RUN : && \
+    apt-get update && \
+    apt-get install -y \
+        uwsgi \
+        mime-support \
+        libsqlite3-mod-spatialite \
+        spatialite-bin \
+    && \
+    pip3 install --requirement /src/requirements.txt && \
+    :
 ADD . /src
-
-RUN echo -e '#!/bin/sh\nexport PYTHONPATH="/usr/local/lib/python3.6/site-packages"\nuwsgi --ini /src/uwsgi.ini --chdir /src' > /src/run.sh; chmod +x /src/run.sh; pip3 install --requirement /src/requirements.txt
 
 EXPOSE 8000
 
-CMD ["/bin/sh", "/src/run.sh"]
+CMD ["uwsgi", "--ini", "/src/uwsgi.ini", "--chdir", "/src", "--pythonpath", "/usr/local/lib/python3.7/site-packages"]
