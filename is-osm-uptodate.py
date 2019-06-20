@@ -128,8 +128,7 @@ def getDataMinimal(
         miny: hug.types.float_number,
         maxx: hug.types.float_number,
         maxy: hug.types.float_number,
-        referer="http://localhost:8000/",
-        output=hug.output_format.json):
+        referer="http://localhost:8000/"):
     if type(referer) is not str:
         referer = referer.headers.get('REFERER')
     with NamedTemp() as db, NamedTemp(suffix='.osm') as osm:
@@ -160,8 +159,7 @@ def getData(
         miny: hug.types.float_number,
         maxx: hug.types.float_number,
         maxy: hug.types.float_number,
-        referer="http://localhost:8000/",
-        output=hug.output_format.json):
+        referer="http://localhost:8000/"):
     global features, featuresTime
     if type(referer) is not str:
         referer = referer.headers.get('REFERER')
