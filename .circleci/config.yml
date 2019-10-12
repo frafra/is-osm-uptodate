@@ -2,10 +2,8 @@ version: 2
 jobs:
   build:
     docker:
-      - image: docker
+      - image: circleci/python:3.7-buster-browsers
     working_directory: ~/repo
     steps:
       - checkout
-      - setup_remote_docker
-      - run: docker build --tag=is-osm-uptodate .
-      - run: docker run is-osm-uptodate python3 /src/is-osm-uptodate.py 9.190 45.464 9.191 45.465
+      - run: tests/run_tests.sh
