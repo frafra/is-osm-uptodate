@@ -284,11 +284,11 @@ function parseData(data) {
     pointToLayer: (feature, latlng) => {
       let value = modes[mode].getValue(feature);
       let computed;
-      if (modes[mode].inverted) computed = 240*(value-maximumValue)/range
-      else computed = 240*(value-minimumValue)/range;
+      if (modes[mode].inverted) computed = (value-maximumValue)/range
+      else computed = (value-minimumValue)/range;
       let marker = L.circleMarker(latlng, {
         radius: 5,
-        fillColor: `hsl(${computed}, 100%, 50%)`,
+        fillColor: d3.interpolateViridis(computed),
         color: "#555",
         weight: 1,
         opacity: 1,
@@ -312,9 +312,9 @@ function parseData(data) {
       if (feature.geometry.type !== 'LineString') return;
       let value = modes[mode].getValue(feature);
       let computed;
-      if (modes[mode].inverted) computed = 240*(value-maximumValue)/range
-      else computed = 240*(value-minimumValue)/range;
-      layer.options.color = `hsla(${computed}, 100%, 50%, 0.5)`;
+      if (modes[mode].inverted) computed = (value-maximumValue)/range
+      else computed = (value-minimumValue)/range;
+      layer.options.color = d3.interpolateViridis(computed);
       let popup = generatePopup(feature);
       layer.bindPopup(popup);
       if (!modes[mode].inverted) {
