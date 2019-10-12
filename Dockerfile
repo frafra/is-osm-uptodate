@@ -1,7 +1,7 @@
-FROM python:3.7
+FROM python:3.7-buster
 LABEL maintainer="fraph24@gmail.com"
 
-ADD requirements.txt /src/requirements.txt
+ADD . /src
 RUN : && \
     apt-get update && \
     apt-get install -y \
@@ -9,10 +9,12 @@ RUN : && \
         mime-support \
         libsqlite3-mod-spatialite \
         spatialite-bin \
+        npm \
     && \
     pip3 install --requirement /src/requirements.txt && \
+    cd /src/web && \
+    npm ci && \
     :
-ADD . /src
 
 EXPOSE 8000
 
