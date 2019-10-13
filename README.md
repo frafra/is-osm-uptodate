@@ -16,8 +16,17 @@ Page on OSM wiki: https://wiki.openstreetmap.org/wiki/Is_OSM_up-to-date
   - [dugong](https://bitbucket.org/nikratio/python-dugong)
   - [uWSGI](https://uwsgi-docs.readthedocs.io/)
 - [spatialite-tools](https://www.gaia-gis.it/fossil/spatialite-tools/index)
+- [npm](https://www.npmjs.com/)
 
 # Setup
+
+## Download dependencies for the web app
+
+```
+$ cd web
+$ npm ci
+$ cd -
+```
 
 ## uwsgi
 
