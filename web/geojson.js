@@ -110,13 +110,16 @@ info.update = message => {
   }
   this.div.innerHTML = `
     ${message}
+    <strong style="text-align: center" class="d-block d-sm-block d-md-none">
+      ${mode}
+    </strong>
     <div class="bar">
       <span>${minimumValuePretty}</span>
       <span class="colors"></span>
       <span>${maximumValuePretty}</span>
     </div>
-    <hr/>
-    <div class="slider">
+    <div class="slider d-none d-md-block">
+      <hr/>
       Colour
       <input type="range" id="grayscale" value="${colour}"/>
     </div>
@@ -130,8 +133,8 @@ let ways = L.layerGroup();
 let rectangle = L.layerGroup();
 
 let overlays = {
-  '<i class="fas fa-dot-circle"></i> Nodes':nodes,
-  '<i class="fas fa-road"></i> Ways':ways,
+  '<i class="fas fa-dot-circle"></i> <span class="d-none d-md-inline">Nodes</span>':nodes,
+  '<i class="fas fa-road"></i> <span class="d-none d-md-inline">Ways</span>':ways,
 }
 L.control.layers({}, overlays, {collapsed:false}).addTo(map);
 nodes.addTo(map);
@@ -264,7 +267,7 @@ function parseData(data) {
     wayPrettyId = maximumWay.properties.id;
   }
   info.update(`
-    <table>
+    <table class="d-none d-md-table">
       <tr>
         <td>Worst node</td>
         <td><a href="javascript:openNodeMarker();">#${nodePrettyId}</a></td>
