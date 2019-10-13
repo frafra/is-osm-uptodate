@@ -27,4 +27,4 @@ cleanup() {
 (cd .. && uwsgi --ini uwsgi.ini) &
 trap cleanup 0
 
-pytest test_base.py --browser=firefox
+pytest --browser=firefox --save_screenshot $@

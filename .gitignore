@@ -4,3 +4,4 @@ node_modules
 tests/firefox
 tests/geckodriver.log
 tests/venv
+tests/latest_logs

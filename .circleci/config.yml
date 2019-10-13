@@ -6,4 +6,14 @@ jobs:
     working_directory: ~/repo
     steps:
       - checkout
+      - run: |
+          sudo apt-get install -y \
+          uwsgi \
+          mime-support \
+          libsqlite3-mod-spatialite \
+          spatialite-bin \
+          npm
+      - run: cd web && npm ci && cd ..
       - run: tests/run_tests.sh
+      - store_artifacts:
+          path: tests/latest_logs
