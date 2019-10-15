@@ -6,7 +6,8 @@ class TestWebapp(BaseCase):
         def wrapper(self, *args, **kwargs):
             self.set_window_size('640', '480')
             self.open("http://localhost:8000")
-            self.assert_text("Worst node", timeout=settings.EXTREME_TIMEOUT)
+            self.assert_element("#map path.leaflet-interactive",
+                timeout=settings.EXTREME_TIMEOUT)
         return wrapper
 
     @open_home
