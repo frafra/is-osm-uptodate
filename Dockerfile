@@ -1,21 +1,34 @@
-FROM python:3.7-buster
+FROM python:3.7-buster AS apt
 LABEL maintainer="fraph24@gmail.com"
+RUN apt-get update
+WORKDIR /home/app
 
-ADD . /src
-RUN : && \
-    apt-get update && \
+FROM apt AS builder
+ADD . .
+RUN apt-get install -y npm && \
+    cd web && \
+    npm ci
+
+FROM apt AS base
+COPY --from=builder /home/app .
+RUN useradd --user-group --system --no-create-home --no-log-init app && \
+    chown -R app:app . && \
+    pip3 install --requirement requirements.txt && \
     apt-get install -y \
         uwsgi \
         mime-support \
         libsqlite3-mod-spatialite \
-        spatialite-bin \
-        npm \
-    && \
-    pip3 install --requirement /src/requirements.txt && \
-    cd /src/web && \
-    npm ci && \
-    :
+        spatialite-bin
 
-EXPOSE 8000
+FROM base AS tester
+WORKDIR /home/app/tests
+RUN pip3 install --requirement requirements.txt && \
+    apt-get install -y firefox-esr && \
+    seleniumbase install geckodriver
+USER app
+CMD ["pytest", "--browser=firefox", "--save_screenshot"]
 
-CMD ["uwsgi", "--ini", "/src/uwsgi.ini", "--chdir", "/src", "--pythonpath", "/usr/local/lib/python3.7/site-packages"]
+FROM base AS runner
+USER app
+EXPOSE 8000/tcp
+CMD ["uwsgi", "--ini", "uwsgi.ini"]

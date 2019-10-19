@@ -2,18 +2,12 @@ version: 2
 jobs:
   build:
     docker:
-      - image: circleci/python:3.7-buster-browsers
+      - image: marshallford/podman
     working_directory: ~/repo
     steps:
       - checkout
-      - run: |
-          sudo apt-get install -y \
-          uwsgi \
-          mime-support \
-          libsqlite3-mod-spatialite \
-          spatialite-bin \
-          npm
-      - run: cd web && npm ci && cd ..
-      - run: tests/run_tests.sh
+      - run: podman build --target=tester -t tester .
+      - run: podman run --name=tester tester
+      - run: podman cp tester:/home/app/tests/latest_logs
       - store_artifacts:
-          path: tests/latest_logs
+          path: latest_logs
