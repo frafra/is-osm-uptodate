@@ -1,19 +1,12 @@
 version: 2
 jobs:
   build:
-    docker:
-      - image: circleci/python:3.7-buster-browsers
+    machine: true
     working_directory: ~/repo
     steps:
       - checkout
-      - run: |
-          sudo apt-get install -y \
-          uwsgi \
-          mime-support \
-          libsqlite3-mod-spatialite \
-          spatialite-bin \
-          npm
-      - run: cd web && npm ci && cd ..
-      - run: tests/run_tests.sh
+      - run: docker build --target=tester -t tester .
+      - run: docker run --name=tester tester
+      - run: docker cp tester:/home/app/tests/latest_logs latest_logs
       - store_artifacts:
-          path: tests/latest_logs
+          path: latest_logs
