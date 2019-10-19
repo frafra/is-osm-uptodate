@@ -1,13 +1,11 @@
 version: 2
 jobs:
   build:
-    docker:
-      - image: marshallford/podman
     working_directory: ~/repo
     steps:
       - checkout
-      - run: podman build --target=tester -t tester .
-      - run: podman run --name=tester tester
-      - run: podman cp tester:/home/app/tests/latest_logs
+      - run: docker build --target=tester -t tester .
+      - run: docker run --name=tester tester
+      - run: docker cp tester:/home/app/tests/latest_logs
       - store_artifacts:
           path: latest_logs
