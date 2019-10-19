@@ -7,6 +7,6 @@ jobs:
       - checkout
       - run: docker build --target=tester -t tester .
       - run: docker run --name=tester tester
-      - run: docker cp tester:/home/app/tests/latest_logs
+      - run: docker cp tester:/home/app/tests/latest_logs latest_logs
       - store_artifacts:
           path: latest_logs
