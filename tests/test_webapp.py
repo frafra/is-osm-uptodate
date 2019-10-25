@@ -1,6 +1,7 @@
 from seleniumbase import BaseCase
 from seleniumbase.config import settings
 from parameterized import parameterized
+import signal
 
 import shlex
 import subprocess
@@ -14,7 +15,7 @@ def setup_module():
 
 def teardown_module():
     global uwsgi
-    uwsgi.kill()
+    uwsgi.send_signal(signal.SIGINT)
 
 class TestWebapp(BaseCase):
     def test_open_home(self):
