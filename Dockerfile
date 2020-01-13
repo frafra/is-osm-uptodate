@@ -23,12 +23,13 @@ RUN useradd --user-group --system --no-create-home --no-log-init app && \
 FROM base AS tester
 WORKDIR /home/app/tests
 RUN pip3 install --requirement requirements.txt && \
-    apt-get install -y firefox-esr && \
+    apt-get install -y firefox-esr xvfb && \
     seleniumbase install geckodriver
 USER app
 CMD ["pytest", "--browser=firefox", "--save_screenshot"]
 
 FROM base AS runner
+ENV DISPLAY=:99
 USER app
 EXPOSE 8000/tcp
 CMD ["uwsgi", "--ini", "uwsgi.ini"]
