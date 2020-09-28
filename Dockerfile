@@ -1,4 +1,4 @@
-FROM python:3.8.4-buster AS apt
+FROM python:3.8.6-buster AS apt
 LABEL maintainer="fraph24@gmail.com"
 RUN apt-get update
 WORKDIR /home/app
