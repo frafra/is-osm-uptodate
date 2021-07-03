@@ -13,9 +13,7 @@ Page on OSM wiki: https://wiki.openstreetmap.org/wiki/Is_OSM_up-to-date
 
 - [Python 3](https://www.python.org/)
   - [hug](http://www.hug.rest/)
-  - [dugong](https://bitbucket.org/nikratio/python-dugong)
   - [uWSGI](https://uwsgi-docs.readthedocs.io/)
-- [spatialite-tools](https://www.gaia-gis.it/fossil/spatialite-tools/index)
 - [npm](https://www.npmjs.com/)
 
 # Setup
@@ -36,7 +34,7 @@ $ uwsgi --ini uwsgi.ini
 
 It could be needed to export `PYTHONPATH` before running uwsgi. Example:
 ```
-$ export PYTHONPATH="/usr/local/lib/python3.7/site-packages"
+$ export PYTHONPATH="/usr/local/lib/python3.9/site-packages"
 ```
 
 ## Docker image
