@@ -13,9 +13,7 @@ RUN cd web && \
 FROM apt AS base
 RUN apt-get -qq install \
         uwsgi \
-        mime-support \
-        libsqlite3-mod-spatialite \
-        spatialite-bin && \
+        mime-support && \
     useradd --user-group --system --no-create-home --no-log-init app && \
     chown -R app:app .
 COPY requirements.txt .

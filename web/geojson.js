@@ -3,7 +3,7 @@ let hash = new L.Hash(map);
 
 let custom_attribution = `<a href="https://wiki.openstreetmap.org/wiki/Is_OSM_up-to-date">${document.title}</a> (<a href="https://github.com/frafra/is-osm-uptodate">source code</a>)`;
 let OpenStreetMapLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  attribution: `${custom_attribution} | &copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap contributors</a>`,
+  attribution: `${custom_attribution} | &copy; <a href="https://ohsome.org/copyrights">OpenStreetMap contributors</a>`,
   maxZoom: 19,
   minZoom: 1
 });
@@ -53,7 +53,7 @@ for (let i=0; i<buttonModes.length; i++) {
 let modes = {
     lastedit: {
         defaultValue: new Date(),
-        getValue: feature => new Date(feature.properties.timestamp),
+        getValue: feature => new Date(feature.properties.lastedit),
         prettyValue: date => date.toISOString().slice(0, 10),
         inverted: false
     },
@@ -69,18 +69,9 @@ let modes = {
         prettyValue: value => value,
         inverted: false
     },
-    contributors: {
-        defaultValue: 1,
-        getValue: feature => feature.properties.contributors,
-        prettyValue: value => value,
-        inverted: false
-    },
     frequency: {
         defaultValue: 0,
-        getValue: feature => {
-          let milliseconds = new Date()-new Date(feature.properties.created)
-          return milliseconds/1000/60/60/24/feature.properties.version;
-        },
+        getValue: feature => feature.properties.average_update_days,
         prettyValue: value => {
           let days = Math.floor(value);
           if (days < 1) return 'daily';
@@ -129,14 +120,8 @@ info.update = message => {
 info.addTo(map);
 
 let nodes = L.layerGroup();
-let ways = L.layerGroup();
 let rectangle = L.layerGroup();
 
-let overlays = {
-  '<i class="fas fa-dot-circle"></i> <span class="d-none d-md-inline">Nodes</span>':nodes,
-  '<i class="fas fa-road"></i> <span class="d-none d-md-inline">Ways</span>':ways,
-}
-L.control.layers({}, overlays, {collapsed:false}).addTo(map);
 nodes.addTo(map);
 
 function openNodeMarker() {
@@ -144,31 +129,14 @@ function openNodeMarker() {
   window.nodeMarker.openPopup();
 }
 
-function openWayMarker() {
-  ways.addTo(map);
-  window.wayMarker.openPopup();
-}
 
 function generatePopup(feature) {
-  let attributes_list = `<ul>`;
-  for (let key in feature.properties.attributes) {
-    let value = feature.properties.attributes[key];
-    attributes_list += `<li><a href="https://wiki.openstreetmap.org/wiki/Key:${key}" target="_blank">${key}</a>:
-     <a href="https://wiki.openstreetmap.org/wiki/Tag:${key}%3D${value}" target="_blank">${value}</a></li>`;
-  }
-  attributes_list += `</ul>`;
   let position = location.hash.substr(1);
   let type = feature.geometry.type == 'Point' ? 'node' : 'way';
   let popup = `
-    <b>Last edit</b>: ${feature.properties.timestamp} (by
-      <a href="https://www.openstreetmap.org/user/${feature.properties.user}" target="_blank">${feature.properties.user}</a>)<br>
-    <b>Created at</b>: ${feature.properties.created} (by
-      <a href="https://www.openstreetmap.org/user/${feature.properties.users[0]}" target="_blank">${feature.properties.users[0]}</a>)<br>
+    <b>Last edit</b>: ${feature.properties.lastedit}<br>
+    <b>Created at</b>: ${feature.properties.created}<br>
     <b>Current version</b>: ${feature.properties.version}<br>
-    <b>Contributors</b>: ${feature.properties.contributors}<br>
-    <b>Attributes:</b>
-      ${attributes_list}
-    <br>
     <div style="text-align: center">
       <a href="https://www.openstreetmap.org/edit?${type}=${feature.properties.id}#map=${position}" target="_blank">Edit <a> |
       <a href="https://www.openstreetmap.org/${type}/${feature.properties.id}/history" target="_blank">History</a> |
@@ -209,18 +177,13 @@ let results;
 function parseData(data) {
   results = data ? data : results;
   nodes.clearLayers();
-  ways.clearLayers();
   rectangle.remove();
   minimumValue = modes[mode].defaultValue;
   maximumValue = modes[mode].defaultValue;
   let minimumNodeValue = modes[mode].defaultValue;
-  let minimumWayValue = modes[mode].defaultValue;
   let maximumNodeValue = modes[mode].defaultValue;
-  let maximumWayValue = modes[mode].defaultValue;
   let minimumNode;
-  let minimumWay;
   let maximumNode;
-  let maximumWay;
   let defaultValue = modes[mode].defaultValue
   for (let index in results.features) {
     let feature = results.features[index];
@@ -234,15 +197,6 @@ function parseData(data) {
         maximumNodeValue = value;
         maximumNode = feature;
       }
-    } else {
-      if (value <= minimumWayValue || minimumWayValue == defaultValue) {
-        minimumWayValue = value;
-        minimumWay = feature;
-      }
-      if (value > maximumWayValue || maximumWay == defaultValue) {
-        maximumWayValue = value;
-        maximumWay = feature;
-      }
     }
     if (value <= minimumValue) {
       minimumValue = value;
@@ -252,19 +206,13 @@ function parseData(data) {
     }
   }
   let nodePrettyValue;
-  let wayPrettyValue;
   let nodePrettyId;
-  let wayPrettyId;
   if (!modes[mode].inverted) {
     nodePrettyValue = modes[mode].prettyValue(modes[mode].getValue(minimumNode));
-    wayPrettyValue = modes[mode].prettyValue(modes[mode].getValue(minimumWay));
     nodePrettyId = minimumNode.properties.id;
-    wayPrettyId = minimumWay.properties.id;
   } else {
     nodePrettyValue = modes[mode].prettyValue(modes[mode].getValue(maximumNode));
-    wayPrettyValue = modes[mode].prettyValue(modes[mode].getValue(maximumWay));
     nodePrettyId = maximumNode.properties.id;
-    wayPrettyId = maximumWay.properties.id;
   }
   info.update(`
     <table class="d-none d-md-table">
@@ -272,11 +220,6 @@ function parseData(data) {
         <td>Worst node</td>
         <td><a href="javascript:openNodeMarker();">#${nodePrettyId}</a></td>
         <td>(${nodePrettyValue})</td>
-      </tr>
-      <tr>
-        <td>Worst way</td>
-        <td><a href="javascript:openWayMarker();">#${wayPrettyId}</a></td>
-        <td>(${wayPrettyValue})</td>
       </tr>
     </table>
   `);
@@ -310,26 +253,6 @@ function parseData(data) {
       }
       nodes.addLayer(marker);
       return marker;
-    },
-    onEachFeature: (feature, layer) => {
-      if (feature.geometry.type !== 'LineString') return;
-      let value = modes[mode].getValue(feature);
-      let computed;
-      if (modes[mode].inverted) computed = (value-maximumValue)/range
-      else computed = (value-minimumValue)/range;
-      layer.options.color = d3.interpolateViridis(computed);
-      let popup = generatePopup(feature);
-      layer.bindPopup(popup);
-      if (!modes[mode].inverted) {
-        if (feature.properties.id == minimumWay.properties.id) {
-          window.wayMarker = layer;
-        }
-      } else {
-        if (feature.properties.id == maximumWay.properties.id) {
-          window.wayMarker = layer;
-        }
-      }
-      ways.addLayer(layer);
     }
   });
   rectangle = L.rectangle(bounds, {
