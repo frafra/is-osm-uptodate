@@ -7,7 +7,7 @@ import shlex
 import subprocess
 
 uwsgi_command = shlex.split('uwsgi --ini uwsgi.ini')
-buttons = 'creation lastedit revisions contributors frequency'.split()
+buttons = 'creation lastedit revisions frequency'.split()
 
 def setup_module():
     global uwsgi
@@ -21,7 +21,7 @@ class TestWebapp(BaseCase):
     def test_open_home(self):
         self.set_window_size('640', '480')
         self.open("http://localhost:8000")
-        self.assert_element("#map path.leaflet-interactive",
+        self.assert_element("#map a.leaflet-control-zoom-out",
             timeout=settings.EXTREME_TIMEOUT)
 
     def test_js_errors(self):
