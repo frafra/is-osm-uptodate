@@ -5,8 +5,8 @@ jobs:
     working_directory: ~/repo
     steps:
       - checkout
-      - run: docker build --target=tester -t tester .
-      - run: docker run --name=tester tester
+      - run: docker build -t tester --build-arg test=true .
+      - run: docker run --name=tester tester bash -c "cd tests && exec pytest --browser=firefox --save_screenshot"
       - run: docker cp tester:/home/app/tests/latest_logs latest_logs
       - store_artifacts:
           path: latest_logs

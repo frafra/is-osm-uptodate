@@ -1,35 +1,41 @@
-FROM python:3.9.1-buster AS apt
+FROM python:3.9.6-buster AS apt
 LABEL maintainer="fraph24@gmail.com"
+ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update
 WORKDIR /home/app
 
 FROM apt AS builder
-ADD . .
-RUN apt-get install -y npm && \
-    cd web && \
+RUN apt-get  -qq install npm
+COPY web web
+RUN cd web && \
     npm ci
 
 FROM apt AS base
-COPY --from=builder /home/app .
-RUN useradd --user-group --system --no-create-home --no-log-init app && \
-    chown -R app:app . && \
-    pip3 install --requirement requirements.txt && \
-    apt-get install -y \
+RUN apt-get -qq install \
         uwsgi \
         mime-support \
         libsqlite3-mod-spatialite \
-        spatialite-bin
+        spatialite-bin && \
+    useradd --user-group --system --no-create-home --no-log-init app && \
+    chown -R app:app .
+COPY requirements.txt .
+RUN pip3 install --requirement requirements.txt
 
-FROM base AS tester
-WORKDIR /home/app/tests
-RUN pip3 install --requirement requirements.txt && \
-    apt-get install -y firefox-esr xvfb && \
-    seleniumbase install geckodriver
-USER app
-CMD ["pytest", "--browser=firefox", "--save_screenshot"]
+COPY --from=builder /home/app/web web/
+COPY uwsgi.ini is-osm-uptodate.py ./
 
-FROM base AS runner
+COPY tests/ tests
+ARG test
+ENV test=${test}
+RUN if [ -n "$test" ]; then cd tests && \
+    pip3 install --requirement requirements.txt && \
+    apt-get -qq install firefox-esr xvfb && \
+    seleniumbase install geckodriver && \
+    chown app:app -R . ; \
+    fi
 ENV DISPLAY=:99
-USER app
+
 EXPOSE 8000/tcp
+
+USER app
 CMD ["uwsgi", "--ini", "uwsgi.ini"]
