@@ -6,7 +6,7 @@ WORKDIR /home/app
 
 FROM apt AS builder
 RUN apt-get  -qq install npm
-COPY web web
+COPY web/package.json web/package-lock.json web/
 RUN cd web && \
     npm ci
 
@@ -23,6 +23,7 @@ RUN pip3 install --requirement requirements.txt
 
 COPY --from=builder /home/app/web web/
 COPY uwsgi.ini is-osm-uptodate.py ./
+COPY web web
 
 COPY tests/ tests
 ARG test
