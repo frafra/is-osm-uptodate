@@ -11,7 +11,7 @@ Page on OSM wiki: https://wiki.openstreetmap.org/wiki/Is_OSM_up-to-date
 
 # Dependencies
 
-- [Python 3](https://www.python.org/)
+- [Python 3](https://www.python.org/) (3.8 or greater)
   - [flask](https://flask.palletsprojects.com/)
   - [uWSGI](https://uwsgi-docs.readthedocs.io/)
   - [jsonslicer](https://github.com/AMDmi3/jsonslicer)
