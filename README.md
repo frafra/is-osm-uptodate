@@ -12,8 +12,9 @@ Page on OSM wiki: https://wiki.openstreetmap.org/wiki/Is_OSM_up-to-date
 # Dependencies
 
 - [Python 3](https://www.python.org/)
-  - [hug](http://www.hug.rest/)
+  - [flask](https://flask.palletsprojects.com/)
   - [uWSGI](https://uwsgi-docs.readthedocs.io/)
+  - [jsonslicer](https://github.com/AMDmi3/jsonslicer)
 - [npm](https://www.npmjs.com/)
 
 # Setup
@@ -58,24 +59,12 @@ $ docker run --publish 8000:8000 --detach is-osm-uptodate-custom
 
 Open http://localhost:8000. Try to change the location and click on the refresh button in order to get the nodes for the new bounding box.
 
-## Command line interface
+## Command line
 
 Example:
 
 ```
-$ ./is-osm-uptodate.py -h
-usage: is-osm-uptodate.py [-h] [-r REFERER] minx miny maxx maxy
-
-positional arguments:
-  minx                  A float number
-  miny                  A float number
-  maxx                  A float number
-  maxy                  A float number
-
-optional arguments:
-  -h, --help            show this help message and exit
-  -r REFERER, --referer REFERER
-$ ./is-osm-uptodate.py 9.188295196 45.4635324507 9.1926242813 45.4649771956
+$ curl 'http://localhost:8000/api/getData?minx=9.188295196&miny=45.4635324507&maxx=9.1926242813&maxy=45.4649771956' -o milan-duomo.json
 ```
 
 # Common issues
