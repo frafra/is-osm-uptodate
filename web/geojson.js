@@ -160,6 +160,8 @@ function getData() {
   let east = bounds.getEast();
   let north = bounds.getNorth();
   let url = `/api/getData?minx=${west}&miny=${south}&maxx=${east}&maxy=${north}`;
+  let filter = document.getElementById('filter').value;
+  if (filter.trim().length > 0) url += `&filter=${filter}`
   fetch(url).then(response => {
     return response.json();
   }).then(parseData).catch(error => {
