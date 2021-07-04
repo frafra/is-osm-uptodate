@@ -51,6 +51,9 @@ def process(group, end):
         (now-lastedit).days/feature["properties"]["version"]
     return feature
 
+def process_group(group, end):
+    if processed := process(group, end):
+        return json.dumps(processed, use_decimal=True)
 
 @app.route('/api/getData')
 def getData():
@@ -58,11 +61,8 @@ def getData():
     miny = flask.request.args.get('miny')
     maxx = flask.request.args.get('maxx')
     maxy = flask.request.args.get('maxy')
-    referer = r"http://localhost:8000/"
+    referer = flask.request.headers.get('REFERER', "http://localhost:8000/")
     global featuresTime, start, end
-    if type(referer) is not str:
-        referer = flask.request.headers.get('REFERER')
-    args = [minx, miny, maxx, maxy]
     if time.time()-featuresTime > CACHE_REFRESH or not start or not end:
         metadata = json.load(urllib.request.urlopen(METADATA))
         temporal_extent = metadata["extractRegion"]["temporalExtent"]
@@ -71,7 +71,6 @@ def getData():
         end = end.rstrip('Z') + ":00Z" # WORKAROUND
         featuresTime = time.time()
     def generate():
-        yield '{"type": "FeatureCollection", "features": ['
         params = urllib.parse.urlencode({
             "bboxes": f"{minx},{miny},{maxx},{maxy}",
             "properties": "metadata",
@@ -79,37 +78,34 @@ def getData():
             "time": f"{start},{end}",
             "types": "node",
         })
-        separator_needed = False
         req = urllib.request.Request(API+'?'+params)
         for key, value in generateHeaders(referer).items():
             req.add_header(key, value)
         with urllib.request.urlopen(req) as resp_gzipped:
             resp = gzip.GzipFile(fileobj=resp_gzipped)
+            slicer = JsonSlicer(resp, ('features', None))
+            yield '{"type": "FeatureCollection", "features": ['
+            first = True
             group = []
-            for feature in JsonSlicer(resp, ('features', None)):
+            for feature in slicer:
                 osmid = feature['properties']['@osmId']
                 if len(group) == 0:
                     group.append(feature)
                 elif group[0]['properties']['@osmId'] == osmid:
                     group.append(feature)
                 else:
-                    processed = process(group, end)
-                    if processed:
-                        if separator_needed:
-                            yield ','
+                    if processed := process_group(group, end):
+                        if first:
+                            first = False
                         else:
-                            separator_needed = True
-                        yield json.dumps(processed, use_decimal=True)
+                            yield ','
+                        yield processed
                     group = [feature]
-            if group:
-                processed = process(group, end)
-                if processed:
-                    if separator_needed:
+            if len(group) > 0:
+                if processed := process_group(group, end):
+                    if not first:
                         yield ','
-                    else:
-                        separator_needed = True
-                    yield json.dumps(processed, use_decimal=True)
-                group = []
+                    yield processed
         yield ']}'
     return app.response_class(generate(), mimetype='application/json')
 
