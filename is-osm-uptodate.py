@@ -62,6 +62,10 @@ def getData():
     maxx = flask.request.args.get('maxx')
     maxy = flask.request.args.get('maxy')
     referer = flask.request.headers.get('REFERER', "http://localhost:8000/")
+    filters = flask.request.args.get('filter', '')
+    if len(filters) > 0:
+        filters += " and "
+    filters += "type:node"
     global featuresTime, start, end
     if time.time()-featuresTime > CACHE_REFRESH or not start or not end:
         metadata = json.load(urllib.request.urlopen(METADATA))
@@ -76,7 +80,7 @@ def getData():
             "properties": "metadata",
             "showMetadata": "true",
             "time": f"{start},{end}",
-            "filter": "type:node",
+            "filter": filters,
         })
         req = urllib.request.Request(API+'?'+params)
         for key, value in generateHeaders(referer).items():
