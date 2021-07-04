@@ -76,7 +76,7 @@ def getData():
             "properties": "metadata",
             "showMetadata": "true",
             "time": f"{start},{end}",
-            "types": "node",
+            "filter": "type:node",
         })
         req = urllib.request.Request(API+'?'+params)
         for key, value in generateHeaders(referer).items():
