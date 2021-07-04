@@ -2,54 +2,19 @@
 
 __version__ = "1.5"
 
-import hug
-import requests
+import flask
+from jsonslicer import JsonSlicer
+import simplejson as json
 
-import json
-import sqlite3
+import gzip
+import datetime
+import urllib.request
+import urllib.parse
 import time
 
 API = "https://api.ohsome.org/v1/elementsFullHistory/geometry"
 METADATA = "https://api.ohsome.org/v1/metadata"
 CACHE_REFRESH = 60*60*24
-
-QUERY = """
-  with flat as (
-    select json_extract(value, '$.properties.@osmId') as osmid,
-           json_extract(value, '$.geometry.coordinates') as coordinates,
-           json_extract(value, '$.properties.@validFrom') as validfrom,
-           json_extract(value, '$.properties.@validTo') as validto,
-           json_extract(value, '$.properties.@version') as version
-      from json_each(json_extract(?, '$.features'))
-     ), grouped as (
-    select json_object(
-               'type', 'Feature',
-               'geometry', json_object(
-                   'type', 'Point',
-                   'coordinates', coordinates
-               ),
-               'properties', json_object(
-                   'id', trim(osmid, 'node/'),
-                   'version', version,
-                   'created', min(validfrom),
-                   'lastedit', max(validfrom),
-                   'average_update_days', (
-                       julianday(date('now'))-julianday(min(validfrom))
-                       )/max(version)
-                )
-           ) as feature
-      from flat
-     group by osmid
-    having max(validto) == ?
-    )
-select json_object(
-           'type', 'FeatureCollection',
-           'features', json_group_array(json(feature))
-       ) as geojson
-  from grouped
-group by true
-;
-"""
 
 def generateHeaders(referer):
     return {
@@ -58,57 +23,93 @@ def generateHeaders(referer):
         "Accept-Encoding":"gzip",
     }
 
-@hug.get('/api/getDataMinimal')
-def getDataMinimal(
-        minx: hug.types.float_number,
-        miny: hug.types.float_number,
-        maxx: hug.types.float_number,
-        maxy: hug.types.float_number,
-        referer="http://localhost:8000/"):
-    if type(referer) is not str:
-        referer = referer.headers.get('REFERER')
-    result = requests.get(
-        API,
-        headers=generateHeaders(referer),
-        params={
-            "bboxes": f"{minx},{miny},{maxx},{maxy}",
-            "properties": "metadata",
-            "showMetadata": "true",
-            "time": f"{start},{end}",
-            "types": "node",
-        },
-    ).text
-    return result
-
 featuresTime = time.time()
 start, end = None, None
 
 # TODO: ERROR HANDLING
 #'{\n  "timestamp" : "2021-07-03T12:13:20.122893",\n  "status" : 400,\n  "message" : "The provided time parameter is not ISO-8601 conform.",\n  "requestUrl" : "https://api.ohsome.org/v1/elementsFullHistory/geometry?bboxes=9.188295196%2C45.4635324507%2C9.1926242813%2C45.4649771956&properties=metadata&showMetadata=true&time=None%2CNone&types=node"\n}'
 
-@hug.cli(output=hug.output_format.json)
-@hug.get('/api/getData')
-def getData(
-        minx: hug.types.float_number,
-        miny: hug.types.float_number,
-        maxx: hug.types.float_number,
-        maxy: hug.types.float_number,
-        referer="http://localhost:8000/"):
-    global features, featuresTime, start, end
+app = flask.Flask(__name__)
+
+def process(group, end):
+    first, last = group[0], group[-1]
+    if last['properties']['@validTo'] != end:
+        return # feature has been deleted
+    feature = {
+        "type": "Feature",
+        "geometry": last['geometry'],
+        "properties": {
+            "id": first['properties']['@osmId'].split('/')[1],
+            "created": first['properties']['@validFrom'],
+            "lastedit": last['properties']['@validFrom'],
+            "version": last['properties']['@version'],
+        }
+    }
+    lastedit = datetime.datetime.strptime(feature["properties"]["lastedit"], '%Y-%m-%dT%H:%M:%SZ')
+    now = datetime.datetime.now().utcnow()
+    feature["properties"]["average_update_days"] = \
+        (now-lastedit).days/feature["properties"]["version"]
+    return feature
+
+
+@app.route('/api/getData')
+def getData():
+    minx = flask.request.args.get('minx')
+    miny = flask.request.args.get('miny')
+    maxx = flask.request.args.get('maxx')
+    maxy = flask.request.args.get('maxy')
+    referer = r"http://localhost:8000/"
+    global featuresTime, start, end
     if type(referer) is not str:
-        referer = referer.headers.get('REFERER')
+        referer = flask.request.headers.get('REFERER')
     args = [minx, miny, maxx, maxy]
     if time.time()-featuresTime > CACHE_REFRESH or not start or not end:
-        metadata = requests.get(METADATA).json()
+        metadata = json.load(urllib.request.urlopen(METADATA))
         temporal_extent = metadata["extractRegion"]["temporalExtent"]
         start = temporal_extent["fromTimestamp"]
         end = temporal_extent["toTimestamp"]
         end = end.rstrip('Z') + ":00Z" # WORKAROUND
         featuresTime = time.time()
-    result = getDataMinimal(*args, referer=referer)
-    conn = sqlite3.connect(':memory:')
-    result = conn.execute(QUERY, (result, end)).fetchone()[0]
-    return json.loads(result)
+    def generate():
+        yield '{"type": "FeatureCollection", "features": ['
+        params = urllib.parse.urlencode({
+            "bboxes": f"{minx},{miny},{maxx},{maxy}",
+            "properties": "metadata",
+            "showMetadata": "true",
+            "time": f"{start},{end}",
+            "types": "node",
+        })
+        separator_needed = False
+        req = urllib.request.Request(API+'?'+params)
+        for key, value in generateHeaders(referer).items():
+            req.add_header(key, value)
+        with urllib.request.urlopen(req) as resp_gzipped:
+            resp = gzip.GzipFile(fileobj=resp_gzipped)
+            group = []
+            for feature in JsonSlicer(resp, ('features', None)):
+                osmid = feature['properties']['@osmId']
+                if len(group) == 0:
+                    group.append(feature)
+                elif group[0]['properties']['@osmId'] == osmid:
+                    group.append(feature)
+                else:
+                    processed = process(group, end)
+                    if processed:
+                        if separator_needed:
+                            yield ','
+                        else:
+                            separator_needed = True
+                        yield json.dumps(processed, use_decimal=True)
+                    group = [feature]
+            if group:
+                processed = process(group, end)
+                if processed:
+                    if separator_needed:
+                        yield ','
+                    else:
+                        separator_needed = True
+                    yield json.dumps(processed, use_decimal=True)
+                group = []
+        yield ']}'
+    return app.response_class(generate(), mimetype='application/json')
 
-if __name__ == '__main__':
-    getData.interface.cli()

@@ -11,7 +11,7 @@ RUN cd web && \
     npm ci
 
 FROM apt AS base
-RUN apt-get -qq install uwsgi && \
+RUN apt-get -qq install uwsgi libyajl-dev && \
     useradd --user-group --system --no-create-home --no-log-init app && \
     chown -R app:app .
 COPY requirements.txt .
@@ -27,7 +27,7 @@ RUN if [ -n "$test" ]; then cd tests && \
     fi
 COPY tests/test_api.py tests/test_webapp.py tests/
 RUN if [ -n "$test" ]; then chown app:app -R tests/ ; fi
-COPY tests/test_api.py tests/test_webapp.py tests/
+COPY tests/test_api.py tests/test_webapp.py tests/__init__.py tests/
 ENV DISPLAY=:99
 
 COPY --from=builder /home/app/web web/
