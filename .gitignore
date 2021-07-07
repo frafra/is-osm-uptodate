@@ -2,6 +2,7 @@ __pycache__
 __pypackages__
 node_modules
 latest_logs
+archived_logs
 
 tests/firefox
 tests/geckodriver.log
