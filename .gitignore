@@ -3,6 +3,7 @@ __pypackages__
 node_modules
 latest_logs
 archived_logs
+geckodriver.log
 
 tests/firefox
 tests/geckodriver.log
