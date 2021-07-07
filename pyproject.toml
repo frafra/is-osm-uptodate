@@ -41,6 +41,14 @@ test = [
     "seleniumbase~=1.63",
 ]
 
+[tool.pdm.scripts]
+npm = {shell = "cd web && npm ci"}
+web = "uwsgi --ini uwsgi.ini"
+docker = "./scripts/run_docker.sh"
+test = "pytest --browser=firefox --save_screenshot tests/"
+test_docker = "./scripts/run_tests.sh"
+lint = "pre-commit run --all-files"
+
 [tool.flakehell]
 # https://flakehell.readthedocs.io/
 # https://black.readthedocs.io/en/stable/compatible_configs.html?highlight=flake8#flake8

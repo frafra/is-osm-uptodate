@@ -25,4 +25,4 @@ COPY web web
 EXPOSE 8000/tcp
 
 USER app
-CMD ["pdm", "run", "uwsgi", "--ini", "uwsgi.ini"]
+CMD ["pdm", "run", "web"]

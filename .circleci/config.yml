@@ -5,6 +5,6 @@ jobs:
     working_directory: ~/repo
     steps:
       - checkout
-      - run: ./run_tests.sh
+      - run: ./scripts/run_tests.sh
       - store_artifacts:
           path: latest_logs

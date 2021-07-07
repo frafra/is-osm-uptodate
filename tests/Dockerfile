@@ -12,4 +12,4 @@ RUN pip3 install pdm && \
 COPY tests/test_api.py tests/test_webapp.py tests/common.py tests/
 ENV DISPLAY=:99
 
-CMD ["pdm", "run", "pytest", "--browser=firefox", "--save_screenshot", "tests/"]
+CMD ["pdm", "run", "test"]

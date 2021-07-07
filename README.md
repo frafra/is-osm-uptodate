@@ -12,35 +12,36 @@ Page on OSM wiki: https://wiki.openstreetmap.org/wiki/Is_OSM_up-to-date
 # Dependencies
 
 - [Python 3](https://www.python.org/) (3.8 or greater)
-  - [flask](https://flask.palletsprojects.com/)
-  - [uWSGI](https://uwsgi-docs.readthedocs.io/)
-  - [jsonslicer](https://github.com/AMDmi3/jsonslicer)
+- [PDM](https://pdm.fming.dev/)
+- [uWSGI](https://uwsgi-docs.readthedocs.io/)
 - [npm](https://www.npmjs.com/)
 
 ## Optional
 
-- [PDM](https://pdm.fming.dev/)
 - Docker
 
-# Setup
+# Run
 
-## Download dependencies for the web app
-
-```
-$ cd web
-$ npm ci
-$ cd -
-```
-
-## uwsgi
+# With Docker
 
 ```
-$ uwsgi --ini uwsgi.ini
+pdm run docker_build
+pdm run docker
 ```
 
-It could be needed to export `PYTHONPATH` before running uwsgi. Example:
+# Without Docker
+
+## Setup
+
 ```
-$ export PYTHONPATH="/usr/local/lib/python3.9/site-packages"
+pdm install --no-self --production
+pdm run npm # Download dependencies for the web app
+```
+
+## Run
+
+```
+pdm run web
 ```
 
 ## Docker image
@@ -48,14 +49,13 @@ $ export PYTHONPATH="/usr/local/lib/python3.9/site-packages"
 ### Ready to use
 
 ```
-$ docker run --publish 8000:8000 --detach frafra/is-osm-uptodate
+docker run --publish 8000:8000 frafra/is-osm-uptodate
 ```
 
 ### Custom image
 
 ```
-$ docker build --tag=is-osm-uptodate-custom .
-$ docker run --publish 8000:8000 --detach is-osm-uptodate-custom
+pdm run docker
 ```
 
 # How to use
@@ -77,14 +77,20 @@ $ curl 'http://localhost:8000/api/getData?minx=9.188295196&miny=45.4635324507&ma
 ```
 pipx install pdm
 pdm install --no-self
-pdm run pre-commit install
-pdm run uwsgi --ini uwsgi.ini py-autoreload=3
+pdm run develop
+```
+
+## Testing
+
+```
+seleniumbase install geckodriver
+pdm run test
 ```
 
 You can also run dockerized tests:
 
 ```
-./run_tests.sh
+./scripts/run_tests.sh
 ```
 
 # Common issues
