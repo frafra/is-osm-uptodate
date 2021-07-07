@@ -17,6 +17,11 @@ Page on OSM wiki: https://wiki.openstreetmap.org/wiki/Is_OSM_up-to-date
   - [jsonslicer](https://github.com/AMDmi3/jsonslicer)
 - [npm](https://www.npmjs.com/)
 
+## Optional
+
+- [PDM](https://pdm.fming.dev/)
+- Docker
+
 # Setup
 
 ## Download dependencies for the web app
@@ -65,6 +70,20 @@ Example:
 
 ```
 $ curl 'http://localhost:8000/api/getData?minx=9.188295196&miny=45.4635324507&maxx=9.1926242813&maxy=45.4649771956' -o milan-duomo.json
+```
+
+# How to develop
+
+```
+pipx install pdm
+pdm install --no-self
+pdm run uwsgi --ini uwsgi.ini py-autoreload=3
+```
+
+You can also run dockerized tests:
+
+```
+./run_tests.sh
 ```
 
 # Common issues

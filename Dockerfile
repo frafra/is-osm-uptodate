@@ -14,8 +14,9 @@ FROM apt AS base
 RUN apt-get -qq install uwsgi libyajl-dev && \
     useradd --user-group --system --no-create-home --no-log-init app && \
     chown -R app:app .
-COPY requirements.txt .
-RUN pip3 install --requirement requirements.txt
+COPY --chown=app:app pyproject.toml pdm.lock ./
+RUN pip3 install pdm && \
+    pdm install --production --no-self
 
 COPY --from=builder /home/app/web web/
 COPY uwsgi.ini is-osm-uptodate.py ./
@@ -24,4 +25,4 @@ COPY web web
 EXPOSE 8000/tcp
 
 USER app
-CMD ["uwsgi", "--ini", "uwsgi.ini"]
+CMD ["pdm", "run", "uwsgi", "--ini", "uwsgi.ini"]

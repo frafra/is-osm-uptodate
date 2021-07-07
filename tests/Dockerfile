@@ -5,10 +5,11 @@ RUN apt-get update
 WORKDIR /home/app
 
 RUN apt-get -qq install firefox-esr xvfb
-COPY requirements.txt .
-RUN pip3 install --requirement requirements.txt && \
-    seleniumbase install geckodriver
-COPY test_api.py test_webapp.py common.py ./
+COPY pyproject.toml pdm.lock ./
+RUN pip3 install pdm && \
+    pdm install --no-default -s test && \
+    pdm run seleniumbase install geckodriver
+COPY tests/test_api.py tests/test_webapp.py tests/common.py tests/
 ENV DISPLAY=:99
 
-CMD ["pytest", "--browser=firefox", "--save_screenshot"]
+CMD ["pdm", "run", "pytest", "--browser=firefox", "--save_screenshot", "tests/"]

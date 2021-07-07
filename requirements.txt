@@ -1,4 +1,0 @@
-Flask==2.0.1
-jsonslicer==0.1.6
-simplejson==3.17.2
-uwsgi==2.0.19.1
