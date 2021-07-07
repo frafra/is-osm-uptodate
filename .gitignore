@@ -4,6 +4,7 @@ node_modules
 latest_logs
 archived_logs
 geckodriver.log
+.pdm.toml
 
 tests/firefox
 tests/geckodriver.log
