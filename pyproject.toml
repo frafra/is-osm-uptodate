@@ -1,0 +1,39 @@
+[tool.poetry]
+name = "is-osm-uptodate"
+version = "1.6"
+description = "Find outdated nodes in OpenStreetMap"
+authors = ["Francesco Frassinelli <fraph24@gmail.com>"]
+license = "AGPLv3"
+
+[tool.pdm]
+includes = []
+[build-system]
+requires = ["pdm-pep517"]
+build-backend = "pdm.pep517.api"
+
+[project]
+name = "is-osm-uptodate"
+version = "1.6"
+description = "Find outdated nodes in OpenStreetMap"
+authors = [
+    {name = "Francesco Frassinelli", email = "fraph24@gmail.com"},
+]
+dependencies = [
+    "Flask<3.0.0,>=2.0.1",
+    "jsonslicer<1.0.0,>=0.1.7",
+    "simplejson<4.0.0,>=3.17.2",
+    "uWSGI<3.0.0,>=2.0.19",
+]
+requires-python = ">=3.8,<4.0"
+dynamic = ["classifiers"]
+license = {text = "AGPLv3"}
+
+[project.optional-dependencies]
+
+[tool.pdm.dev-dependencies]
+test = [
+    "seleniumbase~=1.63",
+]
+
+[project.urls]
+

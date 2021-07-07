@@ -24,7 +24,7 @@ clean_up
 
 # Build Docker images
 docker build -t $DOCKER_APP .
-docker build -t $DOCKER_TESTER -f tests/Dockerfile tests
+docker build -t $DOCKER_TESTER -f tests/Dockerfile .
 
 # Setup the network
 docker network create $NETWORK
