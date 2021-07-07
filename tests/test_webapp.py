@@ -2,12 +2,14 @@ from seleniumbase import BaseCase
 from seleniumbase.config import settings
 from parameterized import parameterized
 
+from common import URL
+
 buttons = 'creation lastedit revisions frequency'.split()
 
 class TestWebapp(BaseCase):
     def test_open_home(self):
         self.set_window_size('640', '480')
-        self.open("http://localhost:8000")
+        self.open(URL)
         self.assert_element("#map a.leaflet-control-zoom-out",
             timeout=settings.EXTREME_TIMEOUT)
 

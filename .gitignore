@@ -1,7 +1,7 @@
 __pycache__
 node_modules
+latest_logs
+venv
 
 tests/firefox
 tests/geckodriver.log
-tests/venv
-tests/latest_logs
