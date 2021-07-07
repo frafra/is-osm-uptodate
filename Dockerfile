@@ -17,19 +17,6 @@ RUN apt-get -qq install uwsgi libyajl-dev && \
 COPY requirements.txt .
 RUN pip3 install --requirement requirements.txt
 
-ARG test
-ENV test=${test}
-RUN if [ -n "$test" ]; then apt-get -qq install firefox-esr xvfb ; fi
-COPY tests/requirements.txt tests/
-RUN if [ -n "$test" ]; then cd tests && \
-    pip3 install --requirement requirements.txt ; \
-    seleniumbase install geckodriver ; \
-    fi
-COPY tests/test_api.py tests/test_webapp.py tests/
-RUN if [ -n "$test" ]; then chown app:app -R tests/ ; fi
-COPY tests/test_api.py tests/test_webapp.py tests/__init__.py tests/
-ENV DISPLAY=:99
-
 COPY --from=builder /home/app/web web/
 COPY uwsgi.ini is-osm-uptodate.py ./
 COPY web web

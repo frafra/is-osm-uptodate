@@ -1,12 +1,9 @@
-import importlib
 import json
 import pytest
-import sys
 import urllib.parse
 import urllib.request
 
-sys.path.append("..")
-app = importlib.import_module("is-osm-uptodate")
+from common import URL
 
 class TestApi:
 
@@ -17,7 +14,7 @@ class TestApi:
             "maxx": 9.19158697128296,
             "maxy": 45.46452522062808,
         })
-        with urllib.request.urlopen('http://localhost:8000/api/getData?'+params) as resp:
+        with urllib.request.urlopen(URL+'/api/getData?'+params) as resp:
             decoded = json.load(resp)
         return decoded
 
