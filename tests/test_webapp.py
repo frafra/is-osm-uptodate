@@ -8,9 +8,9 @@ buttons = 'creation lastedit revisions frequency'.split()
 
 class TestWebapp(BaseCase):
     def test_open_home(self):
-        self.set_window_size('640', '480')
+        self.set_window_size('768', '432')
         self.open(URL)
-        self.assert_element("#map a.leaflet-control-zoom-out",
+        self.assert_text("Worst node",
             timeout=settings.EXTREME_TIMEOUT)
 
     def test_js_errors(self):
