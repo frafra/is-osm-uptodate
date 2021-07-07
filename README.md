@@ -77,6 +77,7 @@ $ curl 'http://localhost:8000/api/getData?minx=9.188295196&miny=45.4635324507&ma
 ```
 pipx install pdm
 pdm install --no-self
+pdm run pre-commit install
 pdm run uwsgi --ini uwsgi.ini py-autoreload=3
 ```
 
