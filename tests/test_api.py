@@ -2,7 +2,6 @@ import json
 import urllib.parse
 import urllib.request
 
-import pytest
 from common import URL
 
 

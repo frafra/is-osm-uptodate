@@ -23,6 +23,8 @@ class TestWebapp(BaseCase):
     @parameterized.expand(buttons)
     def test_tabs(self, button):
         self.test_open_home()
-        self.execute_script('document.getElementById("' + button + '").click()')
+        self.execute_script(
+            'document.getElementById("' + button + '").click()'
+        )
         self.assert_no_js_errors()
         self.assert_no_404_errors()

@@ -28,9 +28,6 @@ def generateHeaders(referer):
 featuresTime = time.time()
 start, end = None, None
 
-# TODO: ERROR HANDLING
-#'{\n  "timestamp" : "2021-07-03T12:13:20.122893",\n  "status" : 400,\n  "message" : "The provided time parameter is not ISO-8601 conform.",\n  "requestUrl" : "https://api.ohsome.org/v1/elementsFullHistory/geometry?bboxes=9.188295196%2C45.4635324507%2C9.1926242813%2C45.4649771956&properties=metadata&showMetadata=true&time=None%2CNone&types=node"\n}'
-
 app = flask.Flask(__name__)
 
 
@@ -52,9 +49,9 @@ def process(group, end):
         feature["properties"]["lastedit"], "%Y-%m-%dT%H:%M:%SZ"
     )
     now = datetime.datetime.now().utcnow()
-    feature["properties"]["average_update_days"] = (now - lastedit).days / feature[
-        "properties"
-    ]["version"]
+    feature["properties"]["average_update_days"] = (
+        now - lastedit
+    ).days / feature["properties"]["version"]
     return feature
 
 
