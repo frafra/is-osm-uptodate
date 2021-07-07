@@ -31,12 +31,6 @@ license = {text = "AGPLv3"}
 [project.optional-dependencies]
 
 [tool.pdm.dev-dependencies]
-dev = [
-    "pre-commit<3.0.0,>=2.13.0",
-    "black<22.0,>=21.6b0",
-    "flakehell<1.0.0,>=0.9.0",
-    "isort<6.0.0,>=5.9.1",
-]
 test = [
     "seleniumbase~=1.63",
 ]
@@ -50,13 +44,8 @@ test = "pytest --browser=firefox --save_screenshot tests/"
 test_docker = "./scripts/run_tests.sh"
 lint = "pre-commit run --all-files"
 
-[tool.flakehell]
-# https://flakehell.readthedocs.io/
-# https://black.readthedocs.io/en/stable/compatible_configs.html?highlight=flake8#flake8
-max-line-length = 88
-extend-ignore = "E203, W503"
-# https://github.com/flakehell/flakehell/issues/10#issuecomment-822720074
-extended_default_ignore = []  # add this
+[tool.black]
+line-length = 79
 
 [tool.isort]
 # https://pycqa.github.io/isort/docs/configuration/black_compatibility/

@@ -1,22 +1,18 @@
 repos:
-- repo: local
-  hooks:
-  - id: black
-    name: black
-    entry: black
-    language: system
-    types: [python]
-- repo: local
-  hooks:
-  - id: flakehell
-    name: flakehell
-    entry: flake8helled
-    language: system
-    types: [python]
-- repo: local
-  hooks:
-  - id: isort
-    name: isort
-    entry: isort
-    language: system
-    types: [python]
+  - repo: https://github.com/psf/black
+    rev: 21.6b0
+    hooks:
+      - id: black
+        exclude: ^pdm/_vendor
+
+  - repo: https://github.com/PyCQA/flake8
+    rev: 3.9.2
+    hooks:
+      - id: flake8
+        additional_dependencies:
+          - flake8-bugbear
+
+  - repo: https://github.com/pycqa/isort
+    rev: 5.9.1
+    hooks:
+      - id: isort
