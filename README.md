@@ -2,6 +2,7 @@
 
 [![CircleCI](https://img.shields.io/circleci/build/github/frafra/is-osm-uptodate.svg)](https://circleci.com/gh/frafra/is-osm-uptodate)
 [![Docker Cloud Build Status](https://img.shields.io/docker/cloud/build/frafra/is-osm-uptodate.svg)](https://hub.docker.com/r/frafra/is-osm-uptodate)
+[![pdm-managed](https://img.shields.io/badge/pdm-managed-blueviolet)](https://pdm.fming.dev)
 
 This application helps you find which nodes have not been edited for a long time.
 
