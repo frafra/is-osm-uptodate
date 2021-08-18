@@ -1,16 +1,3 @@
-[tool.poetry]
-name = "is-osm-uptodate"
-version = "1.6"
-description = "Find outdated nodes in OpenStreetMap"
-authors = ["Francesco Frassinelli <fraph24@gmail.com>"]
-license = "AGPLv3"
-
-[tool.pdm]
-includes = []
-[build-system]
-requires = ["pdm-pep517"]
-build-backend = "pdm.pep517.api"
-
 [project]
 name = "is-osm-uptodate"
 version = "1.6"

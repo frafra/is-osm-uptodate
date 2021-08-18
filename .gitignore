@@ -1,5 +1,6 @@
 __pycache__
 __pypackages__
+*.egg-info/
 node_modules
 latest_logs
 archived_logs
