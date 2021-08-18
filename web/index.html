@@ -41,10 +41,16 @@
         <input id="filter" class="form-control mr-sm-2" type="text" placeholder="example: amenity=*" aria-label="Filter">
         </div>
       </div>
-      <button id="fetch" class="btn btn-success">
-        <i class="fas fa-sync-alt"></i>
-        <span class="d-none d-md-inline">Fetch data</span>
-      </button>
+      <div class="d-lg-inline">
+        <button id="fetch" class="btn btn-success">
+          <i class="fas fa-sync-alt"></i>
+          <span class="d-none d-md-inline">Fetch data</span>
+        </button>
+        <a id="download" href="#" class="btn btn-primary invisible" role="button">
+          <i class="fas fa-arrow-alt-circle-down"></i>
+          <span class="d-none d-md-inline">Download</span>
+        </a>
+      </div>
     </nav>
     <div id="map"></div>
     <script src="node_modules/leaflet/dist/leaflet.js"></script>

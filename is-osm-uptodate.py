@@ -60,12 +60,22 @@ def process_group(group, end):
         return json.dumps(processed, use_decimal=True)
 
 
+def timestamp_shortener(timestamp):
+    return (
+        timestamp.replace(":", "")
+        .replace("-", "")
+        .rstrip("Z")
+        .rstrip("0")
+        .rstrip("T")
+    )
+
+
 @app.route("/api/getData")
 def getData():
-    minx = flask.request.args.get("minx")
-    miny = flask.request.args.get("miny")
-    maxx = flask.request.args.get("maxx")
-    maxy = flask.request.args.get("maxy")
+    # Round to 7 decimal https://wiki.openstreetmap.org/wiki/Node#Structure
+    bbox = []
+    for arg in ("minx", "miny", "maxx", "maxy"):
+        bbox.append(str(round(float(flask.request.args.get(arg)), 7)))
     referer = flask.request.headers.get("REFERER", "http://localhost:8000/")
     filters = flask.request.args.get("filter", "")
     if len(filters) > 0:
@@ -83,7 +93,7 @@ def getData():
     def generate():
         params = urllib.parse.urlencode(
             {
-                "bboxes": f"{minx},{miny},{maxx},{maxy}",
+                "bboxes": ",".join(bbox),
                 "properties": "metadata",
                 "showMetadata": "true",
                 "time": f"{start},{end}",
@@ -120,4 +130,16 @@ def getData():
                     yield processed
         yield "]}"
 
-    return app.response_class(generate(), mimetype="application/json")
+    start_short = timestamp_shortener(start)
+    end_short = timestamp_shortener(end)
+    bbox_str = "_".join(bbox)
+    filename = (
+        f"is-osm-uptodate_{bbox_str}_{start_short}_{end_short}.json".replace(
+            ":", ""
+        )
+    )
+    return app.response_class(
+        generate(),
+        mimetype="application/json",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )

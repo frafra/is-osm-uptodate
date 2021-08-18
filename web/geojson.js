@@ -147,7 +147,7 @@ function generatePopup(feature) {
 }
 
 let bounds;
-function getData() {
+function computeUrl() {
   info.update(`
     <div style="text-align: center">
       <strong>Loading</strong>
@@ -161,9 +161,19 @@ function getData() {
   let north = bounds.getNorth();
   let url = `/api/getData?minx=${west}&miny=${south}&maxx=${east}&maxy=${north}`;
   let filter = document.getElementById('filter').value;
-  if (filter.trim().length > 0) url += `&filter=${filter}`
+  if (filter.trim().length > 0) url += `&filter=${filter}`;
+  return url;
+}
+function getData() {
+  download.href = '#';
+  download.classList.add("invisible");
+  let url = computeUrl();
   fetch(url).then(response => {
-    return response.json();
+    let download = document.getElementById('download');
+    let valid_json = response.json();
+    download.href = url;
+    download.classList.remove("invisible");
+    return valid_json;
   }).then(parseData).catch(error => {
     info.update(`
       <div style="text-align: center">
