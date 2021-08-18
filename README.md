@@ -92,7 +92,7 @@ pdm run test
 You can also run dockerized tests:
 
 ```
-./scripts/run_tests.sh
+pdm run test_docker
 ```
 
 # Common issues
