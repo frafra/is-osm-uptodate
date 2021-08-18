@@ -16,10 +16,6 @@ class TestWebapp(BaseCase):
         self.test_open_home()
         self.assert_no_js_errors()
 
-    def test_404_errors(self):
-        self.test_open_home()
-        self.assert_no_404_errors()
-
     @parameterized.expand(buttons)
     def test_tabs(self, button):
         self.test_open_home()
@@ -27,4 +23,3 @@ class TestWebapp(BaseCase):
             'document.getElementById("' + button + '").click()'
         )
         self.assert_no_js_errors()
-        self.assert_no_404_errors()
