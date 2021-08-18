@@ -42,6 +42,7 @@ pdm run npm # Download dependencies for the web app
 ## Run
 
 ```
+chmod +x $(pdm info --packages)/bin/*
 pdm run web
 ```
 
