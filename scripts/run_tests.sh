@@ -31,10 +31,15 @@ docker network create $NETWORK
 
 # Run
 docker run --network $NETWORK --name $APP -d $DOCKER_APP
-docker run --network $NETWORK --name $TESTER -e URL="http://$APP:8000" $DOCKER_TESTER || true
+set +e
+docker run --network $NETWORK --name $TESTER -e URL="http://$APP:8000" $DOCKER_TESTER
+exitcode="$?"
+set -e
 
 # Copy tester logs
 docker cp $TESTER:/home/app/latest_logs latest_logs || true
 
 # Copy app logs
 docker logs $APP
+
+exit $exitcode
