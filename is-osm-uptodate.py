@@ -28,7 +28,7 @@ def generateHeaders(referer):
 featuresTime = time.time()
 start, end = None, None
 
-app = flask.Flask(__name__)
+app = flask.Flask(__name__, static_folder="web", static_url_path="")
 
 
 def process(group, end):
@@ -143,3 +143,12 @@ def getData():
         mimetype="application/json",
         headers={"Content-Disposition": f'attachment; filename="{filename}"'},
     )
+
+
+@app.route("/")
+def entry():
+    return flask.send_file("web/index.html")
+
+
+if __name__ == "__main__":
+    app.run(debug=True)

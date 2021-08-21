@@ -25,7 +25,7 @@ test = [
 [tool.pdm.scripts]
 npm = {shell = "cd web && npm ci"}
 web = "uwsgi --ini uwsgi.ini"
-develop = "uwsgi --ini uwsgi.ini --py-autoreload=3"
+develop = "python is-osm-uptodate.py"
 docker = "./scripts/run_docker.sh"
 test = "pytest --browser=firefox --save_screenshot tests/"
 test_docker = "./scripts/run_tests.sh"
