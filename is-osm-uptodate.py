@@ -77,10 +77,7 @@ def getData():
     for arg in ("minx", "miny", "maxx", "maxy"):
         bbox.append(str(round(float(flask.request.args.get(arg)), 7)))
     referer = flask.request.headers.get("REFERER", "http://localhost:8000/")
-    filters = flask.request.args.get("filter", "")
-    if len(filters) > 0:
-        filters += " and "
-    filters += "type:node"
+    filters = [flask.request.args.get("filter"), "type:node"]
     global featuresTime, start, end
     if time.time() - featuresTime > CACHE_REFRESH or not start or not end:
         metadata = json.load(urllib.request.urlopen(METADATA))
@@ -97,7 +94,7 @@ def getData():
                 "properties": "metadata",
                 "showMetadata": "true",
                 "time": f"{start},{end}",
-                "filter": filters,
+                "filter": " and ".join(filter(None, filters)),
             }
         )
         req = urllib.request.Request(API + "?" + params)
