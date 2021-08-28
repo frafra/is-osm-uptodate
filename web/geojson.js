@@ -119,7 +119,25 @@ info.update = message => {
 };
 info.addTo(map);
 
-let nodes = L.layerGroup();
+let nodes = L.markerClusterGroup({
+    iconCreateFunction: function (cluster) {
+        var markers = cluster.getAllChildMarkers();
+        n = 0;
+        for (var i = 0; i < markers.length; i++) {
+            n += colormap[markers[i].options.fillColor];
+        }
+        avg = n/markers.length;
+        fillColor = d3.interpolateViridis(avg);
+        html = document.createElement('div');
+        html.style.backgroundColor = fillColor;
+        content = document.createElement('span');
+        content.innerText = markers.length;
+        html.appendChild(content);
+        return L.divIcon({ html: html, className: "mycluster" });
+    },
+    spiderfyOnMaxZoom: false,
+    disableClusteringAtZoom: 19,
+});
 let rectangle = L.layerGroup();
 
 nodes.addTo(map);
@@ -186,6 +204,7 @@ function getData() {
 }
 
 let results;
+let colormap = {};
 function parseData(data) {
   results = data ? data : results;
   nodes.clearLayers();
@@ -238,15 +257,19 @@ function parseData(data) {
   let range;
   if (modes[mode].inverted) range = minimumValue-maximumValue;
   else range = maximumValue-minimumValue;
+  let markers = [];
+  colormap = {}; // reset
   L.geoJSON(results, {
     pointToLayer: (feature, latlng) => {
       let value = modes[mode].getValue(feature);
       let computed;
       if (modes[mode].inverted) computed = (value-maximumValue)/range
       else computed = (value-minimumValue)/range;
+      let color = d3.interpolateViridis(computed);
+      colormap[color] = computed;
       let marker = L.circleMarker(latlng, {
         radius: 5,
-        fillColor: d3.interpolateViridis(computed),
+        fillColor: color,
         color: "#555",
         weight: 1,
         opacity: 1,
@@ -263,7 +286,7 @@ function parseData(data) {
           window.nodeMarker = marker;
         }
       }
-      nodes.addLayer(marker);
+      markers.push(marker);
       return marker;
     }
   });
@@ -271,6 +294,7 @@ function parseData(data) {
     color: "#ff7800", fill: false, weight: 3
   });
   rectangle.addTo(map);
+  nodes.addLayers(markers);
 }
 
 if (!document.location.hash) {
