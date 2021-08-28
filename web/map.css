@@ -56,3 +56,17 @@ ul {
 .slider input {
   flex-grow: 1;
 }
+
+.mycluster {
+  width: 30px !important;
+  height: 30px !important;
+  margin-top: -15px !important;
+  margin-left: -15px !important;
+}
+
+.mycluster > div {
+  text-align: center;
+  line-height: 30px;
+  border-radius: 15px;
+  text-shadow: 0 0 5px white;
+}
