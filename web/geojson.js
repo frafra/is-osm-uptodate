@@ -85,6 +85,7 @@ let modes = {
 
 let minimumValue = modes[mode].defaultValue;
 let maximumValue = modes[mode].defaultValue;
+let aggregation = 'average';
 let info = L.control();
 info.onAdd = map => {
   this.div = L.DomUtil.create('div', 'info');
@@ -109,12 +110,35 @@ info.update = message => {
       <span class="colors"></span>
       <span>${maximumValuePretty}</span>
     </div>
+    <hr/>
+    <span>Group using</span>
+    <div id="aggregation" class="btn-group btn-group-sm btn-group-toggle" data-toggle="buttons">
+      <label class="btn btn-secondary">
+        <input type="radio" name="grouping" id="min" autocomplete="off">
+        <span class="d-none d-md-block">min</span>
+      </label>
+      <label class="btn btn-secondary active">
+        <input type="radio" name="grouping" id="avg" autocomplete="off" checked>
+        <span class="d-none d-md-block">average</span>
+      </label>
+      <label class="btn btn-secondary">
+        <input type="radio" name="grouping" id="max" autocomplete="off">
+        <span class="d-none d-md-block">max</span>
+      </label>
+    </div>
     <div class="slider d-none d-md-block">
       <hr/>
       Colour
       <input type="range" id="grayscale" value="${colour}"/>
     </div>
   `;
+  let buttonAggregation = document.querySelectorAll('#aggregation input');
+  for (let i=0; i<buttonAggregation.length; i++) {
+    buttonAggregation[i].onchange = event => {
+      aggregation = event.target.id;
+      nodes.refreshClusters();
+    }
+  }
   document.getElementById('grayscale').addEventListener('input', setColor);
 };
 info.addTo(map);
@@ -122,12 +146,29 @@ info.addTo(map);
 let nodes = L.markerClusterGroup({
     iconCreateFunction: function (cluster) {
         var markers = cluster.getAllChildMarkers();
-        n = 0;
-        for (var i = 0; i < markers.length; i++) {
-            n += colormap[markers[i].options.fillColor];
+        let aggregated;
+        switch (aggregation) {
+            case 'min':
+                for (var i = 0; i < markers.length; i++) {
+                    value = colormap[markers[i].options.fillColor];
+                    if (!aggregated || value < aggregated) aggregated = value;
+                }
+                break;
+            case 'max':
+                for (var i = 0; i < markers.length; i++) {
+                    value = colormap[markers[i].options.fillColor];
+                    if (!aggregated || value > aggregated) aggregated = value;
+                }
+                break;
+            case 'avg':
+            default:
+                n = 0;
+                for (var i = 0; i < markers.length; i++) {
+                    n += colormap[markers[i].options.fillColor];
+                }
+                aggregated = n/markers.length;
         }
-        avg = n/markers.length;
-        fillColor = d3.interpolateViridis(avg);
+        fillColor = d3.interpolateViridis(aggregated);
         html = document.createElement('div');
         html.style.backgroundColor = fillColor;
         content = document.createElement('span');
