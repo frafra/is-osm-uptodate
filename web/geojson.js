@@ -115,15 +115,15 @@ info.update = message => {
     <div id="aggregation" class="btn-group btn-group-sm btn-group-toggle" data-toggle="buttons">
       <label class="btn btn-secondary">
         <input type="radio" name="grouping" id="min" autocomplete="off">
-        <span class="d-none d-md-block">min</span>
+        <span class="d-md-block">min</span>
       </label>
       <label class="btn btn-secondary active">
         <input type="radio" name="grouping" id="avg" autocomplete="off" checked>
-        <span class="d-none d-md-block">average</span>
+        <span class="d-md-block">average</span>
       </label>
       <label class="btn btn-secondary">
         <input type="radio" name="grouping" id="max" autocomplete="off">
-        <span class="d-none d-md-block">max</span>
+        <span class="d-md-block">max</span>
       </label>
     </div>
     <div class="slider d-none d-md-block">
