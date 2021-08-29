@@ -147,6 +147,7 @@ let nodes = L.markerClusterGroup({
     iconCreateFunction: function (cluster) {
         var markers = cluster.getAllChildMarkers();
         let aggregated;
+        let value;
         switch (aggregation) {
             case 'min':
                 for (var i = 0; i < markers.length; i++) {
@@ -162,16 +163,15 @@ let nodes = L.markerClusterGroup({
                 break;
             case 'avg':
             default:
-                n = 0;
+                value = 0;
                 for (var i = 0; i < markers.length; i++) {
-                    n += colormap[markers[i].options.fillColor];
+                    value += colormap[markers[i].options.fillColor];
                 }
-                aggregated = n/markers.length;
+                aggregated = value/markers.length;
         }
-        fillColor = d3.interpolateViridis(aggregated);
-        html = document.createElement('div');
-        html.style.backgroundColor = fillColor;
-        content = document.createElement('span');
+        let html = document.createElement('div');
+        html.style.backgroundColor = d3.interpolateViridis(aggregated);
+        let content = document.createElement('span');
         content.innerText = markers.length;
         html.appendChild(content);
         return L.divIcon({ html: html, className: "mycluster" });
