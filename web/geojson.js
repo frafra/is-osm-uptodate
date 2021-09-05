@@ -85,7 +85,7 @@ let modes = {
 
 let minimumValue = modes[mode].defaultValue;
 let maximumValue = modes[mode].defaultValue;
-let aggregation = 'average';
+let percentile = 50;
 let info = L.control();
 info.onAdd = map => {
   this.div = L.DomUtil.create('div', 'info');
@@ -111,20 +111,10 @@ info.update = message => {
       <span>${maximumValuePretty}</span>
     </div>
     <hr/>
-    <span>Group using</span>
-    <div id="aggregation" class="btn-group btn-group-sm btn-group-toggle" data-toggle="buttons">
-      <label class="btn btn-secondary">
-        <input type="radio" name="grouping" id="min" autocomplete="off">
-        <span class="d-md-block">min</span>
-      </label>
-      <label class="btn btn-secondary active">
-        <input type="radio" name="grouping" id="avg" autocomplete="off" checked>
-        <span class="d-md-block">average</span>
-      </label>
-      <label class="btn btn-secondary">
-        <input type="radio" name="grouping" id="max" autocomplete="off">
-        <span class="d-md-block">max</span>
-      </label>
+    <div class="slider d-none d-md-block">
+      Aggregation (<span id="percentileStatus">50th</span> percentile)
+      <input type="range" id="percentile" min="1" value="{percentile}" step="1">
+    </div>
     </div>
     <div class="slider d-none d-md-block">
       <hr/>
@@ -132,12 +122,23 @@ info.update = message => {
       <input type="range" id="grayscale" value="${colour}"/>
     </div>
   `;
-  let buttonAggregation = document.querySelectorAll('#aggregation input');
-  for (let i=0; i<buttonAggregation.length; i++) {
-    buttonAggregation[i].onchange = event => {
-      aggregation = event.target.id;
-      nodes.refreshClusters();
+  document.getElementById('percentile').oninput = event => {
+    percentile = parseInt(event.target.value);
+    let percentileElement = document.getElementById('percentileStatus');
+    switch (percentile) {
+        case 1:
+            percentileElement.innerText = "1st";
+            break;
+        case 2:
+            percentileElement.innerText = "2nd";
+            break;
+        case 3:
+            percentileElement.innerText = "3rd";
+            break;
+        default:
+            percentileElement.innerText = percentile+"th";
     }
+    nodes.refreshClusters();
   }
   document.getElementById('grayscale').addEventListener('input', setColor);
 };
@@ -146,29 +147,11 @@ info.addTo(map);
 let nodes = L.markerClusterGroup({
     iconCreateFunction: function (cluster) {
         var markers = cluster.getAllChildMarkers();
-        let aggregated;
-        let value;
-        switch (aggregation) {
-            case 'min':
-                for (var i = 0; i < markers.length; i++) {
-                    value = colormap[markers[i].options.fillColor];
-                    if (!aggregated || value < aggregated) aggregated = value;
-                }
-                break;
-            case 'max':
-                for (var i = 0; i < markers.length; i++) {
-                    value = colormap[markers[i].options.fillColor];
-                    if (!aggregated || value > aggregated) aggregated = value;
-                }
-                break;
-            case 'avg':
-            default:
-                value = 0;
-                for (var i = 0; i < markers.length; i++) {
-                    value += colormap[markers[i].options.fillColor];
-                }
-                aggregated = value/markers.length;
-        }
+        let values = markers.map(marker => colormap[marker.options.fillColor]);
+        values.sort(function(a, b) {
+          return a - b;
+        });
+        let aggregated = values[Math.ceil(percentile*values.length/100)-1];
         let html = document.createElement('div');
         html.style.backgroundColor = d3.interpolateViridis(aggregated);
         let content = document.createElement('span');
