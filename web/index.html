@@ -11,7 +11,34 @@
     <script defer src="node_modules/@fortawesome/fontawesome-free/js/all.js"></script>
   </head>
   <body>
-    <nav id="bar" class="navbar navbar-expand-lg navbar-light bg-secondary">
+    <div>
+      <h3>Configuration</h3>
+
+      <form class="form-inline d-none d-lg-inline">
+        <input id="search" class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
+        <button id="go" class="btn btn-success" type="submit"><i class="fas fa-arrow-circle-right"></i> View on map</button>
+      </form>
+
+      <div class="form-inline d-none d-lg-inline">
+        <div class="input-group mb-2 mr-sm-2">
+          <div class="input-group-prepend">
+            <div class="input-group-text">Filter</div>
+          </div>
+          <input id="filter" class="form-control mr-sm-2" type="text" placeholder="example: amenity=*" aria-label="Filter">
+        </div>
+      </div>
+
+      <hr>
+      <h3>Actions</h3>
+
+      <button id="fetch" class="btn btn-success">
+        <i class="fas fa-sync-alt"></i>
+        <span class="d-none d-md-inline">Show data</span>
+      </button>
+
+      <hr>
+      <h3>Criteria</h3>
+
       <div id="mode" class="btn-group btn-group-toggle" data-toggle="buttons">
         <label class="btn btn-secondary">
           <input type="radio" name="options" id="creation" autocomplete="off"><i class="fas fa-fast-backward"></i>
@@ -30,30 +57,35 @@
           <span class="d-none d-md-block">Update frequency</span>
         </label>
       </div>
-      <form class="form-inline d-none d-lg-inline">
-        <input id="search" class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
-        <button id="go" class="btn btn-success" type="submit"><i class="fas fa-arrow-circle-right"></i> Go</button>
-      </form>
-      <div class="form-inline d-none d-lg-inline">
-        <div class="input-group mb-2 mr-sm-2">
-          <div class="input-group-prepend">
-            <div class="input-group-text">Filter</div>
-          </div>
-        <input id="filter" class="form-control mr-sm-2" type="text" placeholder="example: amenity=*" aria-label="Filter">
-        </div>
+
+      <div class="slider d-none d-md-block">
+        Aggregation (<span id="percentileStatus">50th</span> percentile)
+        <input type="range" id="percentile" min="1" value="50" step="1">
       </div>
+
+      <hr>
+      <h3>Statistics</h3>
+
+      <table>
+        <tr>
+          <td>Worst node</td>
+          <td><a href="javascript:openNodeMarker();" id="worstnode"></a></td>
+        </tr>
+      </table>
+
+      <hr>
+      <h3>Save results</h3>
+
       <div class="d-lg-inline">
-        <button id="fetch" class="btn btn-success">
-          <i class="fas fa-sync-alt"></i>
-          <span class="d-none d-md-inline">Fetch data</span>
-        </button>
         <a id="download" href="#" class="btn btn-primary invisible" role="button">
           <i class="fas fa-arrow-alt-circle-down"></i>
           <span class="d-none d-md-inline">Download</span>
         </a>
       </div>
-    </nav>
+    </div>
+
     <div id="map"></div>
+
     <script src="node_modules/leaflet/dist/leaflet.js"></script>
     <script src="node_modules/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
     <script src="node_modules/leaflet-hash/leaflet-hash.js"></script>
