@@ -85,7 +85,7 @@ let modes = {
 
 let minimumValue = modes[mode].defaultValue;
 let maximumValue = modes[mode].defaultValue;
-let percentile = 50;
+document.getElementById("percentile").value = 50;
 let info = L.control();
 info.onAdd = map => {
   this.div = L.DomUtil.create('div', 'info');
@@ -101,7 +101,7 @@ info.update = message => {
     maximumValuePretty = modes[mode].prettyValue(minimumValue);
   }
   this.div.innerHTML = `
-    ${message}
+    <i>${message}</i>
     <strong style="text-align: center" class="d-block d-sm-block d-md-none">
       ${mode}
     </strong>
@@ -110,15 +110,8 @@ info.update = message => {
       <span class="colors"></span>
       <span>${maximumValuePretty}</span>
     </div>
-    <hr/>
     <div class="slider d-none d-md-block">
-      Aggregation (<span id="percentileStatus">50th</span> percentile)
-      <input type="range" id="percentile" min="1" value="{percentile}" step="1">
-    </div>
-    </div>
-    <div class="slider d-none d-md-block">
-      <hr/>
-      Colour
+      Backroung colour
       <input type="range" id="grayscale" value="${colour}"/>
     </div>
   `;
@@ -151,6 +144,7 @@ let nodes = L.markerClusterGroup({
         values.sort(function(a, b) {
           return a - b;
         });
+        let percentile = document.getElementById('percentile').value;
         let aggregated = values[Math.ceil(percentile*values.length/100)-1];
         let html = document.createElement('div');
         html.style.backgroundColor = d3.interpolateViridis(aggregated);
@@ -166,11 +160,18 @@ let rectangle = L.layerGroup();
 
 nodes.addTo(map);
 
+let autoopen = false;
 function openNodeMarker() {
   nodes.addTo(map);
-  window.nodeMarker.openPopup();
+  autoopen=true;
+  map.on('zoomend', function() {
+   if (autoopen) {
+     window.nodeMarker.openPopup();
+     autoopen=false;
+     }
+  });
+  map.flyTo(window.nodeMarker._latlng, OpenStreetMapLayer.options.maxZoom);
 }
-
 
 function generatePopup(feature) {
   let position = location.hash.substr(1);
@@ -190,12 +191,7 @@ function generatePopup(feature) {
 
 let bounds;
 function computeUrl() {
-  info.update(`
-    <div style="text-align: center">
-      <strong>Loading</strong>
-      <div>Please wait...</div>
-    </div>`
-  );
+  info.update("Loading...");
   bounds = map.getBounds();
   let west = bounds.getWest();
   let south = bounds.getSouth();
@@ -211,18 +207,14 @@ function getData() {
   download.classList.add("invisible");
   let url = computeUrl();
   fetch(url).then(response => {
+    info.update("Loaded");
     let download = document.getElementById('download');
     let valid_json = response.json();
     download.href = url;
     download.classList.remove("invisible");
     return valid_json;
   }).then(parseData).catch(error => {
-    info.update(`
-      <div style="text-align: center">
-        <strong>Error</strong>
-        <div>Please try again or zoom in.</div>
-      </div>
-    `);
+    info.update("Error; please try again");
     console.log(error);
   });
 }
@@ -269,15 +261,7 @@ function parseData(data) {
     nodePrettyValue = modes[mode].prettyValue(modes[mode].getValue(maximumNode));
     nodePrettyId = maximumNode.properties.id;
   }
-  info.update(`
-    <table class="d-none d-md-table">
-      <tr>
-        <td>Worst node</td>
-        <td><a href="javascript:openNodeMarker();">#${nodePrettyId}</a></td>
-        <td>(${nodePrettyValue})</td>
-      </tr>
-    </table>
-  `);
+  document.getElementById("worstnode").innerText = nodePrettyId;
   let range;
   if (modes[mode].inverted) range = minimumValue-maximumValue;
   else range = maximumValue-minimumValue;
