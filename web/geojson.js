@@ -303,6 +303,7 @@ function parseData(data) {
   });
   rectangle.addTo(map);
   nodes.addLayers(markers);
+  info.update("Loaded");
 }
 
 if (!document.location.hash) {
