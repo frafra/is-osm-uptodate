@@ -5,13 +5,13 @@ body {
   flex-direction: row;
 }
 
-#map {
-  width: 100%;
+#bar {
+  text-align: center;
+  padding: .5em;
 }
 
-h3 {
-  text-align: center;
-  text-transform: capitalize;
+#map {
+  width: 100%;
 }
 
 ul {
