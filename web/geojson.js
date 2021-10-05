@@ -1,7 +1,6 @@
 let map = L.map('map');
 const search = new GeoSearch.GeoSearchControl({
   provider: new GeoSearch.OpenStreetMapProvider(),
-  style: 'bar',
   showMarker: false,
 });
 map.addControl(search);
