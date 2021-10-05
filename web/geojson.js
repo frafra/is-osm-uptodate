@@ -41,7 +41,7 @@ for (let i=0; i<buttonModes.length; i++) {
     mode = event.target.id;
     parseData();
   }
-}
+};
 let modes = {
     lastedit: {
         defaultValue: new Date(),
@@ -73,7 +73,7 @@ let modes = {
         },
         inverted: true
     }
-}
+};
 
 let minimumValue = modes[mode].defaultValue;
 let maximumValue = modes[mode].defaultValue;
@@ -206,7 +206,7 @@ function getData() {
     info.update("Error; please try again");
     console.log(error);
   });
-}
+};
 
 let results;
 let colormap = {};
@@ -220,7 +220,7 @@ function parseData(data) {
   let maximumNodeValue = modes[mode].defaultValue;
   let minimumNode;
   let maximumNode;
-  let defaultValue = modes[mode].defaultValue
+  let defaultValue = modes[mode].defaultValue;
   for (let index in results.features) {
     let feature = results.features[index];
     let value = modes[mode].getValue(feature);
@@ -241,13 +241,10 @@ function parseData(data) {
       maximumValue = value;
     }
   }
-  let nodePrettyValue;
   let nodePrettyId;
   if (!modes[mode].inverted) {
-    nodePrettyValue = modes[mode].prettyValue(modes[mode].getValue(minimumNode));
     nodePrettyId = minimumNode.properties.id;
   } else {
-    nodePrettyValue = modes[mode].prettyValue(modes[mode].getValue(maximumNode));
     nodePrettyId = maximumNode.properties.id;
   }
   document.getElementById("worstnode").innerText = nodePrettyId;
@@ -260,7 +257,7 @@ function parseData(data) {
     pointToLayer: (feature, latlng) => {
       let value = modes[mode].getValue(feature);
       let computed;
-      if (modes[mode].inverted) computed = (value-maximumValue)/range
+      if (modes[mode].inverted) computed = (value-maximumValue)/range;
       else computed = (value-minimumValue)/range;
       let color = d3.interpolateViridis(computed);
       colormap[color] = computed;
