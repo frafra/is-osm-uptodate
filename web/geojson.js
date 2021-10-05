@@ -104,7 +104,7 @@ info.update = message => {
       <span>${maximumValuePretty}</span>
     </div>
     <div class="slider d-none d-md-block">
-      Backroung colour
+      Background colour
       <input type="range" id="grayscale" value="${colour}"/>
     </div>
   `;
