@@ -93,7 +93,6 @@ info.update = message => {
     maximumValuePretty = modes[mode].prettyValue(minimumValue);
   }
   this.div.innerHTML = `
-    <i>${message}</i>
     <div class="bar">
       <span>${minimumValuePretty}</span>
       <span class="colors"></span>
@@ -180,7 +179,7 @@ function generatePopup(feature) {
 
 let bounds;
 function computeUrl() {
-  info.update("Loading...");
+  info.update();
   bounds = map.getBounds();
   let west = bounds.getWest();
   let south = bounds.getSouth();
@@ -192,18 +191,23 @@ function computeUrl() {
   return url;
 }
 function getData() {
+  let spinner = document.getElementById('spinner');
+  spinner.classList.remove("d-none");
   download.href = '#';
   download.classList.add("disabled");
   let url = computeUrl();
   fetch(url).then(response => {
-    info.update("Loaded");
+    info.update();
+    let spinner = document.getElementById('spinner');
+    spinner.classList.add("d-none");
     let download = document.getElementById('download');
     let valid_json = response.json();
     download.href = url;
     download.classList.remove("disabled");
     return valid_json;
   }).then(parseData).catch(error => {
-    info.update("Error; please try again");
+    let spinner = document.getElementById('spinner');
+    spinner.classList.add("d-none");
     console.log(error);
   });
 };
@@ -289,7 +293,7 @@ function parseData(data) {
   });
   rectangle.addTo(map);
   nodes.addLayers(markers);
-  info.update("Loaded");
+  info.update();
 }
 
 if (!document.location.hash) {
