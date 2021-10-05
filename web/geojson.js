@@ -193,14 +193,14 @@ function computeUrl() {
 }
 function getData() {
   download.href = '#';
-  download.classList.add("invisible");
+  download.classList.add("disabled");
   let url = computeUrl();
   fetch(url).then(response => {
     info.update("Loaded");
     let download = document.getElementById('download');
     let valid_json = response.json();
     download.href = url;
-    download.classList.remove("invisible");
+    download.classList.remove("disabled");
     return valid_json;
   }).then(parseData).catch(error => {
     info.update("Error; please try again");
