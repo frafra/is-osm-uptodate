@@ -12,76 +12,111 @@
     <script defer src="node_modules/@fortawesome/fontawesome-free/js/all.js"></script>
   </head>
   <body>
-    <div id="bar" class="bg-light">
-      <h3>Settings</h3>
-
-      <div class="form">
-        <div class="input-group mb-2 mr-sm-2">
-          <div class="input-group-prepend">
-            <div class="input-group-text">Filter</div>
+    <div id="bar" class="bg-light accordion">
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="section-settings-heading">
+          <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#section-settings-body">
+             Settings
+          </button>
+        </h2>
+        <div id="section-settings-body" class="accordion-collapse collapse show">
+          <div class="accordion-body">
+            <div class="form">
+              <div class="input-group mb-2 mr-sm-2">
+                <div class="input-group-prepend">
+                  <div class="input-group-text">Filter</div>
+                </div>
+                <input id="filter" class="form-control" type="text" placeholder="example: amenity=*" aria-label="Filter">
+              </div>
+            </div>
           </div>
-          <input id="filter" class="form-control mr-sm-2" type="text" placeholder="example: amenity=*" aria-label="Filter">
         </div>
       </div>
-
-      <hr/>
-      <h3>Actions</h3>
-
-      <button id="fetch" class="btn btn-primary">
-        <i class="fas fa-sync-alt"></i>
-        <span>Show data</span>
-      </button>
-
-      <hr/>
-      <h3>Criteria</h3>
-
-      <div id="mode" class="btn-group btn-group-toggle" data-toggle="buttons">
-        <input type="radio" class="btn-check" name="modes" id="creation" autocomplete="off">
-        <label class="btn btn-secondary border-secondary" for="creation">
-          <i class="fas fa-fast-backward"></i><br/>
-          First edit
-        </label>
-        <input type="radio" class="btn-check" name="modes" id="lastedit" autocomplete="off" checked>
-        <label class="btn btn-secondary border-secondary" for="lastedit">
-          <i class="fas fa-fast-forward"></i><br/>
-          Last edit
-        </label>
-        <input type="radio" class="btn-check" name="modes" id="revisions" autocomplete="off">
-        <label class="btn btn-secondary border-secondary" for="revisions">
-          <i class="fas fa-clone"></i><br/>
-          Revisions
-        </label>
-        <input type="radio" class="btn-check" name="modes" id="frequency" autocomplete="off">
-        <label class="btn btn-secondary border-secondary" for="frequency">
-          <i class="fas fa-stopwatch"></i><br/>
-          Update frequency
-        </label>
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="section-actions-heading">
+          <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#section-actions-body">
+             Actions
+          </button>
+        </h2>
+        <div id="section-actions-body" class="accordion-collapse collapse show">
+          <div class="accordion-body">
+            <button id="fetch" class="btn btn-primary">
+              <i class="fas fa-sync-alt"></i>
+              <span>Show data</span>
+            </button>
+          </div>
+        </div>
       </div>
-
-      <div class="slider">
-        <p>Aggregation<br/>
-        (<span id="percentileStatus">50th</span> percentile)</p>
-        <input type="range" id="percentile" min="1" value="50" step="1">
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="section-criteria-heading">
+          <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#section-criteria-body">
+             Criteria
+          </button>
+        </h2>
+        <div id="section-criteria-body" class="accordion-collapse collapse show">
+          <div class="accordion-body">
+            <div id="mode" class="btn-group btn-group-toggle" data-toggle="buttons">
+              <input type="radio" class="btn-check" name="modes" id="creation" autocomplete="off">
+              <label class="btn btn-secondary border-secondary" for="creation">
+                <i class="fas fa-fast-backward"></i><br/>
+                First edit
+              </label>
+              <input type="radio" class="btn-check" name="modes" id="lastedit" autocomplete="off" checked>
+              <label class="btn btn-secondary border-secondary" for="lastedit">
+                <i class="fas fa-fast-forward"></i><br/>
+                Last edit
+              </label>
+              <input type="radio" class="btn-check" name="modes" id="revisions" autocomplete="off">
+              <label class="btn btn-secondary border-secondary" for="revisions">
+                <i class="fas fa-clone"></i><br/>
+                Revisions
+              </label>
+              <input type="radio" class="btn-check" name="modes" id="frequency" autocomplete="off">
+              <label class="btn btn-secondary border-secondary" for="frequency">
+                <i class="fas fa-stopwatch"></i><br/>
+                Update frequency
+              </label>
+            </div>
+            <div class="slider">
+              <p>Aggregation<br/>
+              (<span id="percentileStatus">50th</span> percentile)</p>
+              <input type="range" id="percentile" min="1" value="50" step="1">
+            </div>
+          </div>
+        </div>
       </div>
-
-      <hr/>
-      <h3>Statistics</h3>
-
-      <table class="table table-striped">
-        <tr>
-          <th scope="row">Worst node</th>
-          <td><a href="javascript:openNodeMarker();" id="worstnode"></a></td>
-        </tr>
-      </table>
-
-      <hr/>
-      <h3>Save results</h3>
-
-      <a id="download" class="btn btn-primary invisible" role="button">
-        <i class="fas fa-arrow-alt-circle-down"></i>
-        <span>Download</span>
-      </a>
-
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="section-statistics-heading">
+          <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#section-statistics-body">
+             Statistics
+          </button>
+        </h2>
+        <div id="section-statistics-body" class="accordion-collapse collapse show">
+          <div class="accordion-body">
+            <table class="table table-striped">
+              <tr>
+                <th scope="row">Worst node</th>
+                <td><a href="javascript:openNodeMarker();" id="worstnode"></a></td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="section-save-heading">
+          <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#section-save-body">
+             Save results
+          </button>
+        </h2>
+        <div id="section-save-body" class="accordion-collapse collapse show">
+          <div class="accordion-body">
+            <a id="download" class="btn btn-primary invisible" role="button">
+              <i class="fas fa-arrow-alt-circle-down"></i>
+              <span>Download</span>
+            </a>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div id="map"></div>
@@ -89,6 +124,7 @@
     <script src="node_modules/leaflet/dist/leaflet.js"></script>
     <script src="node_modules/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
     <script src="node_modules/leaflet-hash/leaflet-hash.js"></script>
+    <script src="node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="node_modules/leaflet-geosearch/dist/bundle.min.js"></script>
     <script src="node_modules/d3-color/dist/d3-color.min.js"></script>
     <script src="node_modules/d3-interpolate/dist/d3-interpolate.min.js"></script>
