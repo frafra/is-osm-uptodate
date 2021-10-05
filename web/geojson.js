@@ -94,15 +94,12 @@ info.update = message => {
   }
   this.div.innerHTML = `
     <i>${message}</i>
-    <strong style="text-align: center" class="d-block d-sm-block d-md-none">
-      ${mode}
-    </strong>
     <div class="bar">
       <span>${minimumValuePretty}</span>
       <span class="colors"></span>
       <span>${maximumValuePretty}</span>
     </div>
-    <div class="slider d-none d-md-block">
+    <div class="slider">
       Background colour
       <input type="range" id="grayscale" value="${colour}"/>
     </div>
