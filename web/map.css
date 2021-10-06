@@ -8,6 +8,10 @@ body {
 #bar {
   text-align: center;
   overflow-y: auto;
+  flex-basis: 350px;
+  flex-shrink: 0;
+  flex-grow: 0;
+  scrollbar-gutter: stable;
 }
 
 #mode > label {
