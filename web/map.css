@@ -34,9 +34,12 @@ body {
   margin-right: auto;
 }
 
+.bar {
+  display: flex;
+}
+
 .colors {
-  display: inline-block;
-  width: 100px;
+  flex-grow: 1;
   height: 1em;
   margin: auto .5em;
   background: linear-gradient(to right, #440154, #21918c, #fde725);
