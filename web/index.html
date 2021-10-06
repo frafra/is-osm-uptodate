@@ -74,9 +74,12 @@
               </label>
             </div>
             <div class="input-group pt-3">
-              <span class="input-group-text">Aggregate by</span>
+              <span class="input-group-text">Show the</span>
               <input type="number" id="percentile" class="form-control" min="1" max="100" value="50" step="1">
               <span class="input-group-text">percentile</span>
+              <span class="form-text">
+                When grouping nodes, leave out the lowest <span id="percentile-value">50</span> % and show the node after.
+              </span>
             </div>
           </div>
         </div>
