@@ -105,6 +105,7 @@ info.update = message => {
   `;
   document.getElementById('percentile').oninput = event => {
     percentile = parseInt(event.target.value);
+    document.getElementById('percentile-value').innerText = percentile;
     nodes.refreshClusters();
   }
   document.getElementById('grayscale').addEventListener('input', setColor);
