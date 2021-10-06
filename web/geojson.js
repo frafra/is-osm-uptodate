@@ -277,8 +277,8 @@ function parseData(data) {
   rectangle = L.rectangle(bounds, {
     color: "#ff7800", fill: false, weight: 3
   });
-  rectangle.addTo(map);
   nodes.addLayers(markers);
+  rectangle.addTo(map);
   info.update();
 }
 
