@@ -1,4 +1,4 @@
-FROM python:3.9.7-buster AS apt
+FROM python:3.10.0-buster AS apt
 LABEL maintainer="fraph24@gmail.com"
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update
