@@ -105,20 +105,6 @@ info.update = message => {
   `;
   document.getElementById('percentile').oninput = event => {
     percentile = parseInt(event.target.value);
-    let percentileElement = document.getElementById('percentileStatus');
-    switch (percentile) {
-        case 1:
-            percentileElement.innerText = "1st";
-            break;
-        case 2:
-            percentileElement.innerText = "2nd";
-            break;
-        case 3:
-            percentileElement.innerText = "3rd";
-            break;
-        default:
-            percentileElement.innerText = percentile+"th";
-    }
     nodes.refreshClusters();
   }
   document.getElementById('grayscale').addEventListener('input', setColor);
