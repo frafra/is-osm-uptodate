@@ -1,3 +1,5 @@
+import './map.css';
+
 let map = L.map('map');
 const search = new GeoSearch.GeoSearchControl({
   provider: new GeoSearch.OpenStreetMapProvider(),
@@ -77,12 +79,14 @@ let modes = {
 
 let minimumValue = modes[mode].defaultValue;
 let maximumValue = modes[mode].defaultValue;
+let minimumValuePretty;
+let maximumValuePretty;
 document.getElementById("percentile").value = 50;
 let info = L.control();
 info.onAdd = map => {
-  this.div = L.DomUtil.create('div', 'info');
-  L.DomEvent.disableClickPropagation(this.div);
-  return this.div;
+  info.div = L.DomUtil.create('div', 'info');
+  L.DomEvent.disableClickPropagation(info.div);
+  return info.div;
 };
 info.update = message => {
   if (!modes[mode].inverted) {
@@ -92,7 +96,7 @@ info.update = message => {
     minimumValuePretty = modes[mode].prettyValue(maximumValue);
     maximumValuePretty = modes[mode].prettyValue(minimumValue);
   }
-  this.div.innerHTML = `
+  info.div.innerHTML = `
     <div class="bar">
       <span>${minimumValuePretty}</span>
       <span class="colors"></span>

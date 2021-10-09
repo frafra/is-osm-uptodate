@@ -9,3 +9,6 @@ geckodriver.log
 
 tests/firefox
 tests/geckodriver.log
+
+web/dist/*
+!web/dist/index.html
