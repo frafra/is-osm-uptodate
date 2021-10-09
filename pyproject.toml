@@ -23,7 +23,7 @@ test = [
 ]
 
 [tool.pdm.scripts]
-npm = {shell = "cd web && npm ci"}
+npm = {shell = "cd web && npm ci && npm run build"}
 web = "uwsgi --ini uwsgi.ini"
 develop = "python is-osm-uptodate.py"
 docker = "./scripts/run_docker.sh"
