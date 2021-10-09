@@ -35,9 +35,8 @@ pdm run docker
 ## Setup
 
 ```
-cd web && npm ci && npm run build && cd -
 pdm install --no-self --production
-pdm run npm # Download dependencies for the web app
+pdm run npm # Build the web app
 ```
 
 ## Run
@@ -80,8 +79,13 @@ $ curl 'http://localhost:8000/api/getData?minx=9.188295196&miny=45.4635324507&ma
 ```
 pipx install pdm
 pdm install --no-self
-cd web && npm ci run && npm run build && cd -
 pdm run develop
+```
+
+To develop the frontend, in addition to the previous commands, run, in a different terminal:
+
+```
+cd web && npm run develop
 ```
 
 ## Testing
