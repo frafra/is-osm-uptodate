@@ -25,21 +25,6 @@ RUN pip3 install pdm && \
 COPY --from=builder /home/app/web/dist/ web/dist/
 COPY web/dist/index.html web/dist/
 
-# sed -nr 's;.*="(node_modules/[^"]+)".*;\1;p' <web/dist/index.html | xargs -I% echo COPY --from=builder /home/app/web/% web/%
-COPY --from=builder /home/app/web/node_modules/leaflet/dist/leaflet.css web/node_modules/leaflet/dist/leaflet.css
-COPY --from=builder /home/app/web/node_modules/leaflet.markercluster/dist/MarkerCluster.css web/node_modules/leaflet.markercluster/dist/MarkerCluster.css
-COPY --from=builder /home/app/web/node_modules/bootstrap/dist/css/bootstrap.min.css web/node_modules/bootstrap/dist/css/bootstrap.min.css
-COPY --from=builder /home/app/web/node_modules/leaflet-geosearch/dist/geosearch.css web/node_modules/leaflet-geosearch/dist/geosearch.css
-COPY --from=builder /home/app/web/node_modules/@fortawesome/fontawesome-free/js/all.js web/node_modules/@fortawesome/fontawesome-free/js/all.js
-COPY --from=builder /home/app/web/node_modules/leaflet/dist/leaflet.js web/node_modules/leaflet/dist/leaflet.js
-COPY --from=builder /home/app/web/node_modules/leaflet.markercluster/dist/leaflet.markercluster.js web/node_modules/leaflet.markercluster/dist/leaflet.markercluster.js
-COPY --from=builder /home/app/web/node_modules/leaflet-hash/leaflet-hash.js web/node_modules/leaflet-hash/leaflet-hash.js
-COPY --from=builder /home/app/web/node_modules/bootstrap/dist/js/bootstrap.bundle.min.js web/node_modules/bootstrap/dist/js/bootstrap.bundle.min.js
-COPY --from=builder /home/app/web/node_modules/leaflet-geosearch/dist/bundle.min.js web/node_modules/leaflet-geosearch/dist/bundle.min.js
-COPY --from=builder /home/app/web/node_modules/d3-color/dist/d3-color.min.js web/node_modules/d3-color/dist/d3-color.min.js
-COPY --from=builder /home/app/web/node_modules/d3-interpolate/dist/d3-interpolate.min.js web/node_modules/d3-interpolate/dist/d3-interpolate.min.js
-COPY --from=builder /home/app/web/node_modules/d3-scale-chromatic/dist/d3-scale-chromatic.min.js web/node_modules/d3-scale-chromatic/dist/d3-scale-chromatic.min.js
-
 COPY uwsgi.ini is-osm-uptodate.py ./
 
 EXPOSE 8000/tcp

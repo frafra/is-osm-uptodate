@@ -28,7 +28,7 @@ def generateHeaders(referer):
 featuresTime = time.time()
 start, end = None, None
 
-app = flask.Flask(__name__, static_folder="web", static_url_path="")
+app = flask.Flask(__name__, static_folder="web/dist", static_url_path="")
 
 
 def process(group, end):
