@@ -1,13 +1,27 @@
 import './map.css';
 
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
+
+import { MarkerClusterGroup } from "leaflet.markercluster/src";
+import "leaflet.markercluster/dist/MarkerCluster.css";
+
+import { GeoSearchControl, OpenStreetMapProvider } from 'leaflet-geosearch';
+import "leaflet-geosearch/dist/geosearch.css";
+
+import { interpolateViridis } from "d3-scale-chromatic"
+
+import 'bootstrap';
+import 'bootstrap/dist/css/bootstrap.min.css';
+
+import '@fortawesome/fontawesome-free/js/all.js';
+
 let map = L.map('map');
-const search = new GeoSearch.GeoSearchControl({
-  provider: new GeoSearch.OpenStreetMapProvider(),
+const search = new GeoSearchControl({
+  provider: new OpenStreetMapProvider(),
   showMarker: false,
 });
 map.addControl(search);
-
-let hash = new L.Hash(map);
 
 let custom_attribution = `<a href="https://wiki.openstreetmap.org/wiki/Is_OSM_up-to-date">${document.title}</a> (<a href="https://github.com/frafra/is-osm-uptodate">source code</a>)`;
 let OpenStreetMapLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -116,7 +130,7 @@ info.update = message => {
 };
 info.addTo(map);
 
-let nodes = L.markerClusterGroup({
+let nodes = new MarkerClusterGroup({
     iconCreateFunction: function (cluster) {
         var markers = cluster.getAllChildMarkers();
         let values = markers.map(marker => colormap[marker.options.fillColor]);
@@ -126,7 +140,7 @@ let nodes = L.markerClusterGroup({
         let percentile = document.getElementById('percentile').value;
         let aggregated = values[Math.ceil(percentile*values.length/100)-1];
         let html = document.createElement('div');
-        html.style.backgroundColor = d3.interpolateViridis(aggregated);
+        html.style.backgroundColor = interpolateViridis(aggregated);
         let content = document.createElement('span');
         content.innerText = markers.length;
         html.appendChild(content);
@@ -140,7 +154,7 @@ let rectangle = L.layerGroup();
 nodes.addTo(map);
 
 let autoopen = false;
-function openNodeMarker() {
+document.getElementById('worstnode').onclick = function () {
   nodes.addTo(map);
   autoopen=true;
   map.on('zoomend', function() {
@@ -153,14 +167,13 @@ function openNodeMarker() {
 }
 
 function generatePopup(feature) {
-  let position = location.hash.substr(1);
   let type = feature.geometry.type == 'Point' ? 'node' : 'way';
   let popup = `
     <b>Last edit</b>: ${feature.properties.lastedit}<br>
     <b>Created at</b>: ${feature.properties.created}<br>
     <b>Current version</b>: ${feature.properties.version}<br>
     <div style="text-align: center">
-      <a href="https://www.openstreetmap.org/edit?${type}=${feature.properties.id}#map=${position}" target="_blank">Edit <a> |
+      <a href="https://www.openstreetmap.org/edit?${type}=${feature.properties.id}" target="_blank">Edit <a> |
       <a href="https://www.openstreetmap.org/${type}/${feature.properties.id}/history" target="_blank">History</a> |
       <a href="https://www.openstreetmap.org/${type}/${feature.properties.id}" target="_blank">Details<a>
     </div>
@@ -254,7 +267,7 @@ function parseData(data) {
       let computed;
       if (modes[mode].inverted) computed = (value-maximumValue)/range;
       else computed = (value-minimumValue)/range;
-      let color = d3.interpolateViridis(computed);
+      let color = interpolateViridis(computed);
       colormap[color] = computed;
       let marker = L.circleMarker(latlng, {
         radius: 5,
@@ -287,9 +300,21 @@ function parseData(data) {
   info.update();
 }
 
-if (!document.location.hash) {
+function updateHash() {
+  let center = map.getCenter();
+  let lat = center.lat.toFixed(5);
+  let lng = center.lng.toFixed(5);
+  let zoom = map.getZoom();
+  document.location.hash = `${zoom}/${lat}/${lng}`;
+};
+map.on('zoomend', updateHash);
+map.on('moveend', updateHash);
+
+if (document.location.hash) {
+  let location = document.location.hash.substr(1).split('/');
+  map.setView([location[1], location[2]], location[0])
+} else {
   map.setView([45.46423, 9.19073], 19); // Duomo di Milano
-  getData();
 }
 
-map.on('load', getData);
+getData();
