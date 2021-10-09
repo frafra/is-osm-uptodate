@@ -144,7 +144,7 @@ def getData():
 
 @app.route("/")
 def entry():
-    return flask.send_file("web/index.html")
+    return flask.send_file("web/dist/index.html")
 
 
 if __name__ == "__main__":
