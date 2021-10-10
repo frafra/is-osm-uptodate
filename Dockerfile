@@ -10,7 +10,7 @@ WORKDIR /home/app/web
 COPY web/package.json web/package-lock.json ./
 RUN npm ci
 COPY web/webpack.config.js ./
-COPY web/src/geojson.js web/src/map.css src/
+COPY web/src ./src
 RUN npm run build
 
 FROM apt AS base
