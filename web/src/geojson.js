@@ -11,10 +11,11 @@ import "leaflet-geosearch/dist/geosearch.css";
 
 import { interpolateViridis } from "d3-scale-chromatic"
 
-import 'bootstrap';
-import 'bootstrap/dist/css/bootstrap.min.css';
+import { Accordion } from 'bootstrap';
+import 'bootstrap/dist/css/bootstrap.css';
 
-import '@fortawesome/fontawesome-free/js/all.js';
+import '@fortawesome/fontawesome-free/css/fontawesome.css'
+import '@fortawesome/fontawesome-free/css/solid.css'
 
 let map = L.map('map');
 const search = new GeoSearchControl({
