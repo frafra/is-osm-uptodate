@@ -1,29 +1,9 @@
-body {
-  margin: 0;
-  height: 100vh;
-  display: flex;
-  flex-direction: row;
-}
-
-#bar {
-  text-align: center;
-  overflow-y: auto;
-  flex-basis: 330px;
-  flex-shrink: 0;
-  flex-grow: 0;
-  scrollbar-gutter: stable;
-}
-
-#mode > label {
-  text-align: left;
-}
-
 #map {
   width: 100%;
 }
 
-.info {
-  padding: .3em .5em;
+#info {
+  padding: 0.3em 0.5em;
   background: white;
   box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
   border-radius: 5px;
@@ -41,7 +21,7 @@ body {
 .colors {
   flex-grow: 1;
   height: 1em;
-  margin: auto .5em;
+  margin: auto 0.5em;
   background: linear-gradient(to right, #440154, #21918c, #fde725);
 }
 
