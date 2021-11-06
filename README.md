@@ -16,6 +16,7 @@ Page on OSM wiki: https://wiki.openstreetmap.org/wiki/Is_OSM_up-to-date
 - [PDM](https://pdm.fming.dev/)
 - [uWSGI](https://uwsgi-docs.readthedocs.io/)
 - [npm](https://www.npmjs.com/)
+- [YAJI](https://github.com/lloyd/yajl)
 
 ## Optional
 
@@ -33,6 +34,10 @@ pdm run docker
 # Without Docker
 
 ## Setup
+
+Install YAJI library:
+- Debian/Ubuntu users: `apt-get install libyajl-dev`
+- Fedora users: `dnf install yajl-devel`
 
 ```
 pdm install --no-self --production
