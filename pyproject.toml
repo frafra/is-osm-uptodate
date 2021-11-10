@@ -1,6 +1,6 @@
 [project]
 name = "is-osm-uptodate"
-version = "1.7"
+version = "1.8"
 description = "Find outdated nodes in OpenStreetMap"
 authors = [
     {name = "Francesco Frassinelli", email = "fraph24@gmail.com"},
