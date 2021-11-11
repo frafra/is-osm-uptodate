@@ -198,7 +198,7 @@ function CustomGeoJSON({ geojson, mode, worstId, bestId, setStatistics }) {
   const geojsonRef = useRef(null);
   const map = useMap();
   useEffect(() => {
-    if (geojsonRef.current) {
+    if (geojsonRef.current && worstId && bestId) {
       const stats = {
         worstNode: {
           label: modes[mode].worstLabel,
@@ -216,6 +216,8 @@ function CustomGeoJSON({ geojson, mode, worstId, bestId, setStatistics }) {
         stats[key].marker.map = map;
       });
       setStatistics(stats);
+    } else {
+      setStatistics({});
     }
   }, [geojson, mode, geojsonRef.current]);
 
@@ -240,13 +242,17 @@ function Map(props) {
   if (!(zoom && lon && lat)) [zoom, lon, lat] = defaultLocation;
   const [colormap, worstId, worstPretty, bestId, bestPretty] = useMemo(() => {
     const colormap = {};
+    const { getValue } = modes[props.mode];
     let worst = modes[props.mode].defaultValue;
     let worstId = null;
     let best = modes[props.mode].defaultValue;
     let bestId = null;
+    let values = [];
     if (props.geojson) {
       const { getValue } = modes[props.mode];
-      const values = props.geojson.features.map((feature) => getValue(feature));
+      values = props.geojson.features.map((feature) => getValue(feature));
+    }
+    if (values.length > 0) {
       const lowest = Math.min(...values);
       const highest = Math.max(...values);
       const { inverted } = modes[props.mode];
