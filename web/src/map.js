@@ -41,18 +41,24 @@ const modes = {
     getValue: (feature) => new Date(feature.properties.lastedit).getTime(),
     prettyValue: (date) => new Date(date).toISOString().slice(0, 10),
     inverted: false,
+    worstLabel: 'least recently updated',
+    bestLabel: 'most recently updated',
   },
   creation: {
     defaultValue: new Date().getTime(),
     getValue: (feature) => new Date(feature.properties.created).getTime(),
     prettyValue: (date) => new Date(date).toISOString().slice(0, 10),
     inverted: false,
+    worstLabel: 'oldest',
+    bestLabel: 'newest',
   },
   revisions: {
     defaultValue: 1,
     getValue: (feature) => feature.properties.version,
     prettyValue: (value) => value,
     inverted: false,
+    worstLabel: 'fewest revisions',
+    bestLabel: 'most revisions',
   },
   frequency: {
     defaultValue: 0,
@@ -65,6 +71,8 @@ const modes = {
       return `every ${years} year(s)`;
     },
     inverted: true,
+    worstLabel: 'least frequently updated',
+    bestLabel: 'most frequently updated',
   },
 };
 
@@ -193,11 +201,11 @@ function CustomGeoJSON({ geojson, mode, worstId, bestId, setStatistics }) {
     if (geojsonRef.current) {
       const stats = {
         worstNode: {
-          label: 'Worst node',
+          label: modes[mode].worstLabel,
           osmid: worstId,
         },
-        besttNode: {
-          label: 'Best node',
+        bestNode: {
+          label: modes[mode].bestLabel,
           osmid: bestId,
         },
       };
