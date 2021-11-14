@@ -101,6 +101,7 @@ def getData():
         for key, value in generateHeaders(referer).items():
             req.add_header(key, value)
         with urllib.request.urlopen(req) as resp_gzipped:
+            yield ""  # Connection with ohsome API worked
             resp = gzip.GzipFile(fileobj=resp_gzipped)
             slicer = JsonSlicer(resp, ("features", None))
             yield '{"type": "FeatureCollection", "features": ['
@@ -135,11 +136,24 @@ def getData():
             ":", ""
         )
     )
-    return app.response_class(
-        generate(),
-        mimetype="application/json",
-        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
-    )
+    generated = generate()
+    try:
+        next(generated)  # peek
+    except urllib.error.HTTPError as error:
+        if error.code == 503:
+            return "ohsome", error.code
+        else:
+            return error.reason, error.code
+    except Exception:
+        return "", 500
+    else:
+        return app.response_class(
+            generated,
+            mimetype="application/json",
+            headers={
+                "Content-Disposition": f'attachment; filename="{filename}"'
+            },
+        )
 
 
 @app.route("/")
