@@ -26,15 +26,26 @@ function App() {
         if (filter.trim().length > 0) url += `&filter=${filter}`;
         setBoundsLoaded(bounds);
         fetch(url)
-          .then((response) => response.json())
+          .then((response) => {
+            if (response.ok) {
+              return response.json();
+            }
+            return response.text().then((text) => {
+              throw new Error(text);
+            });
+          })
           .then((parsed) => {
             setGeojson(parsed);
             setDownloadLink(url);
             setState(states.LOADED);
           })
           .catch((error) => {
-            console.log(error);
-            setState(states.ERROR);
+            if (error.message === 'ohsome') {
+              setState(states.ERROR_OHSOME);
+            } else {
+              console.log(error);
+              setState(states.ERROR);
+            }
           });
         break;
       case states.LOADED:

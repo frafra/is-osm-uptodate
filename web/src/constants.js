@@ -8,4 +8,5 @@ export const states = {
   LOADING: 'loading',
   LOADED: 'loaded',
   ERROR: 'error',
+  ERROR_OHSOME: 'error_ohsome',
 };
