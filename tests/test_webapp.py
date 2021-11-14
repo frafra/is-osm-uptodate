@@ -10,7 +10,9 @@ class TestWebapp(BaseCase):
     def test_open_home(self):
         self.set_window_size("768", "432")
         self.open(URL)
-        self.assert_text("Worst node", timeout=settings.EXTREME_TIMEOUT)
+        self.assert_text(
+            "least recently updated", timeout=settings.EXTREME_TIMEOUT
+        )
 
     def test_js_errors(self):
         self.test_open_home()
