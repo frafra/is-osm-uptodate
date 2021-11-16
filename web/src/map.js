@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef } from 'react';
+import ReactDOMServer from 'react-dom/server';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
@@ -127,20 +128,32 @@ function GetBounds({ setBounds }) {
   return null;
 }
 
-function generatePopup(feature) {
-  const position = location.hash.substr(1);
+function generatePopup(feature, event) {
   const type = feature.geometry.type === 'Point' ? 'node' : 'way';
-  const popup = `
-    <b>Last edit</b>: ${feature.properties.lastedit}<br>
-    <b>Created at</b>: ${feature.properties.created}<br>
-    <b>Current version</b>: ${feature.properties.version}<br>
-    <div style="text-align: center">
-      <a href="https://www.openstreetmap.org/edit?${type}=${feature.properties.id}#map=${position}" target="_blank">Edit <a> |
-      <a href="https://www.openstreetmap.org/${type}/${feature.properties.id}/history" target="_blank">History</a> |
-      <a href="https://www.openstreetmap.org/${type}/${feature.properties.id}" target="_blank">Details<a>
-    </div>
-  `;
-  return popup;
+  const base = 'https://www.openstreetmap.org';
+  return ReactDOMServer.renderToString(
+    <>
+      <b>Last edit</b>: {feature.properties.lastedit}
+      <br />
+      <b>Created at</b>: {feature.properties.created}
+      <br />
+      <b>Current version</b>: {feature.properties.version}
+      <br />
+      <div className="text-center">
+        <a href="{base}/edit?{type}={feature.properties.id}" target="_blank">
+          Edit
+        </a>
+        {' | '}
+        <a href="{base}/{type}/{feature.properties.id}/history" target="_blank">
+          History
+        </a>
+        {' | '}
+        <a href="{base}/{type}/{feature.properties.id}" target="_blank">
+          Details
+        </a>
+      </div>
+    </>
+  );
 }
 
 function pointToLayer(geoJsonPoint, latlng) {
@@ -154,7 +167,7 @@ function pointToLayer(geoJsonPoint, latlng) {
     fillOpacity: 1,
   });
   circle.osmid = geoJsonPoint.properties.id;
-  circle.bindPopup(generatePopup(geoJsonPoint));
+  circle.bindPopup(generatePopup.bind(null, geoJsonPoint));
   return circle;
 }
 
