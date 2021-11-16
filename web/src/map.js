@@ -3,6 +3,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
 import {
+  AttributionControl,
   MapContainer,
   TileLayer,
   CircleMarker,
@@ -292,11 +293,13 @@ function Map(props) {
         // https://github.com/PaulLeCam/react-leaflet/issues/46
         map.onload = updateBounds(map, props.setBounds);
       }}
+      attributionControl={false}
     >
       <TileLayer
         attribution={customAttribution}
         url={tileURL}
         maxZoom={maxZoom}
+        prefix={false}
       />
       <GetBounds setBounds={props.setBounds} />
       {props.boundsLoaded && (
@@ -326,6 +329,7 @@ function Map(props) {
         bestPretty={bestPretty}
         setColor={setColor}
       />
+      <AttributionControl position="bottomright" prefix="" />
     </MapContainer>
   );
 }
