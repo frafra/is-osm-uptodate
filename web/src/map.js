@@ -128,32 +128,75 @@ function GetBounds({ setBounds }) {
   return null;
 }
 
-function generatePopup(feature, event) {
+function generatePopup(feature, marker) {
   const type = feature.geometry.type === 'Point' ? 'node' : 'way';
   const base = 'https://www.openstreetmap.org';
-  return ReactDOMServer.renderToString(
-    <>
-      <b>Last edit</b>: {feature.properties.lastedit}
-      <br />
-      <b>Created at</b>: {feature.properties.created}
-      <br />
-      <b>Current version</b>: {feature.properties.version}
-      <br />
-      <div className="text-center">
-        <a href="{base}/edit?{type}={feature.properties.id}" target="_blank">
-          Edit
-        </a>
-        {' | '}
-        <a href="{base}/{type}/{feature.properties.id}/history" target="_blank">
-          History
-        </a>
-        {' | '}
-        <a href="{base}/{type}/{feature.properties.id}" target="_blank">
-          Details
-        </a>
-      </div>
-    </>
-  );
+  fetch(
+    `https://www.openstreetmap.org/api/0.6/${type}/${feature.properties.id}.json`
+  )
+    .then((response) => {
+      return response.json();
+    })
+    .then((parsed) => {
+      let node = parsed.elements[0];
+      console.log(node);
+      marker.setPopupContent(
+        ReactDOMServer.renderToString(
+          <>
+            <b>Last edit</b>: {feature.properties.lastedit}
+            <br />
+            <b>Created at</b>: {feature.properties.created}
+            <br />
+            <b>Current version</b>: {feature.properties.version}
+            <br />
+            <b>Attributes</b>:
+            <ul>
+              {Object.keys(node.tags).map((key) => (
+                <li>
+                  {key}: {node.tags[key]}
+                </li>
+              ))}
+            </ul>
+            <div className="text-center">
+              <a
+                href="{base}/edit?{type}={feature.properties.id}"
+                target="_blank"
+              >
+                Edit
+              </a>
+              {' | '}
+              <a
+                href="{base}/{type}/{feature.properties.id}/history"
+                target="_blank"
+              >
+                History
+              </a>
+              {' | '}
+              <a href="{base}/{type}/{feature.properties.id}" target="_blank">
+                Details
+              </a>
+            </div>
+          </>
+        )
+      );
+    })
+    .catch((error) => {
+      marker.setPopupContent(
+        ReactDOMServer.renderToString(
+          <>
+            <p>Something went wrong with OSM API!</p>
+            <p>
+              Please try again later or{' '}
+              <a href="https://github.com/frafra/is-osm-uptodate/issues/new/choose">
+                open a ticket
+              </a>
+              !
+            </p>
+          </>
+        )
+      );
+    });
+  return ReactDOMServer.renderToString(<div className="spinner-border" />);
 }
 
 function pointToLayer(geoJsonPoint, latlng) {
