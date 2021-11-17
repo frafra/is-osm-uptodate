@@ -139,7 +139,6 @@ function generatePopup(feature, marker) {
     })
     .then((parsed) => {
       let node = parsed.elements[0];
-      console.log(node);
       marker.setPopupContent(
         ReactDOMServer.renderToString(
           <>
@@ -149,14 +148,18 @@ function generatePopup(feature, marker) {
             <br />
             <b>Current version</b>: {feature.properties.version}
             <br />
-            <b>Attributes</b>:
-            <ul>
-              {Object.keys(node.tags).map((key) => (
-                <li>
-                  {key}: {node.tags[key]}
-                </li>
-              ))}
-            </ul>
+            {node.tags && (
+              <>
+                <b>Attributes</b>:
+                <ul>
+                  {Object.keys(node.tags).map((key) => (
+                    <li>
+                      {key}: {node.tags[key]}
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
             <div className="text-center">
               <a
                 href="{base}/edit?{type}={feature.properties.id}"
@@ -181,6 +184,7 @@ function generatePopup(feature, marker) {
       );
     })
     .catch((error) => {
+      console.log(error);
       marker.setPopupContent(
         ReactDOMServer.renderToString(
           <>
