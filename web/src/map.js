@@ -128,12 +128,11 @@ function GetBounds({ setBounds }) {
   return null;
 }
 
+const osm = 'https://www.openstreetmap.org';
+const wiki = 'https://wiki.openstreetmap.org/wiki';
 function generatePopup(feature, marker) {
   const type = feature.geometry.type === 'Point' ? 'node' : 'way';
-  const base = 'https://www.openstreetmap.org';
-  fetch(
-    `https://www.openstreetmap.org/api/0.6/${type}/${feature.properties.id}.json`
-  )
+  fetch(`${osm}/api/0.6/${type}/${feature.properties.id}.json`)
     .then((response) => {
       return response.json();
     })
@@ -153,8 +152,17 @@ function generatePopup(feature, marker) {
                 <b>Attributes</b>:
                 <ul>
                   {Object.keys(node.tags).map((key) => (
-                    <li>
-                      {key}: {node.tags[key]}
+                    <li key={key}>
+                      <a href={`${wiki}/Key:${key}`} target="_blank">
+                        {key}
+                      </a>
+                      {': '}
+                      <a
+                        href={`${wiki}/Tag:${key}%3D${node.tags[key]}`}
+                        target="_blank"
+                      >
+                        {node.tags[key]}
+                      </a>
                     </li>
                   ))}
                 </ul>
@@ -162,20 +170,23 @@ function generatePopup(feature, marker) {
             )}
             <div className="text-center">
               <a
-                href="{base}/edit?{type}={feature.properties.id}"
+                href={`${osm}/edit?${type}=${feature.properties.id}`}
                 target="_blank"
               >
                 Edit
               </a>
               {' | '}
               <a
-                href="{base}/{type}/{feature.properties.id}/history"
+                href={`${osm}/${type}/${feature.properties.id}/history`}
                 target="_blank"
               >
                 History
               </a>
               {' | '}
-              <a href="{base}/{type}/{feature.properties.id}" target="_blank">
+              <a
+                href={`${osm}/${type}/${feature.properties.id}`}
+                target="_blank"
+              >
                 Details
               </a>
             </div>
