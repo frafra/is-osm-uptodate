@@ -10,3 +10,36 @@ export const states = {
   ERROR: 'error',
   ERROR_OHSOME: 'error_ohsome',
 };
+
+// prettier-ignore
+export const valuesBlacklist = new RegExp (''
+  + '^('
+  +  '('
+  +   '(.*_)?name'
+  +   '|addr'
+  +   '|brand'
+  +   '|capacity'
+  +   '|comment'
+  +   '|contact'
+  +   '|email'
+  +   '|fax'
+  +   '|fixme'
+  +   '|layer'
+  +   '|level'
+  +   '|mapillary'
+  +   '|network'
+  +   '|opening_hours'
+  +   '|operator'
+  +   '|phone'
+  +   '|(route_)?ref'
+  +   '|source'
+  +   '|species'
+  +   '|survey'
+  +   '|website'
+  +  ')(:.*)?'
+  + ')|('
+  +  '.*:('
+  +   'wiki(data|pedia)'
+  +  ')'
+  + ')$'
+);

@@ -28,6 +28,7 @@ import {
   tileURL,
   maxZoom,
   defaultLocation,
+  valuesBlacklist,
 } from './constants';
 
 import './map.css';
@@ -157,12 +158,16 @@ function generatePopup(feature, marker) {
                         {key}
                       </a>
                       {': '}
-                      <a
-                        href={`${wiki}/Tag:${key}%3D${node.tags[key]}`}
-                        target="_blank"
-                      >
-                        {node.tags[key]}
-                      </a>
+                      {key.match(valuesBlacklist) ? (
+                        <>{node.tags[key]}</>
+                      ) : (
+                        <a
+                          href={`${wiki}/Tag:${key}%3D${node.tags[key]}`}
+                          target="_blank"
+                        >
+                          {node.tags[key]}
+                        </a>
+                      )}
                     </li>
                   ))}
                 </ul>
