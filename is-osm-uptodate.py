@@ -15,6 +15,7 @@ from jsonslicer import JsonSlicer
 API = "https://api.ohsome.org/v1/elementsFullHistory/geometry"
 METADATA = "https://api.ohsome.org/v1/metadata"
 CACHE_REFRESH = 60 * 60 * 24
+API_OSM = "https://www.openstreetmap.org/api/0.6"
 
 
 def generateHeaders(referer):
@@ -154,6 +155,22 @@ def getData():
                 "Content-Disposition": f'attachment; filename="{filename}"'
             },
         )
+
+
+@app.route("/api/getFeature")
+def getFeature():
+    feature_type = flask.request.args.get(
+        "feature_type", default="node", type=str
+    )
+    feature_id = flask.request.args.get("feature_id", type=int)
+    referer = flask.request.headers.get("REFERER", "http://localhost:8000/")
+    request = urllib.request.Request(
+        f"{API_OSM}/{feature_type}/{feature_id}.json",
+        headers=generateHeaders(referer),
+    )
+    with urllib.request.urlopen(request) as resp_gzipped:
+        resp = gzip.GzipFile(fileobj=resp_gzipped)
+        return resp.read()
 
 
 @app.route("/")

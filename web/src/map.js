@@ -133,7 +133,7 @@ const osm = 'https://www.openstreetmap.org';
 const wiki = 'https://wiki.openstreetmap.org/wiki';
 function generatePopup(feature, marker) {
   const type = feature.geometry.type === 'Point' ? 'node' : 'way';
-  fetch(`${osm}/api/0.6/${type}/${feature.properties.id}.json`)
+  fetch(`/api/getFeature?feature_type=${type}&feature_id=${feature.properties.id}`)
     .then((response) => {
       return response.json();
     })
