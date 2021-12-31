@@ -27,7 +27,7 @@
     "react-leaflet-markercluster": "git+https://github.com/frafra/react-leaflet-markercluster.git#add-updateElement"
   },
   "devDependencies": {
-    "@babel/core": "^7.16.0",
+    "@babel/core": "^7.16.7",
     "@babel/preset-env": "^7.16.0",
     "@babel/preset-react": "^7.16.0",
     "babel-eslint": "^10.1.0",
