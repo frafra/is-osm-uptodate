@@ -12,7 +12,6 @@ dependencies = [
     "uWSGI<3.0.0,>=2.0.19",
 ]
 requires-python = ">=3.8,<4.0"
-dynamic = ["classifiers"]
 license = {text = "AGPLv3"}
 
 [project.optional-dependencies]
