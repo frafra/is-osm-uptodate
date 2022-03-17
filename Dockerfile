@@ -1,4 +1,4 @@
-FROM python:3.10.2-bullseye AS apt
+FROM python:3.11.0a6-bullseye AS apt
 LABEL maintainer="fraph24@gmail.com"
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update
