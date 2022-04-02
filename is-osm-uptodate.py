@@ -2,6 +2,7 @@
 
 __version__ = "1.9"
 
+import collections
 import datetime
 import gzip
 import time
@@ -9,13 +10,26 @@ import urllib.parse
 import urllib.request
 
 import flask
+import mercantile
 import simplejson as json
 from jsonslicer import JsonSlicer
 
 API = "https://api.ohsome.org/v1/elementsFullHistory/geometry"
 METADATA = "https://api.ohsome.org/v1/metadata"
 CACHE_REFRESH = 60 * 60 * 24
+Z_TARGET = 15
 API_OSM = "https://www.openstreetmap.org/api/0.6"
+DEFAULT_FILTER = "type:node"
+STORAGE_SOFT_LIMIT = 50
+
+storage = collections.defaultdict(list)
+
+
+def store(processed):
+    lon, lat = processed["geometry"]["coordinates"]
+    tile = mercantile.bounding_tile(lon, lat, lon, lat)
+    quadkey = mercantile.quadkey(tile)[:Z_TARGET]
+    storage[quadkey].append(processed)
 
 
 def generateHeaders(referer):
@@ -58,7 +72,7 @@ def process(group, end):
 
 def process_group(group, end):
     if processed := process(group, end):
-        return json.dumps(processed, use_decimal=True)
+        return processed
 
 
 def timestamp_shortener(timestamp):
@@ -71,45 +85,102 @@ def timestamp_shortener(timestamp):
     )
 
 
+def bbox_tiles(bbox, z_target, *tiles):
+    if not tiles:
+        tile = mercantile.bounding_tile(*bbox)
+        while tile.z > z_target:
+            tile = mercantile.parent(tile)
+        tiles = (tile,)
+    for tile in tiles:
+        bounds = mercantile.bounds(tile)
+        if (
+            bounds.east < bbox.left
+            or bbox.right < bounds.west
+            or bounds.north < bbox.bottom
+            or bbox.top < bounds.south
+        ):
+            continue
+        if tile.z >= z_target:
+            yield tile
+        else:
+            yield from bbox_tiles(bbox, z_target, *mercantile.children(tile))
+
+
+def feature_in_bbox(bbox, feature):
+    lon, lat = feature["geometry"]["coordinates"]
+    return bbox.left <= lon <= bbox.right and bbox.bottom <= lat <= bbox.top
+
+
+def stream_to_processed(resp):
+    slicer = JsonSlicer(resp, ("features", None))
+    group = []
+    for feature in slicer:
+        osmid = feature["properties"]["@osmId"]
+        if len(group) == 0:
+            group.append(feature)
+        elif group[0]["properties"]["@osmId"] == osmid:
+            group.append(feature)
+        else:
+            if processed := process_group(group, end):
+                yield processed
+            group = [feature]
+    if len(group) > 0:
+        if processed := process_group(group, end):
+            yield processed
+
+
 def generate(bbox, start, end, filters, referer):
-    params = urllib.parse.urlencode(
-        {
-            "bboxes": ",".join(bbox),
-            "properties": "metadata",
-            "showMetadata": "true",
-            "time": f"{start},{end}",
-            "filter": " and ".join(filter(None, filters)),
-        }
-    )
-    req = urllib.request.Request(API + "?" + params)
-    for key, value in generateHeaders(referer).items():
-        req.add_header(key, value)
-    with urllib.request.urlopen(req) as resp_gzipped:
-        yield ""  # Connection with ohsome API worked
-        resp = gzip.GzipFile(fileobj=resp_gzipped)
-        slicer = JsonSlicer(resp, ("features", None))
-        yield '{"type": "FeatureCollection", "features": ['
-        first = True
-        group = []
-        for feature in slicer:
-            osmid = feature["properties"]["@osmId"]
-            if len(group) == 0:
-                group.append(feature)
-            elif group[0]["properties"]["@osmId"] == osmid:
-                group.append(feature)
-            else:
-                if processed := process_group(group, end):
+    bbox = mercantile.Bbox(*bbox)
+    cached, new_bboxes = [], []
+    for tile in bbox_tiles(bbox, Z_TARGET):
+        quadkey = mercantile.quadkey(tile)
+        if quadkey in storage and not filters:
+            cached.append(quadkey)
+        else:
+            new_bboxes.append(",".join(map(str, mercantile.bounds(tile))))
+    json_start = '{"type": "FeatureCollection", "features": ['
+    first = True
+    if new_bboxes:
+        filters = [filters, DEFAULT_FILTER]
+        params = urllib.parse.urlencode(
+            {
+                "bboxes": "|".join(new_bboxes),
+                "properties": "metadata",
+                "showMetadata": "true",
+                "time": f"{start},{end}",
+                "filter": " and ".join(filter(None, filters)),
+            }
+        )
+        req = urllib.request.Request(API + "?" + params)
+        for key, value in generateHeaders(referer).items():
+            req.add_header(key, value)
+        with urllib.request.urlopen(req) as resp_gzipped:
+            yield ""  # Connection with ohsome API worked
+            resp = gzip.GzipFile(fileobj=resp_gzipped)
+            yield json_start
+            for processed in stream_to_processed(resp):
+                store(processed)
+                if feature_in_bbox(bbox, processed):
                     if first:
                         first = False
                     else:
                         yield ","
-                    yield processed
-                group = [feature]
-        if len(group) > 0:
-            if processed := process_group(group, end):
-                if not first:
+                    processed_json = json.dumps(processed, use_decimal=True)
+                    yield processed_json
+    else:
+        yield ""  # signal
+        yield json_start
+    for quadkey in cached:
+        for processed in storage[quadkey]:
+            if feature_in_bbox(bbox, processed):
+                if first:
+                    first = False
+                else:
                     yield ","
-                yield processed
+                processed_json = json.dumps(processed, use_decimal=True)
+                yield processed_json
+    while len(storage) > STORAGE_SOFT_LIMIT:
+        storage.popitem()
     yield "]}"
 
 
@@ -118,13 +189,18 @@ def getData():
     # Round to 7 decimal https://wiki.openstreetmap.org/wiki/Node#Structure
     bbox = []
     for arg in ("minx", "miny", "maxx", "maxy"):
-        bbox.append(str(round(float(flask.request.args.get(arg)), 7)))
+        bbox.append(round(float(flask.request.args.get(arg)), 7))
     referer = flask.request.headers.get("REFERER", "http://localhost:8000/")
-    filters = [flask.request.args.get("filter"), "type:node"]
+    filters = flask.request.args.get("filter")
     global featuresTime, start, end
     if time.time() - featuresTime > CACHE_REFRESH or not start or not end:
         metadata = json.load(urllib.request.urlopen(METADATA))
         temporal_extent = metadata["extractRegion"]["temporalExtent"]
+        if (
+            start != temporal_extent["fromTimestamp"]
+            or end != temporal_extent["toTimestamp"]
+        ):
+            storage.clear()
         start = temporal_extent["fromTimestamp"]
         end = temporal_extent["toTimestamp"]
         end = end.rstrip("Z") + ":00Z"  # WORKAROUND
@@ -132,7 +208,7 @@ def getData():
 
     start_short = timestamp_shortener(start)
     end_short = timestamp_shortener(end)
-    bbox_str = "_".join(bbox)
+    bbox_str = "_".join(map(str, bbox))
     filename = (
         f"is-osm-uptodate_{bbox_str}_{start_short}_{end_short}.json".replace(
             ":", ""
