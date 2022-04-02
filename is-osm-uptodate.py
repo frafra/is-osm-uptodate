@@ -71,6 +71,48 @@ def timestamp_shortener(timestamp):
     )
 
 
+def generate(bbox, start, end, filters, referer):
+    params = urllib.parse.urlencode(
+        {
+            "bboxes": ",".join(bbox),
+            "properties": "metadata",
+            "showMetadata": "true",
+            "time": f"{start},{end}",
+            "filter": " and ".join(filter(None, filters)),
+        }
+    )
+    req = urllib.request.Request(API + "?" + params)
+    for key, value in generateHeaders(referer).items():
+        req.add_header(key, value)
+    with urllib.request.urlopen(req) as resp_gzipped:
+        yield ""  # Connection with ohsome API worked
+        resp = gzip.GzipFile(fileobj=resp_gzipped)
+        slicer = JsonSlicer(resp, ("features", None))
+        yield '{"type": "FeatureCollection", "features": ['
+        first = True
+        group = []
+        for feature in slicer:
+            osmid = feature["properties"]["@osmId"]
+            if len(group) == 0:
+                group.append(feature)
+            elif group[0]["properties"]["@osmId"] == osmid:
+                group.append(feature)
+            else:
+                if processed := process_group(group, end):
+                    if first:
+                        first = False
+                    else:
+                        yield ","
+                    yield processed
+                group = [feature]
+        if len(group) > 0:
+            if processed := process_group(group, end):
+                if not first:
+                    yield ","
+                yield processed
+    yield "]}"
+
+
 @app.route("/api/getData")
 def getData():
     # Round to 7 decimal https://wiki.openstreetmap.org/wiki/Node#Structure
@@ -88,47 +130,6 @@ def getData():
         end = end.rstrip("Z") + ":00Z"  # WORKAROUND
         featuresTime = time.time()
 
-    def generate():
-        params = urllib.parse.urlencode(
-            {
-                "bboxes": ",".join(bbox),
-                "properties": "metadata",
-                "showMetadata": "true",
-                "time": f"{start},{end}",
-                "filter": " and ".join(filter(None, filters)),
-            }
-        )
-        req = urllib.request.Request(API + "?" + params)
-        for key, value in generateHeaders(referer).items():
-            req.add_header(key, value)
-        with urllib.request.urlopen(req) as resp_gzipped:
-            yield ""  # Connection with ohsome API worked
-            resp = gzip.GzipFile(fileobj=resp_gzipped)
-            slicer = JsonSlicer(resp, ("features", None))
-            yield '{"type": "FeatureCollection", "features": ['
-            first = True
-            group = []
-            for feature in slicer:
-                osmid = feature["properties"]["@osmId"]
-                if len(group) == 0:
-                    group.append(feature)
-                elif group[0]["properties"]["@osmId"] == osmid:
-                    group.append(feature)
-                else:
-                    if processed := process_group(group, end):
-                        if first:
-                            first = False
-                        else:
-                            yield ","
-                        yield processed
-                    group = [feature]
-            if len(group) > 0:
-                if processed := process_group(group, end):
-                    if not first:
-                        yield ","
-                    yield processed
-        yield "]}"
-
     start_short = timestamp_shortener(start)
     end_short = timestamp_shortener(end)
     bbox_str = "_".join(bbox)
@@ -137,7 +138,7 @@ def getData():
             ":", ""
         )
     )
-    generated = generate()
+    generated = generate(bbox, start, end, filters, referer)
     try:
         next(generated)  # peek
     except urllib.error.HTTPError as error:
