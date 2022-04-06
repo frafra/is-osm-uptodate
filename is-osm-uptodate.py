@@ -2,8 +2,8 @@
 
 __version__ = "1.9"
 
-import collections
 import datetime
+import functools
 import gzip
 import time
 import urllib.parse
@@ -21,15 +21,6 @@ Z_TARGET = 15
 API_OSM = "https://www.openstreetmap.org/api/0.6"
 DEFAULT_FILTER = "type:node"
 STORAGE_SOFT_LIMIT = 50
-
-storage = collections.defaultdict(list)
-
-
-def store(processed):
-    lon, lat = processed["geometry"]["coordinates"]
-    tile = mercantile.bounding_tile(lon, lat, lon, lat)
-    quadkey = mercantile.quadkey(tile)[:Z_TARGET]
-    storage[quadkey].append(processed)
 
 
 def generateHeaders(referer):
@@ -129,58 +120,43 @@ def stream_to_processed(resp):
             yield processed
 
 
-def generate(bbox, start, end, filters, referer):
+@functools.lru_cache(maxsize=STORAGE_SOFT_LIMIT)
+def get_tile_features(quadkey, start, end, *filters, **headers):
+    bbox = mercantile.bounds(mercantile.quadkey_to_tile(quadkey))
+    params = urllib.parse.urlencode(
+        {
+            "bboxes": "|".join(map(str, bbox)),
+            "properties": "metadata",
+            "showMetadata": "true",
+            "time": f"{start},{end}",
+            "filter": " and ".join(filter(None, filters)),
+        }
+    )
+    req = urllib.request.Request(API + "?" + params)
+    for key, value in headers.items():
+        req.add_header(key, value)
+    with urllib.request.urlopen(req) as resp_gzipped:
+        resp = gzip.GzipFile(fileobj=resp_gzipped)
+        return list(stream_to_processed(resp))
+
+
+def generate(bbox, start, end, *filters, **headers):
     bbox = mercantile.Bbox(*bbox)
-    cached, new_bboxes = [], []
+    yield ""  # signal
+    yield '{"type": "FeatureCollection", "features": ['
+    first = True
     for tile in bbox_tiles(bbox, Z_TARGET):
         quadkey = mercantile.quadkey(tile)
-        if quadkey in storage and not filters:
-            cached.append(quadkey)
-        else:
-            new_bboxes.append(",".join(map(str, mercantile.bounds(tile))))
-    json_start = '{"type": "FeatureCollection", "features": ['
-    first = True
-    if new_bboxes:
-        filters = [filters, DEFAULT_FILTER]
-        params = urllib.parse.urlencode(
-            {
-                "bboxes": "|".join(new_bboxes),
-                "properties": "metadata",
-                "showMetadata": "true",
-                "time": f"{start},{end}",
-                "filter": " and ".join(filter(None, filters)),
-            }
-        )
-        req = urllib.request.Request(API + "?" + params)
-        for key, value in generateHeaders(referer).items():
-            req.add_header(key, value)
-        with urllib.request.urlopen(req) as resp_gzipped:
-            yield ""  # Connection with ohsome API worked
-            resp = gzip.GzipFile(fileobj=resp_gzipped)
-            yield json_start
-            for processed in stream_to_processed(resp):
-                store(processed)
-                if feature_in_bbox(bbox, processed):
-                    if first:
-                        first = False
-                    else:
-                        yield ","
-                    processed_json = json.dumps(processed, use_decimal=True)
-                    yield processed_json
-    else:
-        yield ""  # signal
-        yield json_start
-    for quadkey in cached:
-        for processed in storage[quadkey]:
-            if feature_in_bbox(bbox, processed):
-                if first:
+        for feature in get_tile_features(
+            quadkey, start, end, *filters, **headers
+        ):
+            if feature_in_bbox(bbox, feature):
+                feature_json = json.dumps(feature, use_decimal=True)
+                if not first:
+                    yield ", "
+                if first and feature_json:
                     first = False
-                else:
-                    yield ","
-                processed_json = json.dumps(processed, use_decimal=True)
-                yield processed_json
-    while len(storage) > STORAGE_SOFT_LIMIT:
-        storage.popitem()
+                yield feature_json
     yield "]}"
 
 
@@ -191,7 +167,9 @@ def getData():
     for arg in ("minx", "miny", "maxx", "maxy"):
         bbox.append(round(float(flask.request.args.get(arg)), 7))
     referer = flask.request.headers.get("REFERER", "http://localhost:8000/")
+    headers = generateHeaders(referer)
     filters = flask.request.args.get("filter")
+    filters = [filters, DEFAULT_FILTER]
     global featuresTime, start, end
     if time.time() - featuresTime > CACHE_REFRESH or not start or not end:
         metadata = json.load(urllib.request.urlopen(METADATA))
@@ -200,12 +178,11 @@ def getData():
             start != temporal_extent["fromTimestamp"]
             or end != temporal_extent["toTimestamp"]
         ):
-            storage.clear()
+            pass  # invalidate cache?
         start = temporal_extent["fromTimestamp"]
         end = temporal_extent["toTimestamp"]
         end = end.rstrip("Z") + ":00Z"  # WORKAROUND
         featuresTime = time.time()
-
     start_short = timestamp_shortener(start)
     end_short = timestamp_shortener(end)
     bbox_str = "_".join(map(str, bbox))
@@ -214,7 +191,7 @@ def getData():
             ":", ""
         )
     )
-    generated = generate(bbox, start, end, filters, referer)
+    generated = generate(bbox, start, end, *filters, **headers)
     try:
         next(generated)  # peek
     except urllib.error.HTTPError as error:
