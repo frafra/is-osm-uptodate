@@ -3,8 +3,8 @@
 __version__ = "1.9"
 
 import datetime
-import functools
 import gzip
+import os
 import time
 import urllib.parse
 import urllib.request
@@ -13,6 +13,7 @@ import flask
 import mercantile
 import simplejson as json
 from jsonslicer import JsonSlicer
+from walrus import Database
 
 API = "https://api.ohsome.org/v1/elementsFullHistory/geometry"
 METADATA = "https://api.ohsome.org/v1/metadata"
@@ -20,7 +21,6 @@ CACHE_REFRESH = 60 * 60 * 24
 Z_TARGET = 15
 API_OSM = "https://www.openstreetmap.org/api/0.6"
 DEFAULT_FILTER = "type:node"
-STORAGE_SOFT_LIMIT = 50
 
 
 def generateHeaders(referer):
@@ -35,30 +35,51 @@ featuresTime = time.time()
 start, end = None, None
 
 app = flask.Flask(__name__, static_folder="web/dist", static_url_path="")
+db = Database(host=os.environ.get("REDIS_HOST", "localhost"))
 
 
 def process(group, end):
     first, last = group[0], group[-1]
     if last["properties"]["@validTo"] != end:
         return  # feature has been deleted
-    feature = {
-        "type": "Feature",
-        "geometry": last["geometry"],
-        "properties": {
-            "id": first["properties"]["@osmId"].split("/")[1],
-            "created": first["properties"]["@validFrom"],
-            "lastedit": last["properties"]["@validFrom"],
-            "version": last["properties"]["@version"],
-        },
-    }
-    lastedit = datetime.datetime.strptime(
-        feature["properties"]["lastedit"], "%Y-%m-%dT%H:%M:%SZ"
+    firstedit = datetime.datetime.strptime(
+        first["properties"]["@validFrom"], "%Y-%m-%dT%H:%M:%SZ"
     )
-    now = datetime.datetime.now().utcnow()
-    feature["properties"]["average_update_days"] = (
-        now - lastedit
-    ).days / feature["properties"]["version"]
-    return feature
+    lastedit = datetime.datetime.strptime(
+        last["properties"]["@validFrom"], "%Y-%m-%dT%H:%M:%SZ"
+    )
+    average_update_days = (
+        datetime.datetime.now().utcnow() - lastedit
+    ).days / last["properties"]["@version"]
+    return (
+        last["geometry"]["coordinates"][0],
+        last["geometry"]["coordinates"][1],
+        int(first["properties"]["@osmId"].split("/")[1]),
+        firstedit.timestamp(),
+        lastedit.timestamp(),
+        last["properties"]["@version"],
+        average_update_days,
+    )
+
+
+def processed_to_geojson(processed):
+    for feature in processed:
+        yield {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [feature[0], feature[1]],
+            },
+            "properties": {
+                "id": feature[2],
+                "created": str(datetime.datetime.utcfromtimestamp(feature[3])),
+                "lastedit": str(
+                    datetime.datetime.utcfromtimestamp(feature[4])
+                ),
+                "version": feature[5],
+                "average_update_days": feature[6],
+            },
+        }
 
 
 def process_group(group, end):
@@ -120,8 +141,12 @@ def stream_to_processed(resp):
             yield processed
 
 
-@functools.lru_cache(maxsize=STORAGE_SOFT_LIMIT)
-def get_tile_features(quadkey, start, end, *filters, **headers):
+def get_tile_data(quadkey, start, end, *filters, **headers):
+    filters = " and ".join(filter(None, filters))
+    cache = db.cache()
+    cache_key = f"{quadkey}-{start}-{end}-{filters}"
+    if result := cache.get(cache_key):
+        return result
     bbox = mercantile.bounds(mercantile.quadkey_to_tile(quadkey))
     params = urllib.parse.urlencode(
         {
@@ -129,7 +154,7 @@ def get_tile_features(quadkey, start, end, *filters, **headers):
             "properties": "metadata",
             "showMetadata": "true",
             "time": f"{start},{end}",
-            "filter": " and ".join(filter(None, filters)),
+            "filter": filters,
         }
     )
     req = urllib.request.Request(API + "?" + params)
@@ -137,7 +162,17 @@ def get_tile_features(quadkey, start, end, *filters, **headers):
         req.add_header(key, value)
     with urllib.request.urlopen(req) as resp_gzipped:
         resp = gzip.GzipFile(fileobj=resp_gzipped)
-        return list(stream_to_processed(resp))
+        result = list(stream_to_processed(resp))
+    cache = cache.set(cache_key, result)
+    return result
+
+
+def get_tile_features(quadkey, start, end, *filters, **headers):
+    return list(
+        processed_to_geojson(
+            get_tile_data(quadkey, start, end, *filters, **headers)
+        )
+    )
 
 
 def generate(bbox, start, end, *filters, **headers):
@@ -233,4 +268,4 @@ def entry():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, port=8000)

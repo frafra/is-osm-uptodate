@@ -1,0 +1,23 @@
+services:
+  app:
+    build: .
+    depends_on:
+      - redis
+    environment:
+      REDIS_HOST: redis
+    ports:
+      - 8000:8000
+  redis:
+    image: docker.io/library/redis:6
+  test:
+    build:
+      context: .
+      dockerfile: tests/Dockerfile
+    profiles:
+      - test
+    depends_on:
+      - app
+    environment:
+      URL: "http://app:8000"
+    volumes:
+      - ./latest_logs/:/home/app/latest_logs/

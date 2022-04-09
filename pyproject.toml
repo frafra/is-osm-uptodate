@@ -11,6 +11,8 @@ dependencies = [
     "simplejson<4.0.0,>=3.17.2",
     "uWSGI<3.0.0,>=2.0.19",
     "mercantile>=1.2.1",
+    "redis>=4.2.2",
+    "walrus>=0.9.1",
 ]
 requires-python = ">=3.8,<4.0"
 license = {text = "AGPLv3"}
@@ -26,9 +28,9 @@ test = [
 npm = {shell = "cd web && npm ci && npm run build"}
 web = "uwsgi --ini uwsgi.ini"
 develop = "python is-osm-uptodate.py"
-docker = "./scripts/run_docker.sh"
+docker = "docker compose run app"
 test = "pytest --browser=firefox --save_screenshot tests/"
-test_docker = "./scripts/run_tests.sh"
+test_docker = "docker compose run test"
 lint = "pre-commit run --all-files"
 
 [tool.black]
