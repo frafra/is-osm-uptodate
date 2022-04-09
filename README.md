@@ -17,6 +17,7 @@ Page on OSM wiki: https://wiki.openstreetmap.org/wiki/Is_OSM_up-to-date
 - [uWSGI](https://uwsgi-docs.readthedocs.io/)
 - [npm](https://www.npmjs.com/)
 - [YAJI](https://github.com/lloyd/yajl)
+- [Redis](https://redis.io/)
 
 ## Optional
 
@@ -27,13 +28,14 @@ Page on OSM wiki: https://wiki.openstreetmap.org/wiki/Is_OSM_up-to-date
 # With Docker
 
 ```
-pdm run docker_build
 pdm run docker
 ```
 
 # Without Docker
 
 ## Setup
+
+Install Redis.
 
 Install YAJI library:
 - Debian/Ubuntu users: `apt-get install libyajl-dev`
