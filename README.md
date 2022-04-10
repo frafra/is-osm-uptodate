@@ -21,14 +21,15 @@ Page on OSM wiki: https://wiki.openstreetmap.org/wiki/Is_OSM_up-to-date
 
 ## Optional
 
-- Docker
+- [Docker](https://docs.docker.com) (with [BuiltKit](https://docs.docker.com/develop/develop-images/build_enhancements/#to-enable-buildkit-builds) enabled)
 
 # Run
 
 # With Docker
 
 ```
-pdm run docker
+pdm run docker_run
+pdm run docker_stop
 ```
 
 # Without Docker
@@ -49,7 +50,6 @@ pdm run npm # Build the web app
 ## Run
 
 ```
-chmod +x $(pdm info --packages)/bin/*
 pdm run web
 ```
 
@@ -58,13 +58,16 @@ pdm run web
 ### Ready to use
 
 ```
-docker run --publish 8000:8000 frafra/is-osm-uptodate
+pdm run docker_run
+pdm run docker_stop
 ```
 
 ### Custom image
 
 ```
-pdm run docker
+pdm run docker_build
+pdm run docker_run
+pdm run docker_stop
 ```
 
 # How to use
@@ -105,7 +108,7 @@ pdm run test
 You can also run dockerized tests:
 
 ```
-pdm run test_docker
+pdm run docker_test
 ```
 
 # Common issues

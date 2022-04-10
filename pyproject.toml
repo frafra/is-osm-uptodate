@@ -28,10 +28,12 @@ test = [
 npm = {shell = "cd web && npm ci && npm run build"}
 web = "uwsgi --ini uwsgi.ini"
 develop = "python is-osm-uptodate.py"
-docker = "docker compose run app"
 test = "pytest --browser=firefox --save_screenshot tests/"
-test_docker = "docker compose run test"
 lint = "pre-commit run --all-files"
+docker_build = "docker compose -f docker/docker-compose.yml --profile dev build"
+docker_run = "docker compose -f docker/docker-compose.yml --profile dev up"
+docker_stop = "docker compose -f docker/docker-compose.yml down"
+docker_test = "docker compose -f docker/docker-compose.yml --profile test run test"
 
 [tool.black]
 line-length = 79
