@@ -163,7 +163,7 @@ def get_tile_data(quadkey, start, end, *filters, **headers):
     with urllib.request.urlopen(req) as resp_gzipped:
         resp = gzip.GzipFile(fileobj=resp_gzipped)
         result = list(stream_to_processed(resp))
-    cache = cache.set(cache_key, result)
+    cache.set(cache_key, result)
     return result
 
 
