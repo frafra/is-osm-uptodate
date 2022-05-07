@@ -4,6 +4,7 @@ __version__ = "1.9"
 
 import datetime
 import gzip
+import io
 import os
 import time
 import urllib.parse
@@ -11,8 +12,10 @@ import urllib.request
 
 import flask
 import mercantile
+import png
 import simplejson as json
 from jsonslicer import JsonSlicer
+from matplotlib import cm
 from walrus import Database
 
 API = "https://api.ohsome.org/v1/elementsFullHistory/geometry"
@@ -22,6 +25,13 @@ Z_TARGET = 15
 API_OSM = "https://www.openstreetmap.org/api/0.6"
 DEFAULT_FILTER = "type:node"
 
+viridis = cm.get_cmap("viridis", 256)
+featuresTime = time.time()
+start, end = None, None
+
+app = flask.Flask(__name__, static_folder="web/dist", static_url_path="")
+db = Database(host=os.environ.get("REDIS_HOST", "localhost"))
+
 
 def generateHeaders(referer):
     return {
@@ -29,13 +39,6 @@ def generateHeaders(referer):
         "Referer": referer,
         "Accept-Encoding": "gzip",
     }
-
-
-featuresTime = time.time()
-start, end = None, None
-
-app = flask.Flask(__name__, static_folder="web/dist", static_url_path="")
-db = Database(host=os.environ.get("REDIS_HOST", "localhost"))
 
 
 def process(group, end):
@@ -195,16 +198,7 @@ def generate(bbox, start, end, *filters, **headers):
     yield "]}"
 
 
-@app.route("/api/getData")
-def getData():
-    # Round to 7 decimal https://wiki.openstreetmap.org/wiki/Node#Structure
-    bbox = []
-    for arg in ("minx", "miny", "maxx", "maxy"):
-        bbox.append(round(float(flask.request.args.get(arg)), 7))
-    referer = flask.request.headers.get("REFERER", "http://localhost:8000/")
-    headers = generateHeaders(referer)
-    filters = flask.request.args.get("filter")
-    filters = [filters, DEFAULT_FILTER]
+def get_updated_metadata():
     global featuresTime, start, end
     if time.time() - featuresTime > CACHE_REFRESH or not start or not end:
         metadata = json.load(urllib.request.urlopen(METADATA))
@@ -216,8 +210,96 @@ def getData():
             pass  # invalidate cache?
         start = temporal_extent["fromTimestamp"]
         end = temporal_extent["toTimestamp"]
-        end = end.rstrip("Z") + ":00Z"  # WORKAROUND
-        featuresTime = time.time()
+        end = end.rstrip("Z") + ":00Z"  # W
+    return start, end
+
+
+@app.route("/tiles/<int:z>/<int:x>/<int:y>.png")
+def tile(z, x, y):
+    tile = mercantile.Tile(x, y, z + 1)
+
+    # common
+    referer = flask.request.headers.get("REFERER", "http://localhost:8000/")
+    headers = generateHeaders(referer)
+    filters = flask.request.args.get("filter")
+    filters = [filters, DEFAULT_FILTER]
+    start, end = get_updated_metadata()
+
+    bbox = mercantile.Bbox(*mercantile.bounds(tile))
+    data = []
+    for tile in bbox_tiles(bbox, Z_TARGET):
+        quadkey = mercantile.quadkey(tile)
+        data.extend(get_tile_data(quadkey, start, end, *filters, **headers))
+
+    param = flask.request.args.get("param", "lastedit")
+    scale_min = flask.request.args.get("min")
+    scale_max = flask.request.args.get("max")
+
+    if param == "created":
+        feature_index = 5
+    elif param == "lastedit":
+        feature_index = 4
+
+    if param == "created" or param == "lastedit":
+        if not scale_min:
+            scale_min = datetime.datetime.strptime(
+                start, "%Y-%m-%dT%H:%M:%SZ"
+            ).timestamp()
+        if not scale_max:
+            scale_max = datetime.datetime.strptime(
+                end, "%Y-%m-%dT%H:%M:%SZ"
+            ).timestamp()
+    elif param == "version":
+        if not scale_min:
+            scale_min = 1
+        if not scale_max:
+            scale_max = 10
+        feature_index = 5
+    elif param == "average_update_days":
+        if not scale_min:
+            scale_min = 7
+        if not scale_max:
+            scale_max = 700
+        feature_index = 6
+    else:
+        return  # trigger error
+
+    values = []
+    for feature in data:
+        normalized = (feature[feature_index] - scale_min) / (
+            scale_max - scale_min
+        )
+        values.append(normalized)
+
+    average = sum(values) / len(values)
+    if average < 0:
+        average = 0
+    elif average > 1:
+        average = 1
+
+    tile = io.BytesIO()
+    writer = png.Writer(1, 1, greyscale=False)
+    writer.write(
+        tile, [[round(c * 255) for c in viridis(round(average * 255))[:3]]]
+    )
+    tile.seek(0)
+
+    return flask.Response(tile.read(), mimetype="image/png")
+
+
+@app.route("/api/getData")
+def getData():
+    # Round to 7 decimal https://wiki.openstreetmap.org/wiki/Node#Structure
+    bbox = []
+    for arg in ("minx", "miny", "maxx", "maxy"):
+        bbox.append(round(float(flask.request.args.get(arg)), 7))
+    # common
+    referer = flask.request.headers.get("REFERER", "http://localhost:8000/")
+    headers = generateHeaders(referer)
+    filters = flask.request.args.get("filter")
+    filters = [filters, DEFAULT_FILTER]
+    start, end = get_updated_metadata()
+
     start_short = timestamp_shortener(start)
     end_short = timestamp_shortener(end)
     bbox_str = "_".join(map(str, bbox))
