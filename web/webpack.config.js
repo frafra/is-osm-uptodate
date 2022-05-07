@@ -1,6 +1,6 @@
 const path = require('path');
 
-module.exports = {
+module.exports = (env) => { return {
   entry: './src/main.js',
   output: {
     filename: 'main.js',
@@ -10,7 +10,11 @@ module.exports = {
     static: path.resolve(__dirname, 'dist'),
     proxy: {
       '/api': {
-        target: 'http://localhost:5000',
+        target: env.BACKEND_URL || 'http://localhost:8000',
+        secure: false,
+      },
+      '/tiles': {
+        target: env.BACKEND_URL || 'http://localhost:8000',
         secure: false,
       },
     },
@@ -33,4 +37,4 @@ module.exports = {
       },
     ],
   },
-};
+}};
