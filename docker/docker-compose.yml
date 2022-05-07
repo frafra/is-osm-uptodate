@@ -13,15 +13,48 @@ services:
     build:
       context: ..
       dockerfile: docker/Dockerfile
+    command: ["pdm", "run", "flask", "run", "--host=0.0.0.0", "--port=8000"]
     profiles:
       - dev
+    depends_on:
+      - redis
+    environment:
+      REDIS_HOST: redis
+      FLASK_APP: is-osm-uptodate.py
+      FLASK_DEBUG: 1
+      FLASK_ENV: development
+    volumes:
+      - ../is-osm-uptodate.py:/home/app/is-osm-uptodate.py:ro
+      - ../uwsgi.ini:/home/app/uwsgi.ini:ro
+      - ../web:/home/app/web:ro
+    ports:
+      - 8000:8000
+  app-test:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    profiles:
       - test
     depends_on:
       - redis
     environment:
       REDIS_HOST: redis
+  app-dev-frontend:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      target: builder
+    command: ["npm", "run", "develop"]
+    profiles:
+      - dev
+    depends_on:
+      - app-dev
+    environment:
+      BACKEND_URL: http://app-dev:8000
+    volumes:
+      - ../web:/home/app/web
     ports:
-      - 8000:8000
+      - 8080:8080
   redis:
     image: docker.io/library/redis:6
   test:
@@ -31,8 +64,8 @@ services:
     profiles:
       - test
     depends_on:
-      - app-dev
+      - app-test
     environment:
-      URL: "http://app-dev:8000"
+      URL: "http://app-test:8000"
     volumes:
       - ./latest_logs/:/home/app/latest_logs/

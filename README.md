@@ -86,6 +86,14 @@ $ curl 'http://localhost:8000/api/getData?minx=9.188295196&miny=45.4635324507&ma
 
 # How to develop
 
+## With Docker
+
+```
+docker compose -f docker/docker-compose.yml --profile dev up
+```
+
+## Without Docker
+
 ```
 pipx install pdm
 pdm install --no-self
