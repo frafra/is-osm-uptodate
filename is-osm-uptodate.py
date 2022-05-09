@@ -149,25 +149,29 @@ def get_tile_data(quadkey, start, end, *filters, **headers):
     filters = " and ".join(filter(None, filters))
     cache = db.cache()
     cache_key = f"{quadkey}-{start}-{end}-{filters}"
-    if result := cache.get(cache_key):
-        return result
-    bbox = mercantile.bounds(mercantile.quadkey_to_tile(quadkey))
-    params = urllib.parse.urlencode(
-        {
-            "bboxes": "|".join(map(str, bbox)),
-            "properties": "metadata",
-            "showMetadata": "true",
-            "time": f"{start},{end}",
-            "filter": filters,
-        }
-    )
-    req = urllib.request.Request(API + "?" + params)
-    for key, value in headers.items():
-        req.add_header(key, value)
-    with urllib.request.urlopen(req) as resp_gzipped:
-        resp = gzip.GzipFile(fileobj=resp_gzipped)
-        result = list(stream_to_processed(resp))
-    cache.set(cache_key, result)
+    lock = db.lock(cache_key + ".lock", lock_id=cache_key + ".lock")
+    with lock:
+        if result := cache.get(cache_key):
+            return result
+
+        bbox = mercantile.bounds(mercantile.quadkey_to_tile(quadkey))
+        params = urllib.parse.urlencode(
+            {
+                "bboxes": "|".join(map(str, bbox)),
+                "properties": "metadata",
+                "showMetadata": "true",
+                "time": f"{start},{end}",
+                "filter": filters,
+            }
+        )
+
+        req = urllib.request.Request(API + "?" + params)
+        for key, value in headers.items():
+            req.add_header(key, value)
+        with urllib.request.urlopen(req) as resp_gzipped:
+            resp = gzip.GzipFile(fileobj=resp_gzipped)
+            result = list(stream_to_processed(resp))
+        cache.set(cache_key, result)
     return result
 
 
