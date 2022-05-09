@@ -6,6 +6,7 @@ import datetime
 import gzip
 import io
 import os
+import statistics
 import time
 import urllib.parse
 import urllib.request
@@ -231,38 +232,48 @@ def tile(z, x, y):
         quadkey = mercantile.quadkey(tile)
         data.extend(get_tile_data(quadkey, start, end, *filters, **headers))
 
-    param = flask.request.args.get("param", "lastedit")
-    scale_min = flask.request.args.get("min")
-    scale_max = flask.request.args.get("max")
+    mode = flask.request.args.get("mode", "lastedit")
+    scale_min = flask.request.args.get("scale_min")
+    scale_max = flask.request.args.get("scale_max")
+    percentile = int(flask.request.args.get("percentile", "50"))
 
-    if param == "created":
-        feature_index = 5
-    elif param == "lastedit":
+    if mode == "creation":
+        feature_index = 3
+    elif mode == "lastedit":
         feature_index = 4
 
-    if param == "created" or param == "lastedit":
+    if mode == "creation" or mode == "lastedit":
         if not scale_min:
             scale_min = datetime.datetime.strptime(
                 start, "%Y-%m-%dT%H:%M:%SZ"
             ).timestamp()
+        else:
+            scale_min = int(scale_min) / 1000
         if not scale_max:
             scale_max = datetime.datetime.strptime(
                 end, "%Y-%m-%dT%H:%M:%SZ"
             ).timestamp()
-    elif param == "version":
+        else:
+            scale_max = int(scale_max) / 1000
+    elif mode == "revisions":
         if not scale_min:
             scale_min = 1
         if not scale_max:
             scale_max = 10
         feature_index = 5
-    elif param == "average_update_days":
+    elif mode == "frequency":
         if not scale_min:
             scale_min = 7
         if not scale_max:
             scale_max = 700
         feature_index = 6
     else:
-        return  # trigger error
+        return flask.Response("Invalid param")
+
+    scale_min = float(scale_min)
+    scale_max = float(scale_max)
+    if scale_min == scale_max:
+        scale_max += 1
 
     values = []
     for feature in data:
@@ -271,16 +282,16 @@ def tile(z, x, y):
         )
         values.append(normalized)
 
-    average = sum(values) / len(values)
-    if average < 0:
-        average = 0
-    elif average > 1:
-        average = 1
+    value = statistics.quantiles(values, n=100 + 1)[percentile - 1]
+    if value < 0:
+        value = 0
+    elif value > 1:
+        value = 1
 
     tile = io.BytesIO()
     writer = png.Writer(1, 1, greyscale=False)
     writer.write(
-        tile, [[round(c * 255) for c in viridis(round(average * 255))[:3]]]
+        tile, [[round(c * 255) for c in viridis(round(value * 255))[:3]]]
     )
     tile.seek(0)
 

@@ -9,6 +9,7 @@ import {
   TileLayer,
   CircleMarker,
   GeoJSON,
+  LayersControl,
   Popup,
   Rectangle,
   useMap,
@@ -26,6 +27,7 @@ import { interpolateViridis } from 'd3-scale-chromatic';
 import {
   customAttribution,
   tileURL,
+  dataTileURL,
   maxZoom,
   defaultLocation,
   valuesBlacklist,
@@ -87,7 +89,7 @@ function applyColor() {
     style.sheet.deleteRule(0);
   }
   style.sheet.insertRule(
-    `.leaflet-tile-container { filter: grayscale(${100 - colour}%); }`,
+    `.leaflet-tile-pane > .leaflet-layer:first-of-type > .leaflet-tile-container { filter: grayscale(${100 - colour}%); }`,
     0
   );
 }
@@ -315,9 +317,10 @@ function CustomGeoJSON({ geojson, mode, worstId, bestId, setStatistics }) {
 
 function Map(props) {
   const clusterRef = useRef(null);
+  const tileRef = useRef(null);
   let [zoom, lon, lat] = document.location.hash.substr(1).split('/');
   if (!(zoom && lon && lat)) [zoom, lon, lat] = defaultLocation;
-  const [colormap, worstId, worstPretty, bestId, bestPretty] = useMemo(() => {
+  const [colormap, worstId, worst, bestId, best] = useMemo(() => {
     const colormap = {};
     const { getValue } = modes[props.mode];
     let worst = modes[props.mode].defaultValue;
@@ -345,10 +348,11 @@ function Map(props) {
       worstId = props.geojson.features[values.indexOf(worst)].properties.id;
       bestId = props.geojson.features[values.indexOf(best)].properties.id;
     }
-    const worstPretty = modes[props.mode].prettyValue(worst);
-    const bestPretty = modes[props.mode].prettyValue(best);
-    return [colormap, worstId, worstPretty, bestId, bestPretty];
+    return [colormap, worstId, worst, bestId, best];
   }, [props.geojson, props.mode]);
+
+  const worstPretty = modes[props.mode].prettyValue(worst);
+  const bestPretty = modes[props.mode].prettyValue(best);
 
   // https://github.com/yuzhva/react-leaflet-markercluster/pull/162
   const iconCreateFn = useMemo(() => {
@@ -358,6 +362,19 @@ function Map(props) {
   useEffect(() => {
     if (clusterRef.current) clusterRef.current.refreshClusters();
   }, [props.percentile, props.mode, props.geojson]);
+
+  const params = (new URLSearchParams({
+    mode: props.mode,
+    percentile: props.percentile,
+    scale_min: modes[props.mode] ? worst : best,
+    scale_max: modes[props.mode] ? best : worst,
+  })).toString();
+
+  useEffect(() => {
+    if (tileRef.current) {
+      tileRef.current.setUrl(dataTileURL+"?"+params);
+    }
+  }, [params]);
 
   return (
     <MapContainer
@@ -405,6 +422,19 @@ function Map(props) {
         bestPretty={bestPretty}
         setColor={setColor}
       />
+      <LayersControl position="bottomleft" collapsed={false}>
+        <LayersControl.Overlay checked={false} name="Tiles (experimental)">
+          <TileLayer
+            ref={tileRef}
+            minZoom={12}
+            maxZoom={maxZoom}
+            tileSize={256}
+            zoomOffset={-1}
+            opacity={0.5}
+            zIndex={1}
+          />
+        </LayersControl.Overlay>
+      </LayersControl>
       <AttributionControl position="bottomright" prefix="" />
     </MapContainer>
   );
