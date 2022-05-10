@@ -219,7 +219,7 @@ def get_updated_metadata():
 
 @app.route("/tiles/<int:z>/<int:x>/<int:y>.png")
 def tile(z, x, y):
-    tile = mercantile.Tile(x, y, z + 1)
+    tile = mercantile.Tile(x, y, z + 2)
 
     # common
     referer = flask.request.headers.get("REFERER", "http://localhost:8000/")

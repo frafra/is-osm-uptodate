@@ -434,7 +434,7 @@ function Map(props) {
             url={dataTileURL_with_params}
             minZoom={12}
             maxZoom={maxZoom}
-            tileSize={256}
+            tileSize={128}
             zoomOffset={-1}
             opacity={0.5}
             zIndex={1}
