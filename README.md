@@ -35,9 +35,7 @@ Try a smaller region or wait for a while. Be sure to have a stable connection.
 
 This application can be deployed, developed and tested using [Docker](https://docs.docker.com) (with [BuiltKit](https://docs.docker.com/develop/develop-images/build_enhancements/#to-enable-buildkit-builds) enabled).
 
-Look at `INSTALL.md` if you wish not to use Docker.
-
-Commands should be executed inside the `docker/` directory.
+Look at `docs/INSTALL.md` if you wish not to use Docker.
 
 ## Deploy
 

@@ -17,7 +17,7 @@ jobs:
       - checkout
       - run:
           name: Build containers
-          command: DOCKER_BUILDKIT=1 COMPOSE_DOCKER_CLI_BUILD=1 docker compose -f docker/docker-compose.yml --profile test build
-      - run: docker compose -f docker/docker-compose.yml --profile test run test
+          command: DOCKER_BUILDKIT=1 COMPOSE_DOCKER_CLI_BUILD=1 docker compose --profile test build
+      - run: docker compose --profile test run test
       - store_artifacts:
           path: latest_logs

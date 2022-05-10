@@ -28,7 +28,8 @@ RUN --mount=type=cache,target=/root/.cache/pip \
 COPY --from=builder /home/app/web/dist/ web/dist/
 COPY web/dist/index.html web/dist/
 
-COPY uwsgi.ini is-osm-uptodate.py ./
+COPY conf/uwsgi.ini conf/
+COPY is-osm-uptodate.py ./
 
 EXPOSE 8000/tcp
 

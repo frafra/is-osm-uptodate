@@ -46,7 +46,7 @@ pdm run seleniumbase install geckodriver
 # Run
 
 ```bash
-pdm run uwsgi --ini uwsgi.ini
+pdm run web
 ```
 
 # Develop

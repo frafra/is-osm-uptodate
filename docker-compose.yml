@@ -1,9 +1,7 @@
 services:
   app:
     image: frafra/is-osm-uptodate
-    build:
-      context: ..
-      dockerfile: docker/Dockerfile
+    build: .
     profiles:
       - prod
     depends_on:
@@ -13,9 +11,7 @@ services:
     ports:
       - 8000:8000
   app-dev:
-    build:
-      context: ..
-      dockerfile: docker/Dockerfile
+    build: .
     command: ["pdm", "run", "flask", "run", "--host=0.0.0.0", "--port=8000"]
     profiles:
       - dev
@@ -27,15 +23,13 @@ services:
       FLASK_DEBUG: 1
       FLASK_ENV: development
     volumes:
-      - ../is-osm-uptodate.py:/home/app/is-osm-uptodate.py:ro
-      - ../uwsgi.ini:/home/app/uwsgi.ini:ro
-      - ../web:/home/app/web:ro
+      - ./is-osm-uptodate.py:/home/app/is-osm-uptodate.py:ro
+      - ./conf/uwsgi.ini:/home/app/conf/uwsgi.ini:ro
+      - ./web:/home/app/web:ro
     ports:
       - 8000:8000
   app-test:
-    build:
-      context: ..
-      dockerfile: docker/Dockerfile
+    build: .
     profiles:
       - test
     depends_on:
@@ -44,8 +38,7 @@ services:
       REDIS_HOST: redis
   app-dev-frontend:
     build:
-      context: ..
-      dockerfile: docker/Dockerfile
+      dockerfile: Dockerfile
       target: builder
     command: ["npm", "run", "develop"]
     profiles:
@@ -55,14 +48,14 @@ services:
     environment:
       BACKEND_URL: http://app-dev:8000
     volumes:
-      - ../web:/home/app/web
+      - ./web:/home/app/web
     ports:
       - 8080:8080
   redis:
     image: docker.io/library/redis:6
   test:
     build:
-      context: ..
+      context: .
       dockerfile: tests/Dockerfile
     profiles:
       - test
@@ -71,4 +64,4 @@ services:
     environment:
       URL: "http://app-test:8000"
     volumes:
-      - ../latest_logs/:/home/app/latest_logs/
+      - ./latest_logs/:/home/app/latest_logs/
