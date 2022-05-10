@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = "1.9"
+__version__ = "2.0"
 
 import datetime
 import gzip
