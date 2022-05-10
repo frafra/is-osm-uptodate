@@ -1,8 +1,11 @@
 services:
   app:
     image: frafra/is-osm-uptodate
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
     profiles:
-      - stable
+      - prod
     depends_on:
       - redis
     environment:
@@ -68,4 +71,4 @@ services:
     environment:
       URL: "http://app-test:8000"
     volumes:
-      - ./latest_logs/:/home/app/latest_logs/
+      - ../latest_logs/:/home/app/latest_logs/

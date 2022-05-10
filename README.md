@@ -4,119 +4,25 @@
 [![Docker Image Size (latest by date)](https://img.shields.io/docker/image-size/frafra/is-osm-uptodate)](https://hub.docker.com/r/frafra/is-osm-uptodate)
 [![pdm-managed](https://img.shields.io/badge/pdm-managed-blueviolet)](https://pdm.fming.dev)
 
-This application helps you find which nodes have not been edited for a long time, by using on [Ohsome API](https://api.ohsome.org/) and various softwares and libraries, such as [Leaflet](https://leafletjs.com/), [React](https://reactjs.org), [Python](https://www.python.org/) and others.
+This application helps you find which nodes have not been edited for a long time, by using on [Ohsome API](https://api.ohsome.org/) and various softwares and libraries, such as [Leaflet](https://leafletjs.com/), [React](https://reactjs.org), [Python](https://www.python.org/), [Redis](https://redis.io/) and others.
 
-Demo: https://is-osm-uptodate.frafra.eu/
+Demo: [is-osm-uptodate.frafra.eu](https://is-osm-uptodate.frafra.eu/)
 
-Page on OSM wiki: https://wiki.openstreetmap.org/wiki/Is_OSM_up-to-date
-
-# Dependencies
-
-- [Python 3](https://www.python.org/) (3.8 or greater)
-- [PDM](https://pdm.fming.dev/)
-- [uWSGI](https://uwsgi-docs.readthedocs.io/)
-- [npm](https://www.npmjs.com/)
-- [YAJI](https://github.com/lloyd/yajl)
-- [Redis](https://redis.io/)
-
-## Optional
-
-- [Docker](https://docs.docker.com) (with [BuiltKit](https://docs.docker.com/develop/develop-images/build_enhancements/#to-enable-buildkit-builds) enabled)
-
-# Run
-
-# With Docker
-
-```
-pdm run docker_run
-pdm run docker_stop
-```
-
-# Without Docker
-
-## Setup
-
-Install Redis.
-
-Install YAJI library:
-- Debian/Ubuntu users: `apt-get install libyajl-dev`
-- Fedora users: `dnf install yajl-devel`
-
-```
-pdm install --no-self --production
-pdm run npm # Build the web app
-```
-
-## Run
-
-```
-pdm run web
-```
-
-## Docker image
-
-### Ready to use
-
-```
-pdm run docker_run
-pdm run docker_stop
-```
-
-### Custom image
-
-```
-pdm run docker_build
-pdm run docker_run
-pdm run docker_stop
-```
+Page on OSM wiki: [iki.openstreetmap.org/wiki/Is_OSM_up-to-date](https://wiki.openstreetmap.org/wiki/Is_OSM_up-to-date)
 
 # How to use
 
 ## Web interface
 
-Open http://localhost:8000. Try to change the location and click on the refresh button in order to get the nodes for the new bounding box.
+Open [is-osm-uptodate.frafra.eu](https://is-osm-uptodate.frafra.eu/) (or your local instance). Try to change the location and click on the refresh button in order to get the nodes for the new bounding box.
+Enable the experimental `Tiles` layer to load data grouped by tile.
 
 ## Command line
 
 Example:
 
 ```
-$ curl 'http://localhost:8000/api/getData?minx=9.188295196&miny=45.4635324507&maxx=9.1926242813&maxy=45.4649771956' -o milan-duomo.json
-```
-
-# How to develop
-
-## With Docker
-
-```
-docker compose -f docker/docker-compose.yml --profile dev up
-```
-
-## Without Docker
-
-```
-pipx install pdm
-pdm install --no-self
-pdm run develop
-```
-
-To develop the frontend, in addition to the previous commands, run, in a different terminal:
-
-```
-cd web && npm run develop
-```
-
-## Testing
-
-```
-seleniumbase install geckodriver
-pdm run test
-```
-
-You can also run dockerized tests:
-
-```
-pdm run docker_test
+$ curl 'http://is-osm-uptodate.frafra.eu/api/getData?minx=9.188295196&miny=45.4635324507&maxx=9.1926242813&maxy=45.4649771956' -o milan-duomo.json
 ```
 
 # Common issues
@@ -124,3 +30,32 @@ pdm run docker_test
 ## Error - Please try again
 
 Try a smaller region or wait for a while. Be sure to have a stable connection.
+
+# Run
+
+This application can be deployed, developed and tested using [Docker](https://docs.docker.com) (with [BuiltKit](https://docs.docker.com/develop/develop-images/build_enhancements/#to-enable-buildkit-builds) enabled).
+
+Look at `INSTALL.md` if you wish not to use Docker.
+
+Commands should be executed inside the `docker/` directory.
+
+## Deploy
+
+```bash
+docker compose --profile prod up # optional: add --build
+docker compose --profile prod down
+```
+
+## Develop
+
+```bash
+docker compose --profile dev up
+docker compose --profile dev down
+```
+
+## Test
+
+```bash
+docker compose --profile test run test
+docker compose --profile test down
+```
