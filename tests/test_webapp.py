@@ -1,14 +1,13 @@
 from common import URL
 from parameterized import parameterized
 from seleniumbase import BaseCase
-from seleniumbase.config import settings
 
 buttons = "creation lastedit revisions frequency".split()
 
 
 class TestWebapp(BaseCase):
     def test_open_home(self):
-        self.set_window_size("768", "432")
+        self.set_window_size("1024", "1024")
         self.open(URL)
 
     def test_js_errors(self):
@@ -19,8 +18,7 @@ class TestWebapp(BaseCase):
     def test_tabs(self, button):
         self.test_open_home()
         self.click("button#fetch")
-        self.click(f"button#{button}")
-        self.assert_text(
-            "least recently updated", timeout=settings.EXTREME_TIMEOUT
+        self.execute_script(
+            'document.getElementById("' + button + '").click()'
         )
         self.assert_no_js_errors()
