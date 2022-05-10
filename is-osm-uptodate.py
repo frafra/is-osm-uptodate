@@ -22,7 +22,7 @@ from walrus import Database
 API = "https://api.ohsome.org/v1/elementsFullHistory/geometry"
 METADATA = "https://api.ohsome.org/v1/metadata"
 CACHE_REFRESH = 60 * 60 * 24
-Z_TARGET = 15
+Z_TARGET = 14
 API_OSM = "https://www.openstreetmap.org/api/0.6"
 DEFAULT_FILTER = "type:node"
 
