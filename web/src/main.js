@@ -60,10 +60,6 @@ function App() {
     return null;
   }, [state]);
 
-  useEffect(() => {
-    if (!state && bounds) setState(states.LOADING);
-  }, [bounds]);
-
   return (
     <>
       <Bar
