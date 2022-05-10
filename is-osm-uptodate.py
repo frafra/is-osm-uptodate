@@ -232,7 +232,12 @@ def tile(z, x, y):
     data = []
     for tile in bbox_tiles(bbox, Z_TARGET):
         quadkey = mercantile.quadkey(tile)
-        data.extend(get_tile_data(quadkey, start, end, *filters, **headers))
+        tile_data = get_tile_data(quadkey, start, end, *filters, **headers)
+        for feature in tile_data:
+            lon = feature[0]
+            lat = feature[1]
+            if bbox.left < lon < bbox.right and bbox.bottom < lat < bbox.top:
+                data.append(feature)
 
     mode = flask.request.args.get("mode", "lastedit")
     scale_min = flask.request.args.get("scale_min")
