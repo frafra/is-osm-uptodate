@@ -284,7 +284,10 @@ def tile(z, x, y):
         )
         values.append(normalized)
 
-    value = statistics.quantiles(values, n=100 + 1)[percentile - 1]
+    try:
+        value = statistics.quantiles(values, n=100 + 1)[percentile - 1]
+    except statistics.StatisticsError:
+        value = 0
     if value < 0:
         value = 0
     elif value > 1:
