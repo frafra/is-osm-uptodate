@@ -9,7 +9,7 @@ function Actions({ state, setState }) {
   return (
     <>
       <button
-        id="download"
+        id="fetch"
         className={classNames('btn', 'btn-primary', { disabled: busy })}
         type="button"
         onClick={(_) => setState(states.LOADING)}

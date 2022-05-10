@@ -42,7 +42,8 @@ import '@fortawesome/fontawesome-free/css/solid.css';
 
 const modes = {
   lastedit: {
-    defaultValue: new Date().getTime(),
+    defaultWorstValue: Date.parse('01 Jan 2010 00:00:00'),
+    defaultBestValue: new Date().getTime(),
     getValue: (feature) => new Date(feature.properties.lastedit).getTime(),
     prettyValue: (date) => new Date(date).toISOString().slice(0, 10),
     inverted: false,
@@ -50,7 +51,8 @@ const modes = {
     bestLabel: 'most recently updated',
   },
   creation: {
-    defaultValue: new Date().getTime(),
+    defaultWorstValue: Date.parse('01 Jan 2010 00:00:00'),
+    defaultBestValue: new Date().getTime(),
     getValue: (feature) => new Date(feature.properties.created).getTime(),
     prettyValue: (date) => new Date(date).toISOString().slice(0, 10),
     inverted: false,
@@ -58,7 +60,8 @@ const modes = {
     bestLabel: 'newest',
   },
   revisions: {
-    defaultValue: 1,
+    defaultWorstValue: 1,
+    defaultBestValue: 10,
     getValue: (feature) => feature.properties.version,
     prettyValue: (value) => value,
     inverted: false,
@@ -66,7 +69,8 @@ const modes = {
     bestLabel: 'most revisions',
   },
   frequency: {
-    defaultValue: 0,
+    defaultWorstValue: 700,
+    defaultBestValue: 7,
     getValue: (feature) => feature.properties.average_update_days,
     prettyValue: (value) => {
       const days = Math.floor(value);
@@ -323,9 +327,9 @@ function Map(props) {
   const [colormap, worstId, worst, bestId, best] = useMemo(() => {
     const colormap = {};
     const { getValue } = modes[props.mode];
-    let worst = modes[props.mode].defaultValue;
+    let worst = modes[props.mode].defaultWorstValue;
     let worstId = null;
-    let best = modes[props.mode].defaultValue;
+    let best = modes[props.mode].defaultBestValue;
     let bestId = null;
     let values = [];
     if (props.geojson) {
@@ -370,9 +374,10 @@ function Map(props) {
     scale_max: modes[props.mode] ? best : worst,
   })).toString();
 
+  const dataTileURL_with_params = dataTileURL+"?"+params;
   useEffect(() => {
     if (tileRef.current) {
-      tileRef.current.setUrl(dataTileURL+"?"+params);
+      tileRef.current.setUrl(dataTileURL_with_params);
     }
   }, [params]);
 
@@ -426,6 +431,7 @@ function Map(props) {
         <LayersControl.Overlay checked={false} name="Tiles (experimental)">
           <TileLayer
             ref={tileRef}
+            url={dataTileURL_with_params}
             minZoom={12}
             maxZoom={maxZoom}
             tileSize={256}
