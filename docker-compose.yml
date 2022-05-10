@@ -16,9 +16,9 @@ services:
     profiles:
       - dev
     depends_on:
-      - redis
+      - redis-dev
     environment:
-      REDIS_HOST: redis
+      REDIS_HOST: redis-dev
       FLASK_APP: is-osm-uptodate.py
       FLASK_DEBUG: 1
       FLASK_ENV: development
@@ -52,7 +52,16 @@ services:
     ports:
       - 8080:8080
   redis:
-    image: docker.io/library/redis:6
+    build: redis
+    profiles:
+      - prod
+      - test
+  redis-dev:
+    build: redis
+    profiles:
+      - dev
+    volumes:
+      - ./redis/redis.conf:/usr/local/etc/redis/redis.conf
   test:
     build:
       context: .
