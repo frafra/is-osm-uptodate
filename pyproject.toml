@@ -27,15 +27,7 @@ test = [
 ]
 
 [tool.pdm.scripts]
-npm = {shell = "cd web && npm ci && npm run build"}
 web = "uwsgi --ini uwsgi.ini"
-develop = "python is-osm-uptodate.py"
-test = "pytest --browser=firefox --save_screenshot tests/"
-lint = "pre-commit run --all-files"
-docker_build = "docker compose -f docker/docker-compose.yml --profile dev build"
-docker_run = "docker compose -f docker/docker-compose.yml --profile dev up"
-docker_stop = "docker compose -f docker/docker-compose.yml down"
-docker_test = "docker compose -f docker/docker-compose.yml --profile test run test"
 
 [tool.black]
 line-length = 79
