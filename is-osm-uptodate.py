@@ -148,30 +148,28 @@ def stream_to_processed(resp):
 def get_tile_data(quadkey, start, end, *filters, **headers):
     filters = " and ".join(filter(None, filters))
     cache = db.cache()
-    cache_key = f"{quadkey}-{start}-{end}-{filters}"
-    lock = db.lock(cache_key + ".lock", lock_id=cache_key + ".lock")
-    with lock:
-        if result := cache.get(cache_key):
-            return result
+    cache_key = f"{quadkey}_{start}_{end}_{filters}"
+    with db.lock(cache_key):
+        result = cache.get(cache_key)
+        if not result:
+            bbox = mercantile.bounds(mercantile.quadkey_to_tile(quadkey))
+            params = urllib.parse.urlencode(
+                {
+                    "bboxes": "|".join(map(str, bbox)),
+                    "properties": "metadata",
+                    "showMetadata": "true",
+                    "time": f"{start},{end}",
+                    "filter": filters,
+                }
+            )
 
-        bbox = mercantile.bounds(mercantile.quadkey_to_tile(quadkey))
-        params = urllib.parse.urlencode(
-            {
-                "bboxes": "|".join(map(str, bbox)),
-                "properties": "metadata",
-                "showMetadata": "true",
-                "time": f"{start},{end}",
-                "filter": filters,
-            }
-        )
-
-        req = urllib.request.Request(API + "?" + params)
-        for key, value in headers.items():
-            req.add_header(key, value)
-        with urllib.request.urlopen(req) as resp_gzipped:
-            resp = gzip.GzipFile(fileobj=resp_gzipped)
-            result = list(stream_to_processed(resp))
-        cache.set(cache_key, result)
+            req = urllib.request.Request(API + "?" + params)
+            for key, value in headers.items():
+                req.add_header(key, value)
+            with urllib.request.urlopen(req) as resp_gzipped:
+                resp = gzip.GzipFile(fileobj=resp_gzipped)
+                result = list(stream_to_processed(resp))
+            cache.set(cache_key, result, timeout=60 * 60 * 24)
     return result
 
 
