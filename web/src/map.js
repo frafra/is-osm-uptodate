@@ -29,6 +29,7 @@ import {
   tileURL,
   dataTileURL,
   maxZoom,
+  minZoom,
   defaultLocation,
   valuesBlacklist,
 } from './constants';
@@ -386,6 +387,8 @@ function Map(props) {
       id="map"
       center={[lon, lat]}
       zoom={zoom}
+      minZoom={minZoom}
+      maxZoom={maxZoom}
       whenCreated={(map) => {
         setup(map);
         // https://github.com/PaulLeCam/react-leaflet/issues/46
@@ -432,7 +435,6 @@ function Map(props) {
           <TileLayer
             ref={tileRef}
             url={dataTileURL_with_params}
-            minZoom={12}
             maxZoom={maxZoom}
             tileSize={128}
             zoomOffset={-1}
