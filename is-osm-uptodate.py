@@ -122,8 +122,7 @@ def bbox_tiles(bbox, z_target, *tiles):
             yield from bbox_tiles(bbox, z_target, *mercantile.children(tile))
 
 
-def feature_in_bbox(bbox, feature):
-    lon, lat = feature["geometry"]["coordinates"]
+def lonlat_in_bbox(bbox, lon, lat):
     return bbox.left <= lon <= bbox.right and bbox.bottom <= lat <= bbox.top
 
 
@@ -174,10 +173,8 @@ def get_tile_data(quadkey, start, end, *filters, **headers):
 
 
 def get_tile_features(quadkey, start, end, *filters, **headers):
-    return list(
-        processed_to_geojson(
-            get_tile_data(quadkey, start, end, *filters, **headers)
-        )
+    yield from processed_to_geojson(
+        get_tile_data(quadkey, start, end, *filters, **headers)
     )
 
 
@@ -191,7 +188,7 @@ def generate(bbox, start, end, *filters, **headers):
         for feature in get_tile_features(
             quadkey, start, end, *filters, **headers
         ):
-            if feature_in_bbox(bbox, feature):
+            if lonlat_in_bbox(bbox, *feature["geometry"]["coordinates"]):
                 feature_json = json.dumps(feature, use_decimal=True)
                 if not first:
                     yield ", "
@@ -234,9 +231,7 @@ def tile(z, x, y):
         quadkey = mercantile.quadkey(tile)
         tile_data = get_tile_data(quadkey, start, end, *filters, **headers)
         for feature in tile_data:
-            lon = feature[0]
-            lat = feature[1]
-            if bbox.left < lon < bbox.right and bbox.bottom < lat < bbox.top:
+            if lonlat_in_bbox(bbox, feature[0], feature[1]):
                 data.append(feature)
 
     mode = flask.request.args.get("mode", "lastedit")
