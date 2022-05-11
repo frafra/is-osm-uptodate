@@ -21,15 +21,16 @@ RUN --mount=type=cache,sharing=locked,target=/var/cache/apt \
     chown -R app:app .
 COPY --chown=app:app pyproject.toml pdm.lock ./
 RUN --mount=type=cache,target=/root/.cache/pip \
-    --mount=type=cache,target=/root/.cache/pdm \
-    pip3 install pdm && \
+    pip3 install pdm
+USER app
+RUN --mount=type=cache,target=/root/.cache/pdm \
     pdm install --production --no-self
 
-COPY --from=builder /home/app/web/dist/ web/dist/
-COPY web/dist/index.html web/dist/
+COPY --from=builder --chown=app:app /home/app/web/dist/ web/dist/
+COPY --chown=app:app web/dist/index.html web/dist/
 
-COPY conf/uwsgi.ini conf/
-COPY is-osm-uptodate.py ./
+COPY --chown=app:app conf/uwsgi.ini conf/
+COPY --chown=app:app is-osm-uptodate.py ./
 
 EXPOSE 8000/tcp
 
