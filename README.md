@@ -30,6 +30,10 @@ $ curl 'http://is-osm-uptodate.frafra.eu/api/getData?minx=9.188295196&miny=45.46
 
 Try a smaller region or wait for a while. Be sure to have a stable connection.
 
+## Tiles/page not loading
+
+Increase `processes`/`threads` in `uwsgi.ini`.
+
 # Run
 
 This application can be deployed, developed and tested using [Docker](https://docs.docker.com) (with [BuiltKit](https://docs.docker.com/develop/develop-images/build_enhancements/#to-enable-buildkit-builds) enabled).
