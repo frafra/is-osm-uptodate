@@ -69,3 +69,13 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+
+      - name: Build and push Docker image (Redis)
+        id: build-and-push
+        uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
+        with:
+          context: redis
+          file: Dockerfile
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: redis-${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
