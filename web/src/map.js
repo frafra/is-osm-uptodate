@@ -431,7 +431,7 @@ function Map(props) {
         setColor={setColor}
       />
       <LayersControl position="bottomleft" collapsed={false}>
-        <LayersControl.Overlay checked={false} name="Tiles (experimental)">
+        <LayersControl.Overlay checked={false} name="Tiles">
           <TileLayer
             ref={tileRef}
             url={dataTileURL_with_params}
