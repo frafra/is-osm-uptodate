@@ -34,5 +34,6 @@ COPY --chown=app:app is-osm-uptodate.py ./
 
 EXPOSE 8000/tcp
 
-USER app
-CMD ["pdm", "run", "web"]
+ENV PYTHONPATH=__pypackages__/3.10/lib
+ENV PATH=$PATH:__pypackages__/3.10/bin
+CMD ["uwsgi", "--ini", "conf/uwsgi.ini"]
