@@ -6,6 +6,7 @@ const classNames = require('classnames');
 
 function Actions({ state, setState }) {
   const busy = state === states.LOADING;
+  const loaded = state === states.LOADED;
   return (
     <>
       <button
@@ -16,7 +17,7 @@ function Actions({ state, setState }) {
       >
         <i className="fas fa-sync-alt" />
         &nbsp;
-        <span>Show data </span>
+        <span>Show nodes </span>
         <span
           className={classNames('spinner-border', 'spinner-border-sm', {
             'd-none': !busy,
@@ -24,6 +25,16 @@ function Actions({ state, setState }) {
           role="status"
         />
         <span className="visually-hidden">Loading...</span>
+      </button>
+      <button
+        id="clean"
+        className={classNames('btn', 'btn-secondary', { disabled: !loaded })}
+        type="button"
+        onClick={(_) => setState(states.CLEAN)}
+      >
+        <i className="fas fa-trash-alt" />
+        &nbsp;
+        <span>Remove nodes </span>
       </button>
       {state === states.ERROR ? (
         <p>
