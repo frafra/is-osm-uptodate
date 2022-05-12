@@ -48,12 +48,13 @@ function App() {
             }
           });
         break;
-      case states.LOADED:
-        break;
       case states.ERROR:
+      case states.CLEAN:
         setBoundsLoaded();
         setDownloadLink(null);
+        setGeojson(null);
         break;
+      case states.LOADED:
       default:
         break;
     }
