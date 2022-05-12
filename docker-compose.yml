@@ -1,6 +1,6 @@
 services:
   app:
-    image: frafra/is-osm-uptodate
+    image: ghcr.io/frafra/is-osm-uptodate:master
     build: .
     profiles:
       - prod
