@@ -214,6 +214,14 @@ def get_updated_metadata():
     return start, end
 
 
+def generate_invalid_tile():
+    tile = io.BytesIO()
+    writer = png.Writer(1, 1, greyscale=True)
+    writer.write(tile, [[255]])
+    tile.seek(0)
+    return tile.read()
+
+
 @app.route("/tiles/<int:z>/<int:x>/<int:y>.png")
 def tile(z, x, y):
     tile = mercantile.Tile(x, y, z + 2)
@@ -239,7 +247,7 @@ def tile(z, x, y):
     scale_max = flask.request.args.get("scale_max")
     percentile = int(flask.request.args.get("percentile", "50"))
     if percentile < 0 or percentile > 100:
-        return
+        return flask.Response(generate_invalid_tile(), mimetype="image/png")
 
     if mode == "creation":
         feature_index = 3
@@ -287,7 +295,7 @@ def tile(z, x, y):
         values.append(normalized)
 
     if len(values) == 0:
-        value = 0
+        return flask.Response(generate_invalid_tile(), mimetype="image/png")
     elif len(values) == 1:
         value = values[0]
     else:
