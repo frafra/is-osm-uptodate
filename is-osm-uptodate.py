@@ -238,6 +238,8 @@ def tile(z, x, y):
     scale_min = flask.request.args.get("scale_min")
     scale_max = flask.request.args.get("scale_max")
     percentile = int(flask.request.args.get("percentile", "50"))
+    if percentile < 0 or percentile > 100:
+        return
 
     if mode == "creation":
         feature_index = 3
@@ -289,11 +291,11 @@ def tile(z, x, y):
     elif len(values) == 1:
         value = values[0]
     else:
-        value = statistics.quantiles(values, n=100 + 1)[percentile - 1]
-    if value < 0:
-        value = 0
-    elif value > 1:
-        value = 1
+        value = [
+            min(values),
+            *statistics.quantiles(values, n=100, method="inclusive"),
+            max(values),
+        ][percentile]
 
     tile = io.BytesIO()
     writer = png.Writer(1, 1, greyscale=False)

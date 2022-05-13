@@ -24,6 +24,8 @@ import 'leaflet-geosearch/dist/geosearch.css';
 
 import { interpolateViridis } from 'd3-scale-chromatic';
 
+const compute_percentile = require('percentile');
+
 import {
   customAttribution,
   tileURL,
@@ -108,7 +110,7 @@ function iconCreateFunction(percentile, colormap, cluster) {
   const markers = cluster.getAllChildMarkers();
   const values = markers.map((marker) => colormap[marker.options.fillColor]);
   values.sort((a, b) => a - b);
-  const aggregated = values[Math.ceil((percentile * values.length) / 100) - 1];
+  const aggregated = compute_percentile(percentile, values);
   const html = document.createElement('div');
   html.style.backgroundColor = interpolateViridis(aggregated);
   const content = document.createElement('span');

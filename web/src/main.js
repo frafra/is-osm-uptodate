@@ -12,7 +12,11 @@ function App() {
   const [state, setState] = useState();
   const [filter, setFilter] = useState('');
   const [mode, setMode] = useState('lastedit');
-  const [percentile, setPercentile] = useState(50);
+  const [percentile, _setPercentile] = useState(50);
+  function setPercentile(value) {
+    value = parseInt(value);
+    if ((0 <= value) && (value <= 100)) _setPercentile(value);
+  }
   const [bounds, setBounds] = useState();
   const [boundsLoaded, setBoundsLoaded] = useState();
   const [geojson, setGeojson] = useState(null);
