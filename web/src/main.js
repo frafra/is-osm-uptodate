@@ -14,8 +14,9 @@ function App() {
   const [mode, setMode] = useState('lastedit');
   const [percentile, _setPercentile] = useState(50);
   function setPercentile(value) {
-    value = parseInt(value);
-    if ((0 <= value) && (value <= 100)) _setPercentile(value);
+    value = parseInt(value.slice(9))*25;
+    console.log(value);
+    _setPercentile(value);
   }
   const [bounds, setBounds] = useState();
   const [boundsLoaded, setBoundsLoaded] = useState();

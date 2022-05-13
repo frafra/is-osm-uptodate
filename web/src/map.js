@@ -34,6 +34,7 @@ import {
   minZoom,
   defaultLocation,
   valuesBlacklist,
+  modes,
 } from './constants';
 
 import './map.css';
@@ -42,51 +43,6 @@ import 'bootstrap/dist/css/bootstrap.css';
 
 import '@fortawesome/fontawesome-free/css/fontawesome.css';
 import '@fortawesome/fontawesome-free/css/solid.css';
-
-const modes = {
-  lastedit: {
-    defaultWorstValue: Date.parse('01 Jan 2010 00:00:00'),
-    defaultBestValue: new Date().getTime(),
-    getValue: (feature) => new Date(feature.properties.lastedit).getTime(),
-    prettyValue: (date) => new Date(date).toISOString().slice(0, 10),
-    inverted: false,
-    worstLabel: 'least recently updated',
-    bestLabel: 'most recently updated',
-  },
-  creation: {
-    defaultWorstValue: Date.parse('01 Jan 2010 00:00:00'),
-    defaultBestValue: new Date().getTime(),
-    getValue: (feature) => new Date(feature.properties.created).getTime(),
-    prettyValue: (date) => new Date(date).toISOString().slice(0, 10),
-    inverted: false,
-    worstLabel: 'oldest',
-    bestLabel: 'newest',
-  },
-  revisions: {
-    defaultWorstValue: 1,
-    defaultBestValue: 10,
-    getValue: (feature) => feature.properties.version,
-    prettyValue: (value) => value,
-    inverted: false,
-    worstLabel: 'fewest revisions',
-    bestLabel: 'most revisions',
-  },
-  frequency: {
-    defaultWorstValue: 700,
-    defaultBestValue: 7,
-    getValue: (feature) => feature.properties.average_update_days,
-    prettyValue: (value) => {
-      const days = Math.floor(value);
-      if (days < 1) return 'daily';
-      if (days < 365) return `every ${days} days`;
-      const years = Math.floor(value / 365);
-      return `every ${years} year(s)`;
-    },
-    inverted: true,
-    worstLabel: 'least frequently updated',
-    bestLabel: 'most frequently updated',
-  },
-};
 
 let colour = 0;
 const style = document.createElement('style');
