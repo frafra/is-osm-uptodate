@@ -24,8 +24,6 @@ import 'leaflet-geosearch/dist/geosearch.css';
 
 import { interpolateViridis } from 'd3-scale-chromatic';
 
-const compute_percentile = require('percentile');
-
 import {
   customAttribution,
   tileURL,
@@ -43,6 +41,8 @@ import 'bootstrap/dist/css/bootstrap.css';
 
 import '@fortawesome/fontawesome-free/css/fontawesome.css';
 import '@fortawesome/fontawesome-free/css/solid.css';
+
+const compute_percentile = require('percentile');
 
 let colour = 0;
 const style = document.createElement('style');
