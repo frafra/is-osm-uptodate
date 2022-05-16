@@ -30,9 +30,11 @@ $ curl 'http://is-osm-uptodate.frafra.eu/api/getData?minx=9.188295196&miny=45.46
 
 Try a smaller region or wait for a while. Be sure to have a stable connection.
 
-## Tiles/page not loading
+## Bad performance with many concurrent users
 
-Increase `processes`/`threads` in `uwsgi.ini`.
+Increase `WORKERS` in `docker-compose.yml`.
+
+See: [Gunicorn - How Many Workers?](https://docs.gunicorn.org/en/latest/design.html#how-many-workers).
 
 # Run
 

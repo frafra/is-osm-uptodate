@@ -11,10 +11,10 @@ import time
 import urllib.parse
 import urllib.request
 
-import flask
 import mercantile
 import png
 import simplejson as json
+from aiohttp import web
 from jsonslicer import JsonSlicer
 from matplotlib import cm
 from walrus import Database
@@ -30,7 +30,6 @@ viridis = cm.get_cmap("viridis", 256)
 featuresTime = time.time()
 start, end = None, None
 
-app = flask.Flask(__name__, static_folder="web/dist", static_url_path="")
 db = Database(host=os.environ.get("REDIS_HOST", "localhost"))
 
 
@@ -219,35 +218,30 @@ def generate_invalid_tile():
     writer = png.Writer(1, 1, greyscale=True)
     writer.write(tile, [[255]])
     tile.seek(0)
-    return tile.read()
+    return tile.getvalue()
 
 
-@app.route("/tiles/<int:z>/<int:x>/<int:y>.png")
-def tile(z, x, y):
+async def tile(request):
+    z = int(request.match_info["z"])
+    x = int(request.match_info["x"])
+    y = int(request.match_info["y"])
     tile = mercantile.Tile(x, y, z + 2)
 
     # common
-    referer = flask.request.headers.get("REFERER", "http://localhost:8000/")
+    referer = request.headers.get("REFERER", "http://localhost:8000/")
     headers = generateHeaders(referer)
-    filters = flask.request.args.get("filter")
+    filters = request.rel_url.query.get("filter")
     filters = [filters, DEFAULT_FILTER]
     start, end = get_updated_metadata()
 
-    bbox = mercantile.Bbox(*mercantile.bounds(tile))
-    data = []
-    for tile in bbox_tiles(bbox, Z_TARGET):
-        quadkey = mercantile.quadkey(tile)
-        tile_data = get_tile_data(quadkey, start, end, *filters, **headers)
-        for feature in tile_data:
-            if lonlat_in_bbox(bbox, feature[0], feature[1]):
-                data.append(feature)
-
-    mode = flask.request.args.get("mode", "lastedit")
-    scale_min = flask.request.args.get("scale_min")
-    scale_max = flask.request.args.get("scale_max")
-    percentile = int(flask.request.args.get("percentile", "50"))
+    mode = request.rel_url.query.get("mode", "lastedit")
+    scale_min = request.rel_url.query.get("scale_min")
+    scale_max = request.rel_url.query.get("scale_max")
+    percentile = int(request.rel_url.query.get("percentile", "50"))
     if percentile < 0 or percentile > 100:
-        return flask.Response(generate_invalid_tile(), mimetype="image/png")
+        return web.Response(
+            body=generate_invalid_tile(), content_type="image/png"
+        )
 
     if mode == "creation":
         feature_index = 3
@@ -280,7 +274,7 @@ def tile(z, x, y):
             scale_max = 700
         feature_index = 6
     else:
-        return flask.Response("Invalid param")
+        return web.Response(text="Invalid param")
 
     scale_min = float(scale_min)
     scale_max = float(scale_max)
@@ -288,14 +282,21 @@ def tile(z, x, y):
         scale_max += 1
 
     values = []
-    for feature in data:
-        normalized = (feature[feature_index] - scale_min) / (
-            scale_max - scale_min
-        )
-        values.append(normalized)
+    bbox = mercantile.Bbox(*mercantile.bounds(tile))
+    for tile in bbox_tiles(bbox, Z_TARGET):
+        quadkey = mercantile.quadkey(tile)
+        tile_data = get_tile_data(quadkey, start, end, *filters, **headers)
+        for feature in tile_data:
+            if lonlat_in_bbox(bbox, feature[0], feature[1]):
+                values.append(
+                    (feature[feature_index] - scale_min)
+                    / (scale_max - scale_min)
+                )
 
     if len(values) == 0:
-        return flask.Response(generate_invalid_tile(), mimetype="image/png")
+        return web.Response(
+            body=generate_invalid_tile(), content_type="image/png"
+        )
     elif len(values) == 1:
         value = values[0]
     else:
@@ -312,19 +313,18 @@ def tile(z, x, y):
     )
     tile.seek(0)
 
-    return flask.Response(tile.read(), mimetype="image/png")
+    return web.Response(body=tile.getvalue(), content_type="image/png")
 
 
-@app.route("/api/getData")
-def getData():
+async def getData(request):
     # Round to 7 decimal https://wiki.openstreetmap.org/wiki/Node#Structure
     bbox = []
     for arg in ("minx", "miny", "maxx", "maxy"):
-        bbox.append(round(float(flask.request.args.get(arg)), 7))
+        bbox.append(round(float(request.rel_url.query.get(arg)), 7))
     # common
-    referer = flask.request.headers.get("REFERER", "http://localhost:8000/")
+    referer = request.headers.get("REFERER", "http://localhost:8000/")
     headers = generateHeaders(referer)
-    filters = flask.request.args.get("filter")
+    filters = request.rel_url.query.get("filter")
     filters = [filters, DEFAULT_FILTER]
     start, end = get_updated_metadata()
 
@@ -347,35 +347,53 @@ def getData():
     except Exception:
         return "", 500
     else:
-        return app.response_class(
-            generated,
-            mimetype="application/json",
+
+        response = web.StreamResponse(
+            status=200,
+            reason="OK",
             headers={
-                "Content-Disposition": f'attachment; filename="{filename}"'
+                "Content-Type": "application/json",
+                "Content-Disposition": f'attachment; filename="{filename}',
             },
         )
+        await response.prepare(request)
+        for chunk in generated:
+            await response.write(chunk.encode("utf-8"))
+        await response.write_eof()
+        return response
 
 
-@app.route("/api/getFeature")
-def getFeature():
-    feature_type = flask.request.args.get(
-        "feature_type", default="node", type=str
-    )
-    feature_id = flask.request.args.get("feature_id", type=int)
-    referer = flask.request.headers.get("REFERER", "http://localhost:8000/")
+async def getFeature(request):
+    feature_type = request.rel_url.query.get("feature_type", "node")
+    feature_id = request.rel_url.query.get("feature_id")
+    referer = request.headers.get("REFERER", "http://localhost:8000/")
     request = urllib.request.Request(
         f"{API_OSM}/{feature_type}/{feature_id}.json",
         headers=generateHeaders(referer),
     )
     with urllib.request.urlopen(request) as resp_gzipped:
         resp = gzip.GzipFile(fileobj=resp_gzipped)
-        return resp.read()
+        return web.Response(body=resp.read())
 
 
-@app.route("/")
-def entry():
-    return flask.send_file("web/dist/index.html")
+async def entry(request):
+    return web.FileResponse("web/dist/index.html")
+
+
+async def webapp():
+    app = web.Application()
+    app.add_routes(
+        [
+            web.get("/", entry),
+            web.get("/api/getFeature", getFeature),
+            web.get("/api/getData", getData),
+            web.get("/tiles/{z}/{x}/{y}.png", tile),
+        ]
+    )
+    app.router.add_static("/", path="web/dist", name="static")
+    return app
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8000)
+    app = webapp()
+    web.run_app(app, path="0.0.0.0", port=8000)

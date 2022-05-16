@@ -46,14 +46,14 @@ pdm run seleniumbase install geckodriver
 # Run
 
 ```bash
-pdm run web
+pdm run gunicorn is-osm-uptodate:webapp --bind 0.0.0.0:8000 --worker-class aiohttp.GunicornWebWorker --timeout 300
 ```
 
 # Develop
 
 ```bash
 (cd web && npm run develop) &
-pdm run ./is-osm-uptodate.py
+pdm run gunicorn is-osm-uptodate:webapp --bind 0.0.0.0:8000 --reload --worker-class aiohttp.GunicornWebWorker
 ```
 
 # Testing
