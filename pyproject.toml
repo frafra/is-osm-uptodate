@@ -6,15 +6,15 @@ authors = [
     {name = "Francesco Frassinelli", email = "fraph24@gmail.com"},
 ]
 dependencies = [
-    "Flask<3.0.0,>=2.0.1",
     "jsonslicer<1.0.0,>=0.1.7",
     "simplejson<4.0.0,>=3.17.2",
-    "uWSGI<3.0.0,>=2.0.19",
     "mercantile>=1.2.1",
     "redis>=4.2.2",
     "walrus>=0.9.1",
     "matplotlib>=3.5.1",
     "pypng>=0.0.21",
+    "aiohttp>=3.8.1",
+    "gunicorn>=20.1.0",
 ]
 requires-python = ">=3.8,<4.0"
 license = {text = "AGPLv3"}
@@ -27,7 +27,6 @@ test = [
 ]
 
 [tool.pdm.scripts]
-web = "uwsgi --ini conf/uwsgi.ini"
 test = "pytest --headless --browser=firefox --save_screenshot tests/"
 
 [tool.black]

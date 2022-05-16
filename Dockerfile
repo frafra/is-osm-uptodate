@@ -29,11 +29,10 @@ RUN --mount=type=cache,target=/root/.cache/pdm \
 COPY --from=builder --chown=app:app /home/app/web/dist/ web/dist/
 COPY --chown=app:app web/dist/index.html web/dist/
 
-COPY --chown=app:app conf/uwsgi.ini conf/
 COPY --chown=app:app is-osm-uptodate.py ./
 
 EXPOSE 8000/tcp
 
 ENV PYTHONPATH=__pypackages__/3.10/lib
 ENV PATH=$PATH:__pypackages__/3.10/bin
-CMD ["uwsgi", "--ini", "conf/uwsgi.ini"]
+CMD ["gunicorn", "is-osm-uptodate:webapp", "--bind", "0.0.0.0:8000", "--worker-class", "aiohttp.GunicornWebWorker", "--timeout", "300"]

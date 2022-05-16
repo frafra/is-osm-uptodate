@@ -8,23 +8,20 @@ services:
       - redis
     environment:
       REDIS_HOST: redis
+      GUNICORN_CMD_ARGS: "--workers 1"
     ports:
       - 8000:8000
   app-dev:
     build: .
-    command: ["pdm", "run", "flask", "run", "--host=0.0.0.0", "--port=8000"]
     profiles:
       - dev
     depends_on:
       - redis-dev
     environment:
       REDIS_HOST: redis-dev
-      FLASK_APP: is-osm-uptodate.py
-      FLASK_DEBUG: 1
-      FLASK_ENV: development
+      GUNICORN_CMD_ARGS: "--reload --log-level debug"
     volumes:
       - ./is-osm-uptodate.py:/home/app/is-osm-uptodate.py:ro
-      - ./conf/uwsgi.ini:/home/app/conf/uwsgi.ini:ro
       - ./web:/home/app/web:ro
     ports:
       - 8000:8000
@@ -36,6 +33,7 @@ services:
       - redis
     environment:
       REDIS_HOST: redis
+      GUNICORN_CMD_ARGS: "--log-level debug"
   app-dev-frontend:
     build:
       dockerfile: Dockerfile
