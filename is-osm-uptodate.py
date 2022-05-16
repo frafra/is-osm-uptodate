@@ -225,7 +225,7 @@ async def tile(request):
     z = int(request.match_info["z"])
     x = int(request.match_info["x"])
     y = int(request.match_info["y"])
-    tile = mercantile.Tile(x, y, z + 2)
+    tile = mercantile.Tile(x, y, z + 3)
 
     # common
     referer = request.headers.get("REFERER", "http://localhost:8000/")
