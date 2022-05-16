@@ -5,6 +5,7 @@ kill_timeout = 5
 
 [env]
   REDIS_HOST = "is-osm-uptodate-redis.internal"
+  GUNICORN_CMD_ARGS = "--workers 2"
 
 [[statics]]
   guest_path = "/web"
@@ -21,7 +22,7 @@ kill_timeout = 5
   script_checks = []
 
   [services.concurrency]
-    hard_limit = 4096
+    hard_limit = 1024
     soft_limit = 256
     type = "connections"
 
