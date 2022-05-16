@@ -8,7 +8,7 @@ services:
       - redis
     environment:
       REDIS_HOST: redis
-      GUNICORN_CMD_ARGS: "--workers 1"
+      GUNICORN_CMD_ARGS: "--workers 2"
     ports:
       - 8000:8000
   app-dev:
