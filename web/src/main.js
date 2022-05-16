@@ -58,6 +58,7 @@ function App() {
         setBoundsLoaded();
         setDownloadLink(null);
         setGeojson(null);
+        setStatistics({});
         break;
       case states.LOADED:
       default:
