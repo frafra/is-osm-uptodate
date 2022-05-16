@@ -147,7 +147,7 @@ def get_tile_data(quadkey, start, end, *filters, **headers):
     filters = " and ".join(filter(None, filters))
     cache = db.cache()
     cache_key = f"{quadkey}_{start}_{end}_{filters}"
-    with db.lock(cache_key):
+    with db.lock(cache_key, ttl=300000):
         result = cache.get(cache_key)
         if not result:
             bbox = mercantile.bounds(mercantile.quadkey_to_tile(quadkey))
