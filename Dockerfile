@@ -35,4 +35,4 @@ EXPOSE 8000/tcp
 
 ENV PYTHONPATH=__pypackages__/3.10/lib
 ENV PATH=$PATH:__pypackages__/3.10/bin
-CMD ["gunicorn", "is-osm-uptodate:webapp", "--bind", "0.0.0.0:8000", "--worker-class", "aiohttp.GunicornWebWorker", "--timeout", "300"]
+CMD ["gunicorn", "is-osm-uptodate:webapp", "--bind", "0.0.0.0:8000", "--workers", "2", "--worker-class", "aiohttp.GunicornWebWorker", "--timeout", "300"]
