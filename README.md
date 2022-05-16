@@ -5,7 +5,7 @@
 
 This application helps you find which nodes have not been edited for a long time, by using on [Ohsome API](https://api.ohsome.org/) and various softwares and libraries, such as [Leaflet](https://leafletjs.com/), [React](https://reactjs.org), [Python](https://www.python.org/), [Redis](https://redis.io/) and others.
 
-Demo: [is-osm-uptodate.frafra.eu](https://is-osm-uptodate.frafra.eu/)
+Demo: [is-osm-uptodate.fly.dev](is-osm-uptodate.fly.dev)
 
 Page on OSM wiki: [iki.openstreetmap.org/wiki/Is_OSM_up-to-date](https://wiki.openstreetmap.org/wiki/Is_OSM_up-to-date)
 
@@ -13,7 +13,7 @@ Page on OSM wiki: [iki.openstreetmap.org/wiki/Is_OSM_up-to-date](https://wiki.op
 
 ## Web interface
 
-Open [is-osm-uptodate.frafra.eu](https://is-osm-uptodate.frafra.eu/) (or your local instance). Try to change the location and click on the refresh button in order to get the nodes for the new bounding box.
+Open [is-osm-uptodate.fly.dev](https://is-osm-uptodate.fly.dev/) (or your local instance). Try to change the location and click on the refresh button in order to get the nodes for the new bounding box.
 Enable the experimental `Tiles` layer to load data grouped by tile.
 
 ## Command line
@@ -21,7 +21,7 @@ Enable the experimental `Tiles` layer to load data grouped by tile.
 Example:
 
 ```
-$ curl 'http://is-osm-uptodate.frafra.eu/api/getData?minx=9.188295196&miny=45.4635324507&maxx=9.1926242813&maxy=45.4649771956' -o milan-duomo.json
+$ curl 'http://is-osm-uptodate.fly.dev/api/getData?minx=9.188295196&miny=45.4635324507&maxx=9.1926242813&maxy=45.4649771956' -o milan-duomo.json
 ```
 
 # Common issues
