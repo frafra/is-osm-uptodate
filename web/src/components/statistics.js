@@ -10,24 +10,32 @@ function flyAndOpen(marker, event) {
 
 function Statistics({ statistics }) {
   return (
-    <table className="table table-striped">
-      <tbody>
-        {Object.keys(statistics).map((key) => (
-          <tr key={key}>
-            <th scope="row">{statistics[key].label}</th>
-            <td>
-              <button
-                className="btn btn-link p-0"
-                type="button"
-                onClick={flyAndOpen.bind(null, statistics[key].marker)}
-              >
-                {statistics[key].osmid}
-              </button>
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
+    <>
+      {Object.keys(statistics).length == 0 && (
+        <p>
+          No statistics to show. Click on <i>Show nodes</i> to get some
+          statistics.
+        </p>
+      )}
+      <table className="table table-striped">
+        <tbody>
+          {Object.keys(statistics).map((key) => (
+            <tr key={key}>
+              <th scope="row">{statistics[key].label}</th>
+              <td>
+                <button
+                  className="btn btn-link p-0"
+                  type="button"
+                  onClick={flyAndOpen.bind(null, statistics[key].marker)}
+                >
+                  {statistics[key].osmid}
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </>
   );
 }
 

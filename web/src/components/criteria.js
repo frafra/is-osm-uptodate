@@ -41,7 +41,7 @@ function Mode({ mode, setMode }) {
   );
 }
 
-function Percentile({ percentile, setPercentile }) {
+function Percentile({ percentile, setPercentile, minimumLabel, maximumLabel }) {
   percentile = `quartile-${percentile / 25}`;
   return (
     <div
@@ -55,7 +55,7 @@ function Percentile({ percentile, setPercentile }) {
         setMode={setPercentile}
         name="percentile"
       >
-        Minimum
+        {minimumLabel}
       </ButtonCheckbox>
       <ButtonCheckbox
         id="quartile-1"
@@ -87,7 +87,7 @@ function Percentile({ percentile, setPercentile }) {
         setMode={setPercentile}
         name="percentile"
       >
-        Maximum
+        {maximumLabel}
       </ButtonCheckbox>
     </div>
   );
@@ -99,9 +99,15 @@ function Criteria({ mode, setMode, percentile, setPercentile }) {
       <Mode mode={mode} setMode={setMode} />
       <hr />
       <p>
-        Ordered from {modes[mode].worstLabel} to {modes[mode].bestLabel}
+        Each group of nodes is represented by the value of one of its nodes,
+        chosen using the following criteria:
       </p>
-      <Percentile percentile={percentile} setPercentile={setPercentile} />
+      <Percentile
+        percentile={percentile}
+        setPercentile={setPercentile}
+        minimumLabel={modes[mode].worstLabel}
+        maximumLabel={modes[mode].bestLabel}
+      />
     </>
   );
 }

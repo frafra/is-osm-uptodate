@@ -4,16 +4,26 @@ const classNames = require('classnames');
 
 function Download({ downloadLink }) {
   return (
-    <button
-      id="download"
-      className={classNames('btn', 'btn-primary', { disabled: !downloadLink })}
-      type="button"
-      href={downloadLink}
-    >
-      <i className="fas fa-arrow-alt-circle-down" />
-      &nbsp;
-      <span>Download</span>
-    </button>
+    <>
+      {!downloadLink && (
+        <p>
+          No data to download. Click on <i>Show nodes</i> to fetch some data
+          first.
+        </p>
+      )}
+      <button
+        id="download"
+        className={classNames('btn', 'btn-primary', {
+          disabled: !downloadLink,
+        })}
+        type="button"
+        href={downloadLink}
+      >
+        <i className="fas fa-arrow-alt-circle-down" />
+        &nbsp;
+        <span>Download</span>
+      </button>
+    </>
   );
 }
 
