@@ -5,6 +5,7 @@ __version__ = "2.0"
 import datetime
 import gzip
 import io
+import math
 import os
 import statistics
 import time
@@ -23,6 +24,7 @@ API = "https://api.ohsome.org/v1/elementsFullHistory/geometry"
 METADATA = "https://api.ohsome.org/v1/metadata"
 CACHE_REFRESH = 60 * 60 * 24
 Z_TARGET = 12
+TILE_RES = 8
 API_OSM = "https://www.openstreetmap.org/api/0.6"
 DEFAULT_FILTER = "type:node"
 
@@ -225,7 +227,7 @@ async def tile(request):
     z = int(request.match_info["z"])
     x = int(request.match_info["x"])
     y = int(request.match_info["y"])
-    tile = mercantile.Tile(x, y, z + 3)
+    tile = mercantile.Tile(x, y, z)
 
     # common
     referer = request.headers.get("REFERER", "http://localhost:8000/")
@@ -281,36 +283,44 @@ async def tile(request):
     if scale_min == scale_max:
         scale_max += 1
 
-    values = []
+    subvalues = [[] for _ in range(TILE_RES * TILE_RES)]
     bbox = mercantile.Bbox(*mercantile.bounds(tile))
-    for tile in bbox_tiles(bbox, Z_TARGET):
-        quadkey = mercantile.quadkey(tile)
+    for btile in bbox_tiles(bbox, Z_TARGET):
+        quadkey = mercantile.quadkey(btile)
         tile_data = get_tile_data(quadkey, start, end, *filters, **headers)
         for feature in tile_data:
-            if lonlat_in_bbox(bbox, feature[0], feature[1]):
-                values.append(
-                    (feature[feature_index] - scale_min)
-                    / (scale_max - scale_min)
-                )
+            if not lonlat_in_bbox(bbox, feature[0], feature[1]):
+                continue
+            y_index = math.floor(
+                TILE_RES * (bbox.top - feature[1]) / (bbox.top - bbox.bottom)
+            )
+            x_index = math.floor(
+                TILE_RES * (feature[0] - bbox.left) / (bbox.right - bbox.left)
+            )
+            subvalues[y_index * TILE_RES + x_index].append(
+                (feature[feature_index] - scale_min) / (scale_max - scale_min)
+            )
 
-    if len(values) == 0:
-        return web.Response(
-            body=generate_invalid_tile(), content_type="image/png"
+    colors = []
+    for values in subvalues:
+        if len(values) == 0:
+            colors.extend([255, 255, 255])
+            continue
+        elif len(values) == 1:
+            value = values[0]
+        else:
+            value = [
+                min(values),
+                *statistics.quantiles(values, n=100, method="inclusive"),
+                max(values),
+            ][percentile]
+        colors.extend(
+            [round(c * 255) for c in viridis(round(value * 255))][:3]
         )
-    elif len(values) == 1:
-        value = values[0]
-    else:
-        value = [
-            min(values),
-            *statistics.quantiles(values, n=100, method="inclusive"),
-            max(values),
-        ][percentile]
 
     tile = io.BytesIO()
-    writer = png.Writer(1, 1, greyscale=False)
-    writer.write(
-        tile, [[round(c * 255) for c in viridis(round(value * 255))[:3]]]
-    )
+    writer = png.Writer(TILE_RES, TILE_RES, greyscale=False)
+    writer.write_array(tile, colors)
     tile.seek(0)
 
     return web.Response(body=tile.getvalue(), content_type="image/png")
