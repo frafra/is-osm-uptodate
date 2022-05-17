@@ -223,6 +223,14 @@ def generate_invalid_tile():
     return tile.getvalue()
 
 
+def ensure_range(value, value_min=0, value_max=1):
+    if value < value_min:
+        value = value_min
+    elif value > value_max:
+        value = value_max
+    return value
+
+
 async def tile(request):
     z = int(request.match_info["z"])
     x = int(request.match_info["x"])
@@ -291,11 +299,21 @@ async def tile(request):
         for feature in tile_data:
             if not lonlat_in_bbox(bbox, feature[0], feature[1]):
                 continue
-            y_index = math.floor(
-                TILE_RES * (bbox.top - feature[1]) / (bbox.top - bbox.bottom)
+            y_index = ensure_range(
+                math.floor(
+                    TILE_RES
+                    * (bbox.top - feature[1])
+                    / (bbox.top - bbox.bottom)
+                ),
+                value_max=TILE_RES - 1,
             )
-            x_index = math.floor(
-                TILE_RES * (feature[0] - bbox.left) / (bbox.right - bbox.left)
+            x_index = ensure_range(
+                math.floor(
+                    TILE_RES
+                    * (feature[0] - bbox.left)
+                    / (bbox.right - bbox.left)
+                ),
+                value_max=TILE_RES - 1,
             )
             subvalues[y_index * TILE_RES + x_index].append(
                 (feature[feature_index] - scale_min) / (scale_max - scale_min)
