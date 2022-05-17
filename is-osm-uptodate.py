@@ -26,7 +26,6 @@ API = f"{API_SERVER}/v1/elementsFullHistory/geometry"
 METADATA = f"{API_SERVER}/v1/metadata"
 CACHE_REFRESH = 60 * 60 * 24
 Z_TARGET = int(os.environ.get("Z_TARGET", 12))
-TILE_RES = int(os.environ.get("TILE_RES", 8))
 API_OSM = "https://www.openstreetmap.org/api/0.6"
 DEFAULT_FILTER = "type:node"
 
@@ -257,6 +256,7 @@ async def tile(request):
     scale_min = request.rel_url.query.get("scale_min")
     scale_max = request.rel_url.query.get("scale_max")
     percentile = int(request.rel_url.query.get("percentile", "50"))
+    resolution = int(request.rel_url.query.get("resolution", "8"))
     if percentile < 0 or percentile > 100:
         return web.Response(
             body=generate_invalid_tile(), content_type="image/png"
@@ -300,7 +300,7 @@ async def tile(request):
     if scale_min == scale_max:
         scale_max += 1
 
-    subvalues = [[] for _ in range(TILE_RES * TILE_RES)]
+    subvalues = [[] for _ in range(resolution * resolution)]
     bbox = mercantile.Bbox(*mercantile.bounds(tile))
     for btile in bbox_tiles(bbox, Z_TARGET):
         quadkey = mercantile.quadkey(btile)
@@ -310,21 +310,21 @@ async def tile(request):
                 continue
             y_index = ensure_range(
                 math.floor(
-                    TILE_RES
+                    resolution
                     * (bbox.top - feature[1])
                     / (bbox.top - bbox.bottom)
                 ),
-                value_max=TILE_RES - 1,
+                value_max=resolution - 1,
             )
             x_index = ensure_range(
                 math.floor(
-                    TILE_RES
+                    resolution
                     * (feature[0] - bbox.left)
                     / (bbox.right - bbox.left)
                 ),
-                value_max=TILE_RES - 1,
+                value_max=resolution - 1,
             )
-            subvalues[y_index * TILE_RES + x_index].append(
+            subvalues[y_index * resolution + x_index].append(
                 (feature[feature_index] - scale_min) / (scale_max - scale_min)
             )
 
@@ -346,7 +346,7 @@ async def tile(request):
         )
 
     tile = io.BytesIO()
-    writer = png.Writer(TILE_RES, TILE_RES, greyscale=False)
+    writer = png.Writer(resolution, resolution, greyscale=False)
     writer.write_array(tile, colors)
     tile.seek(0)
 
