@@ -48,6 +48,6 @@
   text-shadow: 0 0 5px white;
 }
 
-.leaflet-layer:nth-of-type(2) .leaflet-tile {
+.pixelated .leaflet-tile {
   image-rendering: pixelated;
 }
