@@ -8,23 +8,16 @@ kill_timeout = 5
   GUNICORN_CMD_ARGS = "--workers 2"
 
 [[statics]]
-  guest_path = "/web"
+  guest_path = "/home/app/web/dist/"
   url_prefix = "/"
 
-[experimental]
-  allowed_public_ports = []
-  auto_rollback = true
-
 [[services]]
-  http_checks = []
   internal_port = 8000
   protocol = "tcp"
-  script_checks = []
 
   [services.concurrency]
-    hard_limit = 1024
-    soft_limit = 256
-    type = "connections"
+    hard_limit = 25
+    soft_limit = 20
 
   [[services.ports]]
     handlers = ["http"]
@@ -37,6 +30,5 @@ kill_timeout = 5
   [[services.tcp_checks]]
     grace_period = "1s"
     interval = "15s"
-    restart_limit = 6
-    timeout = "2s"
-
+    restart_limit = 0
+    timeout = "5s"
