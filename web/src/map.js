@@ -394,7 +394,7 @@ function Map(props) {
             ref={tileRef}
             url={dataTileURL_with_params}
             maxZoom={maxZoom}
-            tileSize={64}
+            tileSize={512}
             zoomOffset={-1}
             opacity={0.5}
             zIndex={1}
