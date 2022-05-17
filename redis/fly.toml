@@ -12,6 +12,11 @@ processes = []
   allowed_public_ports = []
   auto_rollback = true
 
+# example: flyctl volumes create redis_data --no-encryption -r fra -s 1
+[mounts]
+source = "redis_data"
+destination = "/data"
+
 [[services]]
   http_checks = []
   internal_port = 6379
