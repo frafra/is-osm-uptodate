@@ -398,6 +398,9 @@ function Map(props) {
             zoomOffset={-1}
             opacity={0.5}
             zIndex={1}
+            updateWhenIdle={true}
+            updateWhenZooming={false}
+            className="pixelated"
           />
         </LayersControl.Overlay>
       </LayersControl>
