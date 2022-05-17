@@ -11,6 +11,7 @@ import statistics
 import time
 import urllib.parse
 import urllib.request
+import zlib
 
 import mercantile
 import png
@@ -168,9 +169,16 @@ def get_tile_data(quadkey, start, end, *filters, **headers):
                 req.add_header(key, value)
             with urllib.request.urlopen(req) as resp_gzipped:
                 resp = gzip.GzipFile(fileobj=resp_gzipped)
-                result = list(stream_to_processed(resp))
+                compress = zlib.compressobj()
+                result = b""
+                for chunk in stream_to_processed(resp):
+                    serialized = json.dumps(chunk, use_decimal=True) + "\n"
+                    result += compress.compress(serialized.encode())
+                result += compress.flush()
             cache.set(cache_key, result, timeout=60 * 60 * 24 * 30)
-    return result
+    for line in zlib.decompress(result).decode().split("\n"):
+        if line:
+            yield json.loads(line)
 
 
 def get_tile_features(quadkey, start, end, *filters, **headers):
