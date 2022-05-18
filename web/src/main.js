@@ -25,9 +25,13 @@ function App() {
   const [downloadLink, setDownloadLink] = useState();
 
   useEffect(() => {
+    if (bounds) {
+      var url = `/api/getData?minx=${bounds.getWest()}&miny=${bounds.getSouth()}&maxx=${bounds.getEast()}&maxy=${bounds.getNorth()}`;
+    } else {
+      var url = null;
+    }
     switch (state) {
       case states.LOADING:
-        let url = `/api/getData?minx=${bounds.getWest()}&miny=${bounds.getSouth()}&maxx=${bounds.getEast()}&maxy=${bounds.getNorth()}`;
         if (filter.trim().length > 0) url += `&filter=${filter}`;
         setBoundsLoaded(bounds);
         fetch(url)
@@ -41,7 +45,6 @@ function App() {
           })
           .then((parsed) => {
             setGeojson(parsed);
-            setDownloadLink(url);
             setState(states.LOADED);
           })
           .catch((error) => {
@@ -56,14 +59,13 @@ function App() {
       case states.ERROR:
       case states.CLEAN:
         setBoundsLoaded();
-        setDownloadLink(null);
-        setGeojson(null);
         setStatistics({});
         break;
       case states.LOADED:
       default:
         break;
     }
+    setDownloadLink(url);
     return null;
   }, [state]);
 
