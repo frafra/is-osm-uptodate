@@ -85,6 +85,7 @@ function App() {
         setState={setState}
         mode={mode}
         percentile={percentile}
+        filter={filter}
         setBounds={setBounds}
         boundsLoaded={boundsLoaded}
         geojson={geojson}
