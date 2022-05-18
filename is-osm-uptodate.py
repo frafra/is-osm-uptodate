@@ -190,7 +190,7 @@ def get_tile_features(quadkey, start, end, *filters, **headers):
 def generate(bbox, start, end, *filters, **headers):
     bbox = mercantile.Bbox(*bbox)
     yield ""  # signal
-    yield '{"type": "FeatureCollection", "features": ['
+    yield "["
     first = True
     for tile in bbox_tiles(bbox, Z_TARGET):
         quadkey = mercantile.quadkey(tile)
@@ -198,13 +198,19 @@ def generate(bbox, start, end, *filters, **headers):
             quadkey, start, end, *filters, **headers
         ):
             if lonlat_in_bbox(bbox, *feature["geometry"]["coordinates"]):
-                feature_json = json.dumps(feature, use_decimal=True)
+                feature_json = json.dumps(
+                    {
+                        "coordinates": feature["geometry"]["coordinates"],
+                        "properties": feature["properties"],
+                    },
+                    use_decimal=True,
+                )
                 if not first:
                     yield ", "
                 if first and feature_json:
                     first = False
                 yield feature_json
-    yield "]}"
+    yield "]"
 
 
 def get_updated_metadata():

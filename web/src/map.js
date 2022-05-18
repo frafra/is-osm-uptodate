@@ -1,26 +1,14 @@
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import ReactDOMServer from 'react-dom/server';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
 
-import {
-  AttributionControl,
-  MapContainer,
-  TileLayer,
-  CircleMarker,
-  GeoJSON,
-  LayersControl,
-  Popup,
-  Rectangle,
-  useMap,
-  useMapEvents,
-} from 'react-leaflet';
+import DeckGL from '@deck.gl/react';
+import {HexagonLayer} from '@deck.gl/aggregation-layers';
+import {BitmapLayer} from '@deck.gl/layers';
+import {TileLayer} from '@deck.gl/geo-layers';
 
-import MarkerClusterGroup from 'react-leaflet-markercluster';
-import 'leaflet.markercluster/dist/MarkerCluster.css';
-
-import { GeoSearchControl, OpenStreetMapProvider } from 'leaflet-geosearch';
-import 'leaflet-geosearch/dist/geosearch.css';
+import {Map as MapGL, _MapContext as MapContext, AttributionControl, NavigationControl, Source, Layer } from 'react-map-gl';
+import maplibregl from 'maplibre-gl';
+import 'maplibre-gl/dist/maplibre-gl.css';
 
 import { interpolateViridis } from 'd3-scale-chromatic';
 
@@ -30,9 +18,9 @@ import {
   dataTileURL,
   maxZoom,
   minZoom,
-  defaultLocation,
   valuesBlacklist,
   modes,
+  INITIAL_VIEW_STATE,
 } from './constants';
 
 import './map.css';
@@ -279,10 +267,11 @@ function CustomGeoJSON({ geojson, mode, worstId, bestId, setStatistics }) {
 }
 
 function Map(props) {
+  const [viewState, setViewState] = useState(INITIAL_VIEW_STATE);
+
   const clusterRef = useRef(null);
   const tileRef = useRef(null);
   let [zoom, lon, lat] = document.location.hash.substr(1).split('/');
-  if (!(zoom && lon && lat)) [zoom, lon, lat] = defaultLocation;
   const [colormap, worstId, worst, bestId, best] = useMemo(() => {
     const colormap = {};
     const { getValue } = modes[props.mode];
@@ -340,72 +329,53 @@ function Map(props) {
     }
   }, [params]);
 
+
+  function renderSubLayers(props) {
+    const {
+      bbox: {west, south, east, north}
+    } = props.tile;
+    return new BitmapLayer(props, {
+      data: null,
+      image: props.data,
+      bounds: [west, south, east, north]
+    });  
+  }
+
+  const mapRef = useRef();
+
   return (
-    <MapContainer
-      id="map"
-      center={[lon, lat]}
-      zoom={zoom}
-      minZoom={minZoom}
-      maxZoom={maxZoom}
-      whenCreated={(map) => {
-        setup(map);
-        // https://github.com/PaulLeCam/react-leaflet/issues/46
-        map.onload = updateBounds(map, props.setBounds);
-      }}
-      attributionControl={false}
-    >
-      <TileLayer
-        attribution={customAttribution}
-        url={tileURL}
-        maxZoom={maxZoom}
-        prefix={false}
-      />
-      <GetBounds setBounds={props.setBounds} />
-      {props.boundsLoaded && (
-        <Rectangle
-          pathOptions={{ color: '#ff7800', fill: false, weight: 3 }}
-          bounds={props.boundsLoaded}
-        />
-      )}
-      <MarkerClusterGroup
-        ref={clusterRef}
-        iconCreateFunction={iconCreateFn}
-        spiderfyOnMaxZoom={false}
-        disableClusteringAtZoom={19}
+      <MapGL
+        initialViewState={viewState}
       >
-        {props.geojson && (
-          <CustomGeoJSON
-            geojson={props.geojson}
-            mode={props.mode}
-            worstId={worstId}
-            bestId={bestId}
-            setStatistics={props.setStatistics}
-          />
-        )}
-      </MarkerClusterGroup>
-      <CustomControl
-        worstPretty={worstPretty}
-        bestPretty={bestPretty}
-        setColor={setColor}
-      />
-      <LayersControl position="bottomleft" collapsed={false}>
-        <LayersControl.Overlay checked name="Aggregated nodes">
-          <TileLayer
-            ref={tileRef}
-            url={dataTileURL_with_params}
-            maxZoom={maxZoom}
-            tileSize={512}
-            zoomOffset={-1}
-            opacity={0.5}
-            zIndex={1}
-            updateWhenIdle={true}
-            updateWhenZooming={false}
-            className="pixelated"
-          />
-        </LayersControl.Overlay>
-      </LayersControl>
-      <AttributionControl position="bottomright" prefix="" />
-    </MapContainer>
+            <Source
+          type="raster"
+          tiles={["https://tile.openstreetmap.org/{z}/{x}/{y}.png"]}
+          tileSize={256}
+          maxZoom={19}
+        >
+          <Layer type="raster"/>
+        </Source>
+      
+      <DeckGL
+        controller={false}
+        >
+      <HexagonLayer
+         data={'/api/getData?minx=9.1&miny=45.45&maxx=9.2&maxy=45.46'}
+         onViewStateChange={e => setViewState(e.viewState)}
+         colorAggregation={'MEAN'}
+         getColorWeight={point => point.properties.version}
+         extruded={false}
+         getPosition={d => d.coordinates}
+         radius={50}
+         opacity={0.3}
+       />
+    </DeckGL>
+    
+            <NavigationControl />
+          <AttributionControl customAttribution={customAttribution} />
+
+
+      </MapGL>
   );
 }
 

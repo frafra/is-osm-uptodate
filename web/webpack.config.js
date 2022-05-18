@@ -37,4 +37,9 @@ module.exports = (env) => { return {
       },
     ],
   },
+  resolve:{
+      alias: {
+          'mapbox-gl': 'maplibre-gl',
+      }
+  }
 }};
