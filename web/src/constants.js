@@ -21,8 +21,8 @@ export const modes = {
     getValue: (feature) => new Date(feature.properties.lastedit).getTime(),
     prettyValue: (date) => new Date(date).toISOString().slice(0, 10),
     inverted: false,
-    worstLabel: 'least recently updated',
-    bestLabel: 'most recently updated',
+    worstLabel: 'Least recently updated',
+    bestLabel: 'Most recently updated',
   },
   creation: {
     defaultWorstValue: Date.parse('01 Jan 2010 00:00:00'),
@@ -30,8 +30,8 @@ export const modes = {
     getValue: (feature) => new Date(feature.properties.created).getTime(),
     prettyValue: (date) => new Date(date).toISOString().slice(0, 10),
     inverted: false,
-    worstLabel: 'oldest',
-    bestLabel: 'newest',
+    worstLabel: 'Oldest',
+    bestLabel: 'Newest',
   },
   revisions: {
     defaultWorstValue: 1,
@@ -39,8 +39,8 @@ export const modes = {
     getValue: (feature) => feature.properties.version,
     prettyValue: (value) => value,
     inverted: false,
-    worstLabel: 'fewest revisions',
-    bestLabel: 'most revisions',
+    worstLabel: 'Fewest revisions',
+    bestLabel: 'Most revisions',
   },
   frequency: {
     defaultWorstValue: 700,
@@ -54,8 +54,8 @@ export const modes = {
       return `every ${years} year(s)`;
     },
     inverted: true,
-    worstLabel: 'least frequently updated',
-    bestLabel: 'most frequently updated',
+    worstLabel: 'Least frequently updated',
+    bestLabel: 'Most frequently updated',
   },
 };
 
