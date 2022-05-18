@@ -400,22 +400,18 @@ function Map(props) {
         bestPretty={bestPretty}
         setColor={setColor}
       />
-      <LayersControl position="bottomleft" collapsed={false}>
-        <LayersControl.Overlay checked name="Aggregated nodes">
-          <TileLayer
-            ref={tileRef}
-            url={dataTileURL_with_params}
-            maxZoom={17}
-            tileSize={512}
-            zoomOffset={-1}
-            opacity={0.5}
-            zIndex={1}
-            updateWhenIdle={true}
-            updateWhenZooming={false}
-            className="pixelated"
-          />
-        </LayersControl.Overlay>
-      </LayersControl>
+      <TileLayer
+        ref={tileRef}
+        url={dataTileURL_with_params}
+        maxZoom={17}
+        tileSize={512}
+        zoomOffset={-1}
+        opacity={0.5}
+        zIndex={1}
+        updateWhenIdle={true}
+        updateWhenZooming={false}
+        className="pixelated"
+      />
       <AttributionControl position="bottomright" prefix="" />
     </MapContainer>
   );
