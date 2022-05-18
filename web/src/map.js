@@ -33,6 +33,7 @@ import {
   defaultLocation,
   valuesBlacklist,
   modes,
+  states,
 } from './constants';
 
 import './map.css';
@@ -75,7 +76,7 @@ function iconCreateFunction(percentile, colormap, cluster) {
   return L.divIcon({ html, className: 'mycluster' });
 }
 
-function updateBounds(map, setBounds) {
+function updateBounds(map, setBounds, setState) {
   const center = map.getCenter();
   const lat = center.lat.toFixed(5);
   const lng = center.lng.toFixed(5);
@@ -83,13 +84,18 @@ function updateBounds(map, setBounds) {
   document.location.hash = `${zoom}/${lat}/${lng}`;
 
   setBounds(map.getBounds());
+  if (zoom >= 18) {
+    setState(states.LOADING);
+  } else {
+    setState(states.CLEAN);
+  }
 }
 
-function GetBounds({ setBounds }) {
+function GetBounds({ setBounds, setState }) {
   const map = useMapEvents({
-    resize: () => updateBounds(map, setBounds),
-    moveend: () => updateBounds(map, setBounds),
-    zoomend: () => updateBounds(map, setBounds),
+    resize: () => updateBounds(map, setBounds, setState),
+    moveend: () => updateBounds(map, setBounds, setState),
+    zoomend: () => updateBounds(map, setBounds, setState),
   });
   return null;
 }
@@ -350,7 +356,7 @@ function Map(props) {
       whenCreated={(map) => {
         setup(map);
         // https://github.com/PaulLeCam/react-leaflet/issues/46
-        map.onload = updateBounds(map, props.setBounds);
+        map.onload = updateBounds(map, props.setBounds, props.setState);
       }}
       attributionControl={false}
     >
@@ -360,29 +366,31 @@ function Map(props) {
         maxZoom={maxZoom}
         prefix={false}
       />
-      <GetBounds setBounds={props.setBounds} />
+      <GetBounds setBounds={props.setBounds} setState={props.setState} />
       {props.boundsLoaded && (
         <Rectangle
           pathOptions={{ color: '#ff7800', fill: false, weight: 3 }}
           bounds={props.boundsLoaded}
         />
       )}
-      <MarkerClusterGroup
-        ref={clusterRef}
-        iconCreateFunction={iconCreateFn}
-        spiderfyOnMaxZoom={false}
-        disableClusteringAtZoom={19}
-      >
-        {props.geojson && (
-          <CustomGeoJSON
-            geojson={props.geojson}
-            mode={props.mode}
-            worstId={worstId}
-            bestId={bestId}
-            setStatistics={props.setStatistics}
-          />
-        )}
-      </MarkerClusterGroup>
+      { zoom >= 18 &&
+        <MarkerClusterGroup
+          ref={clusterRef}
+          iconCreateFunction={iconCreateFn}
+          spiderfyOnMaxZoom={false}
+          disableClusteringAtZoom={19}
+        >
+          {props.geojson && (
+            <CustomGeoJSON
+              geojson={props.geojson}
+              mode={props.mode}
+              worstId={worstId}
+              bestId={bestId}
+              setStatistics={props.setStatistics}
+            />
+          )}
+        </MarkerClusterGroup>
+      }
       <CustomControl
         worstPretty={worstPretty}
         bestPretty={bestPretty}
@@ -393,7 +401,7 @@ function Map(props) {
           <TileLayer
             ref={tileRef}
             url={dataTileURL_with_params}
-            maxZoom={maxZoom}
+            maxZoom={17}
             tileSize={512}
             zoomOffset={-1}
             opacity={0.5}

@@ -50,9 +50,6 @@ function Bar({
       <AccordionItem title="Settings">
         <Settings setFilter={setFilter} />
       </AccordionItem>
-      <AccordionItem title="Actions">
-        <Actions state={state} setState={setState} />
-      </AccordionItem>
       <AccordionItem title="Criteria">
         <Criteria
           mode={mode}
