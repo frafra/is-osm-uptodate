@@ -335,6 +335,7 @@ function Map(props) {
   const params = (new URLSearchParams({
     mode: props.mode,
     percentile: props.percentile,
+    filter: props.filter,
     scale_min: modes[props.mode] ? worst : best,
     scale_max: modes[props.mode] ? best : worst,
   })).toString();
