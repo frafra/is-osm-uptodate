@@ -11,9 +11,6 @@ function Settings({ setFilter }) {
 
   return (
     <form className="input-group" onSubmit={handleSubmit}>
-      <div className="input-group-prepend">
-        <div className="input-group-text">Filter</div>
-      </div>
       <input
         className="form-control"
         type="text"

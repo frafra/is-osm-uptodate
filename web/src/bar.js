@@ -47,7 +47,7 @@ function Bar({
 }) {
   return (
     <div id="bar" className="bg-light accordion">
-      <AccordionItem title="Settings">
+      <AccordionItem title="Filters">
         <Settings setFilter={setFilter} />
       </AccordionItem>
       <AccordionItem title="Criteria">
