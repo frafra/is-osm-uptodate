@@ -37,7 +37,7 @@ line-length = 79
 profile = "black"
 
 [project.urls]
-Homepage = "is-osm-uptodate.fly.dev"
+Homepage = "is-osm-uptodate.frafra.eu"
 Repository = "github.com/frafra/is-osm-uptodate"
 
 [build-system]
