@@ -11,7 +11,7 @@ function Download({ downloadLink }) {
           first.
         </p>
       )}
-      <button
+      <a
         id="download"
         className={classNames('btn', 'btn-primary', {
           disabled: !downloadLink,
@@ -22,7 +22,7 @@ function Download({ downloadLink }) {
         <i className="fas fa-arrow-alt-circle-down" />
         &nbsp;
         <span>Download</span>
-      </button>
+      </a>
     </>
   );
 }
