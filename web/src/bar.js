@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 
 import Settings from './components/settings';
-import Actions from './components/actions';
 import Criteria from './components/criteria';
 import Statistics from './components/statistics';
 import Download from './components/download';
