@@ -258,10 +258,13 @@ function CustomGeoJSON({ geojson, mode, worstId, bestId, setStatistics }) {
         },
       };
       Object.keys(stats).forEach((key) => {
-        stats[key].marker = Object.values(geojsonRef.current._layers).find(
+        var marker = Object.values(geojsonRef.current._layers).find(
           (layer) => layer.osmid === stats[key].osmid
         );
-        stats[key].marker.map = map;
+        if (marker) {
+          marker.map = map;
+          stats[key].marker = marker;
+        }
       });
       setStatistics(stats);
     } else {
