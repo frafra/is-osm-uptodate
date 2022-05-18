@@ -13,8 +13,7 @@ function Statistics({ statistics }) {
     <>
       {Object.keys(statistics).length == 0 && (
         <p>
-          No statistics to show. Click on <i>Show nodes</i> to get some
-          statistics.
+          No statistics to show. Zoom in to get some statistics.
         </p>
       )}
       <table className="table table-striped">
