@@ -12,6 +12,7 @@ COPY web/package.json web/package-lock.json ./
 RUN --mount=type=cache,target=/home/app/.npm npm ci
 COPY web/webpack.config.js ./
 COPY web/src ./src
+ARG SENTRY_DSN
 RUN npm run build
 
 FROM apt AS base
@@ -33,6 +34,8 @@ COPY --chown=app:app is-osm-uptodate.py ./
 
 EXPOSE 8000/tcp
 
+ARG SENTRY_DSN
+ENV SENTRY_DSN=$SENTRY_DSN
 ENV PYTHONPATH=__pypackages__/3.10/lib
 ENV PATH=$PATH:__pypackages__/3.10/bin
 CMD ["gunicorn", "is-osm-uptodate:webapp", "--bind", "0.0.0.0:8000", "--workers", "2", "--worker-class", "aiohttp.GunicornWebWorker", "--timeout", "300"]

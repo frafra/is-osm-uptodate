@@ -1,12 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 
+import * as Sentry from "@sentry/react";
+import { BrowserTracing } from "@sentry/tracing";
+
 import { states } from './constants';
 
 import Bar from './bar';
 import Map from './map';
 
 import './main.css';
+
+if (SENTRY_DSN) {
+  Sentry.init({
+    dsn: SENTRY_DSN,
+    integrations: [new BrowserTracing()],
+    tracesSampleRate: 1.0,
+    release: RELEASE,
+  });
+}
 
 function App() {
   const [state, setState] = useState();

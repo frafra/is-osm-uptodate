@@ -635,6 +635,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "sentry-sdk"
+version = "1.5.12"
+summary = "Python client for Sentry (https://sentry.io)"
+dependencies = [
+    "certifi",
+    "urllib3>=1.10.0",
+]
+
+[[package]]
 name = "setuptools"
 version = "61.3.1"
 requires_python = ">=3.7"
@@ -759,7 +768,7 @@ dependencies = [
 
 [metadata]
 lock_version = "3.1"
-content_hash = "sha256:e99e3d08e1fb91a558b88404d9881dcad25b7b6f3b5cf7de0b036ef5eb9967a8"
+content_hash = "sha256:958bf48b631a146864e30b888977eaefcc32b5b0a0a0151ce196692b7c47971e"
 
 [metadata.files]
 "aiohttp 3.8.1" = [
@@ -1476,6 +1485,10 @@ content_hash = "sha256:e99e3d08e1fb91a558b88404d9881dcad25b7b6f3b5cf7de0b036ef5e
 "seleniumbase 1.67.1" = [
     {file = "seleniumbase-1.67.1-py2.py3-none-any.whl", hash = "sha256:faacaeb25b23fac9faefe85efd8dd1af64a9e5fa0f585d926942c675315f3a58"},
     {file = "seleniumbase-1.67.1.tar.gz", hash = "sha256:0a433b820aba603815f4395c2d907f807afae72324226ab33dca1ffbea962902"},
+]
+"sentry-sdk 1.5.12" = [
+    {file = "sentry_sdk-1.5.12-py2.py3-none-any.whl", hash = "sha256:778b53f0a6c83b1ee43d3b7886318ba86d975e686cb2c7906ccc35b334360be1"},
+    {file = "sentry-sdk-1.5.12.tar.gz", hash = "sha256:259535ba66933eacf85ab46524188c84dcb4c39f40348455ce15e2c0aca68863"},
 ]
 "setuptools 61.3.1" = [
     {file = "setuptools-61.3.1-py3-none-any.whl", hash = "sha256:41aface2e85b517c3a466b4689b8055c02cd2e623461f09af7d93f3da65c4709"},
