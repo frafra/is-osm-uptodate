@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = "2.0"
+__version__ = "2.1.0-alpha"
 
 import datetime
 import gzip
@@ -15,11 +15,22 @@ import zlib
 
 import mercantile
 import png
+import sentry_sdk
 import simplejson as json
 from aiohttp import web
 from jsonslicer import JsonSlicer
 from matplotlib import cm
+from sentry_sdk.integrations.aiohttp import AioHttpIntegration
 from walrus import Database
+
+SENTRY_DSN = os.getenv("SENTRY_DSN")
+if SENTRY_DSN:
+    sentry_sdk.init(
+        SENTRY_DSN,
+        integrations=[AioHttpIntegration()],
+        traces_sample_rate=1.0,
+        release=__version__,
+    )
 
 API_SERVER = os.environ.get("API_SERVER", "https://api.ohsome.org")
 API = f"{API_SERVER}/v1/elementsFullHistory/geometry"
