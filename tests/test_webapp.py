@@ -17,7 +17,9 @@ class TestWebapp(BaseCase):
     @parameterized.expand(buttons)
     def test_tabs(self, button):
         self.test_open_home()
-        self.click("button#fetch")
+        self.wait_for_element_absent(
+            "#section-settings-heading accordion-body > p"
+        )
         self.execute_script(
             'document.getElementById("' + button + '").click()'
         )
