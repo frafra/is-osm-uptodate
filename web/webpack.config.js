@@ -1,7 +1,6 @@
 const path = require('path');
 const webpack = require('webpack');
 const SentryWebpackPlugin = require("@sentry/webpack-plugin");
-const TerserPlugin = require("terser-webpack-plugin");
 
 module.exports = (env) => {
   let conf = {
