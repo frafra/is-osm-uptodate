@@ -7,7 +7,6 @@ export const tileURL = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
 export const dataTileURL = 'tiles/{z}/{x}/{y}.png';
 
 export const states = {
-  CLEAN: 'clean',
   LOADING: 'loading',
   LOADED: 'loaded',
   ERROR: 'error',
