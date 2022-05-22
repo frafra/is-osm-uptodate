@@ -34,8 +34,9 @@ test = "pytest --headless --browser=firefox --save_screenshot tests/"
 line-length = 79
 
 [tool.isort]
-# https://pycqa.github.io/isort/docs/configuration/black_compatibility/
+# https://pycqa.github.io/isort/docs/configuration/black_compatibility.html
 profile = "black"
+line_length = 79
 
 [project.urls]
 Homepage = "is-osm-uptodate.frafra.eu"
