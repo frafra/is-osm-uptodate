@@ -31,6 +31,7 @@ COPY --from=builder --chown=app:app /home/app/web/dist/ web/dist/
 COPY --chown=app:app web/dist/index.html web/dist/
 
 COPY --chown=app:app is-osm-uptodate.py ./
+COPY --chown=app:app server/ server/
 
 EXPOSE 8000/tcp
 
