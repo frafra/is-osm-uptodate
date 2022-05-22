@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import ReactDOMServer from 'react-dom/server';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -76,26 +76,47 @@ function iconCreateFunction(percentile, colormap, cluster) {
   return L.divIcon({ html, className: 'mycluster' });
 }
 
-function updateBounds(map, setBounds, setState) {
+function loadData(setState, url, setGeojson ) {
+  fetch(url)
+    .then((response) => {
+      if (response.ok) {
+        return response.json();
+      }
+      return response.text().then((text) => {
+        throw new Error(text);
+      });
+    })
+    .then((parsed) => {
+      setGeojson(parsed);
+      setState(states.LOADED);
+    })
+    .catch((error) => {
+      console.log(error);
+      if (error.message === 'ohsome') {
+        setState(states.ERROR_OHSOME);
+      } else {
+        console.log(error);
+        setState(states.ERROR);
+      }
+    });
+}
+
+function updateBounds(map, setBounds) {
   const center = map.getCenter();
   const lat = center.lat.toFixed(5);
   const lng = center.lng.toFixed(5);
   const zoom = map.getZoom();
   document.location.hash = `${zoom}/${lat}/${lng}`;
 
-  setBounds(map.getBounds());
-  if (zoom >= 18) {
-    setState(states.LOADING);
-  } else {
-    setState(states.CLEAN);
-  }
+  var bounds = map.getBounds();
+  setBounds(bounds);
 }
 
-function GetBounds({ setBounds, setState }) {
+function GetBounds({ setBounds }) {
   const map = useMapEvents({
-    resize: () => updateBounds(map, setBounds, setState),
-    moveend: () => updateBounds(map, setBounds, setState),
-    zoomend: () => updateBounds(map, setBounds, setState),
+    resize: () => updateBounds(map, setBounds),
+    moveend: () => updateBounds(map, setBounds),
+    zoomend: () => updateBounds(map, setBounds),
   });
   return null;
 }
@@ -289,7 +310,8 @@ function CustomGeoJSON({ geojson, mode, worstId, bestId, setStatistics }) {
 
 function Map(props) {
   const clusterRef = useRef(null);
-  const tileRef = useRef(null);
+  const [bounds, setBounds] = useState();
+  const [geojson, setGeojson] = useState(null);
   let [zoom, lon, lat] = document.location.hash.substr(1).split('/');
   if (!(zoom && lon && lat)) [zoom, lon, lat] = defaultLocation;
   const [colormap, worstId, worst, bestId, best] = useMemo(() => {
@@ -300,9 +322,9 @@ function Map(props) {
     let best = modes[props.mode].defaultBestValue;
     let bestId = null;
     let values = [];
-    if (props.geojson) {
+    if (geojson) {
       const { getValue } = modes[props.mode];
-      values = props.geojson.features.map((feature) => getValue(feature));
+      values = geojson.features.map((feature) => getValue(feature));
     }
     if (values.length > 0) {
       const lowest = Math.min(...values);
@@ -311,17 +333,17 @@ function Map(props) {
       worst = !inverted ? lowest : highest;
       best = !inverted ? highest : lowest;
       const range = highest - lowest;
-      props.geojson.features.forEach((feature) => {
+      geojson.features.forEach((feature) => {
         const score = Math.abs(worst - getValue(feature)) / range;
         const color = interpolateViridis(score);
         feature.properties.color = color;
         colormap[color] = score;
       });
-      worstId = props.geojson.features[values.indexOf(worst)].properties.id;
-      bestId = props.geojson.features[values.indexOf(best)].properties.id;
+      worstId = geojson.features[values.indexOf(worst)].properties.id;
+      bestId = geojson.features[values.indexOf(best)].properties.id;
     }
     return [colormap, worstId, worst, bestId, best];
-  }, [props.geojson, props.mode]);
+  }, [geojson, props.mode]);
 
   const worstPretty = modes[props.mode].prettyValue(worst);
   const bestPretty = modes[props.mode].prettyValue(best);
@@ -333,7 +355,7 @@ function Map(props) {
 
   useEffect(() => {
     if (clusterRef.current) clusterRef.current.refreshClusters();
-  }, [props.percentile, props.mode, props.geojson]);
+  }, [props.percentile, props.mode, geojson]);
 
   const params = (new URLSearchParams({
     mode: props.mode,
@@ -344,11 +366,33 @@ function Map(props) {
   })).toString();
 
   const dataTileURL_with_params = dataTileURL+"?"+params;
+
+  var url = null;
   useEffect(() => {
-    if (tileRef.current) {
-      tileRef.current.setUrl(dataTileURL_with_params);
+    if (bounds) {
+      url = `/api/getData?minx=${bounds.getWest()}&miny=${bounds.getSouth()}&maxx=${bounds.getEast()}&maxy=${bounds.getNorth()}`;
+      if (props.filter.trim().length > 0) url += `&filter=${props.filter}`;
+      props.setDownloadLink(url);
+      if (zoom >= 18) {
+        props.setState(states.LOADING);
+        loadData(props.setState, url, setGeojson);
+      }
     }
-  }, [params]);
+  }, [url, bounds, props.filter]);
+
+  const loadAllData = zoom >= 18;
+
+  const tileRef = useCallback(tileLayer => {
+    if (tileLayer !== null) {
+      tileLayer.on('load', event => {
+        props.setState(states.LOADED);
+        props.setStatistics({});
+      });
+      tileLayer.on('loading', event => {
+        props.setState(states.LOADING);
+      });
+    }
+  }, []);
 
   return (
     <MapContainer
@@ -360,7 +404,7 @@ function Map(props) {
       whenCreated={(map) => {
         setup(map);
         // https://github.com/PaulLeCam/react-leaflet/issues/46
-        map.onload = updateBounds(map, props.setBounds, props.setState);
+        map.onload = map => updateBounds(map, setBounds);
       }}
       attributionControl={false}
     >
@@ -370,23 +414,18 @@ function Map(props) {
         maxZoom={maxZoom}
         prefix={false}
       />
-      <GetBounds setBounds={props.setBounds} setState={props.setState} />
-      {props.boundsLoaded && (
-        <Rectangle
-          pathOptions={{ color: '#ff7800', fill: false, weight: 3 }}
-          bounds={props.boundsLoaded}
-        />
-      )}
-      { zoom >= 18 &&
+      <GetBounds setBounds={setBounds} />
+
+      { loadAllData ? (
         <MarkerClusterGroup
           ref={clusterRef}
           iconCreateFunction={iconCreateFn}
           spiderfyOnMaxZoom={false}
           disableClusteringAtZoom={19}
         >
-          {props.geojson && (
+          {geojson && (
             <CustomGeoJSON
-              geojson={props.geojson}
+              geojson={geojson}
               mode={props.mode}
               worstId={worstId}
               bestId={bestId}
@@ -394,25 +433,33 @@ function Map(props) {
             />
           )}
         </MarkerClusterGroup>
-      }
+        ) : (
+        <TileLayer
+          ref={tileRef}
+          key={dataTileURL_with_params}
+          url={dataTileURL_with_params}
+          tileSize={512}
+          zoomOffset={-1}
+          opacity={0.5}
+          zIndex={1}
+          updateWhenIdle={true}
+          updateWhenZooming={false}
+          className="pixelated"
+        />
+      )}
       <CustomControl
         worstPretty={worstPretty}
         bestPretty={bestPretty}
         setColor={setColor}
       />
-      <TileLayer
-        ref={tileRef}
-        url={dataTileURL_with_params}
-        maxZoom={17}
-        tileSize={512}
-        zoomOffset={-1}
-        opacity={0.5}
-        zIndex={1}
-        updateWhenIdle={true}
-        updateWhenZooming={false}
-        className="pixelated"
-      />
       <AttributionControl position="bottomright" prefix="" />
+      { props.state == states.LOADING && (
+        <div id="overlay">
+          <div id="spinner" className="spinner-border text-primary" role="status">
+            <span className="sr-only">Loading...</span>
+          </div>
+        </div>
+      )}
     </MapContainer>
   );
 }

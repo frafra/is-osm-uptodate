@@ -6,7 +6,6 @@ function Settings({ setFilter }) {
   function handleSubmit(e) {
     e.preventDefault();
     setFilter(text);
-    setText("");
   }
 
   return (

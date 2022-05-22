@@ -58,7 +58,7 @@ function Bar({
         />
       </AccordionItem>
       <AccordionItem title="Statistics">
-        <Statistics statistics={statistics} />
+        <Statistics statistics={statistics} state={state} />
       </AccordionItem>
       <AccordionItem title="Save">
         <Download downloadLink={downloadLink} />

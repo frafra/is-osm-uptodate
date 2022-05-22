@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { maxZoom } from '../constants';
+import { maxZoom, states } from '../constants';
 
 function flyAndOpen(marker, event) {
   const { map } = marker;
@@ -8,10 +8,10 @@ function flyAndOpen(marker, event) {
   map.flyTo(marker._latlng, maxZoom);
 }
 
-function Statistics({ statistics }) {
+function Statistics({ statistics, state }) {
   return (
     <>
-      {Object.keys(statistics).length == 0 && (
+      {(Object.keys(statistics).length == 0) && (state = states.LOADED) && (
         <p>
           No statistics to show. Zoom in to get some statistics.
         </p>
