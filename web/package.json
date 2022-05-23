@@ -13,7 +13,7 @@
   "author": "",
   "license": "GPL-3.0",
   "dependencies": {
-    "@fortawesome/fontawesome-free": "^6.0.0",
+    "@fortawesome/fontawesome-free": "^6.1.1",
     "@popperjs/core": "^2.11.2",
     "@sentry/browser": "^6.19.7",
     "@sentry/react": "^6.19.7",
