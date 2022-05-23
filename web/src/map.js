@@ -231,7 +231,7 @@ function setup(map) {
     provider: new OpenStreetMapProvider(),
     showMarker: false,
   });
-  map.addControl(search);
+  //map.addControl(search);
   applyColor();
 }
 
@@ -355,6 +355,7 @@ function Map(props) {
 
   useEffect(() => {
     if (clusterRef.current) clusterRef.current.refreshClusters();
+    return undefined;
   }, [props.percentile, props.mode, geojson]);
 
   const params = (new URLSearchParams({
@@ -378,34 +379,37 @@ function Map(props) {
         loadData(props.setState, url, setGeojson);
       }
     }
+    return undefined;
   }, [url, bounds, props.filter]);
 
   const loadAllData = zoom >= 18;
 
   const tileRef = useCallback(tileLayer => {
-    if (tileLayer !== null) {
-      tileLayer.on('load', event => {
-        props.setState(states.LOADED);
-        props.setStatistics({});
-      });
-      tileLayer.on('loading', event => {
-        props.setState(states.LOADING);
-      });
-    }
+    if (tileLayer === null) return;
+    tileLayer.on('load', event => {
+      props.setState(states.LOADED);
+      props.setStatistics({});
+    });
+    tileLayer.on('loading', event => {
+      props.setState(states.LOADING);
+    });
+  }, []);
+
+  const mapRef = useCallback(map => {
+    if (map === null) return;
+    setup(map);
+    // https://github.com/PaulLeCam/react-leaflet/issues/46
+    map.onload = map => updateBounds(map, setBounds);
   }, []);
 
   return (
     <MapContainer
       id="map"
+      ref={mapRef}
       center={[lon, lat]}
       zoom={zoom}
       minZoom={minZoom}
       maxZoom={maxZoom}
-      whenCreated={(map) => {
-        setup(map);
-        // https://github.com/PaulLeCam/react-leaflet/issues/46
-        map.onload = map => updateBounds(map, setBounds);
-      }}
       attributionControl={false}
     >
       <TileLayer
@@ -423,15 +427,7 @@ function Map(props) {
           spiderfyOnMaxZoom={false}
           disableClusteringAtZoom={19}
         >
-          {geojson && (
-            <CustomGeoJSON
-              geojson={geojson}
-              mode={props.mode}
-              worstId={worstId}
-              bestId={bestId}
-              setStatistics={props.setStatistics}
-            />
-          )}
+
         </MarkerClusterGroup>
         ) : (
         <TileLayer

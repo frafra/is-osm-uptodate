@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 
 import * as Sentry from "@sentry/react";
 import { BrowserTracing } from "@sentry/tracing";
@@ -43,7 +43,7 @@ function App() {
       default:
         break;
     }
-    return null;
+    return undefined;
   }, [state]);
 
   return (
@@ -71,4 +71,8 @@ function App() {
     </>
   );
 }
-ReactDOM.render(<App />, document.getElementById('root'));
+
+
+const container = document.getElementById('root');
+const root = createRoot(container);
+root.render(<App />);
