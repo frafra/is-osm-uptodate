@@ -11,23 +11,26 @@ from . import API, Z_TARGET, db
 from .utils import get_updated_metadata
 
 
-def generate(bbox, start, end, *filters, **headers):
+def generate_raw(bbox, start, end, *filters, **headers):
     bbox = mercantile.Bbox(*bbox)
+    for tile in bbox_tiles(bbox, Z_TARGET):
+        quadkey = mercantile.quadkey(tile)
+        for feature in get_tile_data(quadkey, start, end, *filters, **headers):
+            if lonlat_in_bbox(bbox, feature[0], feature[1]):
+                yield feature
+
+
+def generate(bbox, start, end, *filters, **headers):
     yield ""  # signal
     yield '{"type": "FeatureCollection", "features": ['
     first = True
-    for tile in bbox_tiles(bbox, Z_TARGET):
-        quadkey = mercantile.quadkey(tile)
-        for feature in get_tile_features(
-            quadkey, start, end, *filters, **headers
-        ):
-            if lonlat_in_bbox(bbox, *feature["geometry"]["coordinates"]):
-                feature_json = json.dumps(feature, use_decimal=True)
-                if not first:
-                    yield ", "
-                if first and feature_json:
-                    first = False
-                yield feature_json
+    for feature in generate_raw(bbox, start, end, *filters, **headers):
+        feature_geojson = feature_to_geojson(feature)
+        if not first:
+            yield ", "
+        if first and feature_geojson:
+            first = False
+        yield feature_geojson
     yield "]}"
 
 
@@ -110,12 +113,6 @@ def get_tile_data(quadkey, start, end, *filters, **headers):
             yield json.loads(line)
 
 
-def get_tile_features(quadkey, start, end, *filters, **headers):
-    yield from processed_to_geojson(
-        get_tile_data(quadkey, start, end, *filters, **headers)
-    )
-
-
 def process(group, end):
     first, last = group[0], group[-1]
     if last["properties"]["@validTo"] != end:
@@ -140,9 +137,9 @@ def process(group, end):
     )
 
 
-def processed_to_geojson(processed):
-    for feature in processed:
-        yield {
+def feature_to_geojson(feature):
+    return json.dumps(
+        {
             "type": "Feature",
             "geometry": {
                 "type": "Point",
@@ -157,7 +154,9 @@ def processed_to_geojson(processed):
                 "version": feature[5],
                 "average_update_days": feature[6],
             },
-        }
+        },
+        use_decimal=True,
+    )
 
 
 def process_group(group, end):

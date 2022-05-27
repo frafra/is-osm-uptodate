@@ -44,3 +44,11 @@ def ensure_range(value, value_min=0, value_max=1):
     elif value > value_max:
         value = value_max
     return value
+
+
+def request_to_bbox(request):
+    """Round to 7 decimal https://wiki.openstreetmap.org/wiki/Node#Structure"""
+    bbox = []
+    for arg in ("minx", "miny", "maxx", "maxy"):
+        bbox.append(round(float(request.rel_url.query.get(arg)), 7))
+    return bbox

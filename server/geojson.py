@@ -4,14 +4,16 @@ from aiohttp import web
 
 from . import DEFAULT_FILTER
 from .process import generate
-from .utils import generateHeaders, get_updated_metadata, timestamp_shortener
+from .utils import (
+    generateHeaders,
+    get_updated_metadata,
+    request_to_bbox,
+    timestamp_shortener,
+)
 
 
 async def getData(request):
-    # Round to 7 decimal https://wiki.openstreetmap.org/wiki/Node#Structure
-    bbox = []
-    for arg in ("minx", "miny", "maxx", "maxy"):
-        bbox.append(round(float(request.rel_url.query.get(arg)), 7))
+    bbox = request_to_bbox(request)
     # common
     referer = request.headers.get("REFERER", "http://localhost:8000/")
     headers = generateHeaders(referer)
@@ -21,12 +23,6 @@ async def getData(request):
 
     start_short = timestamp_shortener(start)
     end_short = timestamp_shortener(end)
-    bbox_str = "_".join(map(str, bbox))
-    filename = (
-        f"is-osm-uptodate_{bbox_str}_{start_short}_{end_short}.json".replace(
-            ":", ""
-        )
-    )
     generated = generate(bbox, start, end, *filters, **headers)
     try:
         next(generated)  # peek
@@ -38,7 +34,10 @@ async def getData(request):
     except Exception:
         return "", 500
     else:
-
+        bbox_str = "_".join(map(str, bbox))
+        filename = (
+            f"is-osm-uptodate_{bbox_str}_{start_short}_{end_short}.json"
+        ).replace(":", "")
         response = web.StreamResponse(
             status=200,
             reason="OK",
