@@ -41,8 +41,7 @@ function Bar({
   setMode,
   percentile,
   setPercentile,
-  statistics,
-  downloadLink,
+  url,
 }) {
   return (
     <div id="bar" className="bg-light accordion">
@@ -58,10 +57,10 @@ function Bar({
         />
       </AccordionItem>
       <AccordionItem title="Statistics">
-        <Statistics statistics={statistics} state={state} />
+        <Statistics state={state} mode={mode} url={url} />
       </AccordionItem>
       <AccordionItem title="Save">
-        <Download downloadLink={downloadLink} />
+        <Download url={url} />
       </AccordionItem>
     </div>
   );

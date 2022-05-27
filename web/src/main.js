@@ -29,15 +29,13 @@ function App() {
     value = parseInt(value.slice(9)) * 25;
     _setPercentile(value);
   }
-  const [statistics, setStatistics] = useState({});
-  const [downloadLink, setDownloadLink] = useState();
+  const [url, setUrl] = useState();
 
   useEffect(() => {
     switch (state) {
       case states.LOADING:
         break;
       case states.ERROR:
-        setStatistics({});
         break;
       case states.LOADED:
       default:
@@ -56,8 +54,7 @@ function App() {
         setMode={setMode}
         percentile={percentile}
         setPercentile={setPercentile}
-        statistics={statistics}
-        downloadLink={downloadLink}
+        url={url}
       />
       <Map
         state={state}
@@ -65,8 +62,7 @@ function App() {
         mode={mode}
         percentile={percentile}
         filter={filter}
-        setStatistics={setStatistics}
-        setDownloadLink={setDownloadLink}
+        setUrl={setUrl}
       />
     </>
   );

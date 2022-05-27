@@ -2,15 +2,15 @@ import React from 'react';
 
 const classNames = require('classnames');
 
-function Download({ downloadLink }) {
+function Download({ url }) {
   return (
     <a
       id="download"
       className={classNames('btn', 'btn-primary', {
-        disabled: !downloadLink,
+        disabled: !url,
       })}
       type="button"
-      href={downloadLink}
+      href={url}
     >
       <i className="fas fa-arrow-alt-circle-down" />
       &nbsp;

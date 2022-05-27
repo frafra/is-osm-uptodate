@@ -95,7 +95,6 @@ function loadData(setState, url, setGeojson ) {
       if (error.message === 'ohsome') {
         setState(states.ERROR_OHSOME);
       } else {
-        console.log(error);
         setState(states.ERROR);
       }
     });
@@ -263,36 +262,7 @@ function CustomControl({ worstPretty, bestPretty, setColor }) {
   );
 }
 
-function CustomGeoJSON({ geojson, mode, worstId, bestId, setStatistics }) {
-  const geojsonRef = useRef(null);
-  const map = useMap();
-  useEffect(() => {
-    if (geojsonRef.current && worstId && bestId) {
-      const stats = {
-        worstNode: {
-          label: modes[mode].worstLabel,
-          osmid: worstId,
-        },
-        bestNode: {
-          label: modes[mode].bestLabel,
-          osmid: bestId,
-        },
-      };
-      Object.keys(stats).forEach((key) => {
-        var marker = Object.values(geojsonRef.current._layers).find(
-          (layer) => layer.osmid === stats[key].osmid
-        );
-        if (marker) {
-          marker.map = map;
-          stats[key].marker = marker;
-        }
-      });
-      setStatistics(stats);
-    } else {
-      setStatistics({});
-    }
-  }, [geojson, mode, geojsonRef.current]);
-
+function CustomGeoJSON({ geojson, mode, worstId, bestId }) {
   // https://github.com/PaulLeCam/react-leaflet/issues/332
   const geojsonKey = useMemo(() => {
     return Math.random();
@@ -301,7 +271,6 @@ function CustomGeoJSON({ geojson, mode, worstId, bestId, setStatistics }) {
   return (
     <GeoJSON
       key={geojsonKey}
-      ref={geojsonRef}
       data={geojson}
       pointToLayer={pointToLayer}
     />
@@ -372,7 +341,7 @@ function Map(props) {
     if (bounds) {
       url = `/api/getData?minx=${bounds.getWest()}&miny=${bounds.getSouth()}&maxx=${bounds.getEast()}&maxy=${bounds.getNorth()}`;
       if (props.filter.trim().length > 0) url += `&filter=${props.filter}`;
-      props.setDownloadLink(url);
+      props.setUrl(url);
       if (zoom >= 18) {
         props.setState(states.LOADING);
         loadData(props.setState, url, setGeojson);
@@ -386,7 +355,6 @@ function Map(props) {
     if (tileLayer !== null) {
       tileLayer.on('load', event => {
         props.setState(states.LOADED);
-        props.setStatistics({});
       });
       tileLayer.on('loading', event => {
         props.setState(states.LOADING);
@@ -429,7 +397,6 @@ function Map(props) {
               mode={props.mode}
               worstId={worstId}
               bestId={bestId}
-              setStatistics={props.setStatistics}
             />
           )}
         </MarkerClusterGroup>
