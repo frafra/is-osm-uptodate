@@ -7,6 +7,9 @@ kill_timeout = 5
   REDIS_HOST = "is-osm-uptodate-redis.internal"
   GUNICORN_CMD_ARGS = "--workers 2"
 
+[build.args]
+  SENTRY_DSN = "https://272ecef41e6748cc8b2e955f3a23d67a@o1253953.ingest.sentry.io/6421667"
+
 [[statics]]
   guest_path = "/home/app/web/dist/"
   url_prefix = "/"
