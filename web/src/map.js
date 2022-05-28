@@ -369,10 +369,11 @@ function Map(props) {
       zoom={zoom}
       minZoom={minZoom}
       maxZoom={maxZoom}
-      whenCreated={(map) => {
-        setup(map);
+      whenCreated={setup}
+      whenReady={(event) => {
+        const map = event.target;
         // https://github.com/PaulLeCam/react-leaflet/issues/46
-        map.onload = map => updateBounds(map, setBounds);
+        updateBounds(map, setBounds);
       }}
       attributionControl={false}
     >
