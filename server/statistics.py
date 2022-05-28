@@ -40,23 +40,37 @@ async def getStats(request):
         if value:
             values.append(value)
 
-    stats = {
-        "mean": statistics.mean(values),
-        "stdev": statistics.stdev(values),
-    }
-
-    if param in ["creation", "lastedit"]:
-        stats["mean"] = datetime.datetime.utcfromtimestamp(
-            stats["mean"]
-        ).strftime("%Y-%m-%d %H:%M:%S")
-        stats["stdev"] = (
-            str(datetime.timedelta(seconds=stats["stdev"]).days) + " days"
+    stats = {}
+    if len(values) > 1:
+        stats.update(
+            {
+                "min": min(values),
+                "mean": statistics.mean(values),
+                "max": max(values),
+            }
         )
-    elif param == "frequency":
-        stats["mean"] = f'every {stats["mean"]:.3f} days'
-        stats["stdev"] = f'every {stats["stdev"]:.3f} days'
-    else:
-        stats["mean"] = f'{stats["mean"]:.3f}'
-        stats["stdev"] = f'{stats["stdev"]:.3f}'
+    if len(values) > 2:
+        stats.update(
+            {
+                "stdev": statistics.stdev(values),
+            }
+        )
+
+    for key in stats:
+        match [param, key]:
+            case [("creation" | "lastedit"), ("min" | "mean" | "max")]:
+                stats[key] = datetime.datetime.utcfromtimestamp(
+                    stats[key]
+                ).strftime("%Y-%m-%d %H:%M:%S")
+            case [("creation" | "lastedit"), _]:
+                stats[key] = (
+                    str(datetime.timedelta(seconds=stats[key]).days) + " days"
+                )
+            case ["frequency", ("min", "mean", "max")]:
+                stats[key] = f"every {stats[key]:.3f} days"
+            case ["frequency", _]:
+                stats[key] = f"{stats[key]:.3f} days"
+            case [_, _]:
+                stats[key] = f"{stats[key]:.3f}"
 
     return web.Response(body=json.dumps(stats))
