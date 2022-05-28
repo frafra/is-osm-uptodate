@@ -1,4 +1,10 @@
-import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react';
+import React, {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useCallback,
+} from 'react';
 import ReactDOMServer from 'react-dom/server';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -7,12 +13,7 @@ import {
   AttributionControl,
   MapContainer,
   TileLayer,
-  CircleMarker,
   GeoJSON,
-  LayersControl,
-  Popup,
-  Rectangle,
-  useMap,
   useMapEvents,
 } from 'react-leaflet';
 
@@ -43,7 +44,7 @@ import 'bootstrap/dist/css/bootstrap.css';
 import '@fortawesome/fontawesome-free/css/fontawesome.css';
 import '@fortawesome/fontawesome-free/css/solid.css';
 
-const compute_percentile = require('percentile');
+const computePercentile = require('percentile');
 
 let colour = 0;
 const style = document.createElement('style');
@@ -53,7 +54,9 @@ function applyColor() {
     style.sheet.deleteRule(0);
   }
   style.sheet.insertRule(
-    `.leaflet-tile-pane > .leaflet-layer:first-of-type > .leaflet-tile-container { filter: grayscale(${100 - colour}%); }`,
+    `.leaflet-tile-pane > .leaflet-layer:first-of-type > .leaflet-tile-container { filter: grayscale(${
+      100 - colour
+    }%); }`,
     0
   );
 }
@@ -67,7 +70,7 @@ function iconCreateFunction(percentile, colormap, cluster) {
   const markers = cluster.getAllChildMarkers();
   const values = markers.map((marker) => colormap[marker.options.fillColor]);
   values.sort((a, b) => a - b);
-  const aggregated = compute_percentile(percentile, values);
+  const aggregated = computePercentile(percentile, values);
   const html = document.createElement('div');
   html.style.backgroundColor = interpolateViridis(aggregated);
   const content = document.createElement('span');
@@ -76,7 +79,7 @@ function iconCreateFunction(percentile, colormap, cluster) {
   return L.divIcon({ html, className: 'mycluster' });
 }
 
-function loadData(setState, url, setGeojson ) {
+function loadData(setState, url, setGeojson) {
   fetch(url)
     .then((response) => {
       if (response.ok) {
@@ -91,7 +94,6 @@ function loadData(setState, url, setGeojson ) {
       setState(states.LOADED);
     })
     .catch((error) => {
-      console.log(error);
       if (error.message === 'ohsome') {
         setState(states.ERROR_OHSOME);
       } else {
@@ -107,7 +109,7 @@ function updateBounds(map, setBounds) {
   const zoom = map.getZoom();
   document.location.hash = `${zoom}/${lat}/${lng}`;
 
-  var bounds = map.getBounds();
+  const bounds = map.getBounds();
   setBounds(bounds);
 }
 
@@ -124,12 +126,14 @@ const osm = 'https://www.openstreetmap.org';
 const wiki = 'https://wiki.openstreetmap.org/wiki';
 function generatePopup(feature, marker) {
   const type = feature.geometry.type === 'Point' ? 'node' : 'way';
-  fetch(`/api/getFeature?feature_type=${type}&feature_id=${feature.properties.id}`)
+  fetch(
+    `/api/getFeature?feature_type=${type}&feature_id=${feature.properties.id}`
+  )
     .then((response) => {
       return response.json();
     })
     .then((parsed) => {
-      let node = parsed.elements[0];
+      const node = parsed.elements[0];
       marker.setPopupContent(
         ReactDOMServer.renderToString(
           <>
@@ -145,16 +149,21 @@ function generatePopup(feature, marker) {
                 <ul>
                   {Object.keys(node.tags).map((key) => (
                     <li key={key}>
-                      <a href={`${wiki}/Key:${key}`} target="_blank">
+                      <a
+                        href={`${wiki}/Key:${key}`}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
                         {key}
                       </a>
                       {': '}
                       {key.match(valuesBlacklist) ? (
-                        <>{node.tags[key]}</>
+                        node.tags[key]
                       ) : (
                         <a
                           href={`${wiki}/Tag:${key}%3D${node.tags[key]}`}
                           target="_blank"
+                          rel="noreferrer"
                         >
                           {node.tags[key]}
                         </a>
@@ -168,6 +177,7 @@ function generatePopup(feature, marker) {
               <a
                 href={`${osm}/edit?${type}=${feature.properties.id}`}
                 target="_blank"
+                rel="noreferrer"
               >
                 Edit
               </a>
@@ -175,6 +185,7 @@ function generatePopup(feature, marker) {
               <a
                 href={`${osm}/${type}/${feature.properties.id}/history`}
                 target="_blank"
+                rel="noreferrer"
               >
                 History
               </a>
@@ -182,6 +193,7 @@ function generatePopup(feature, marker) {
               <a
                 href={`${osm}/${type}/${feature.properties.id}`}
                 target="_blank"
+                rel="noreferrer"
               >
                 Details
               </a>
@@ -190,8 +202,7 @@ function generatePopup(feature, marker) {
         )
       );
     })
-    .catch((error) => {
-      console.log(error);
+    .catch(() => {
       marker.setPopupContent(
         ReactDOMServer.renderToString(
           <>
@@ -234,7 +245,7 @@ function setup(map) {
   applyColor();
 }
 
-function CustomControl({ worstPretty, bestPretty, setColor }) {
+function CustomControl({ worstPretty, bestPretty }) {
   const divRef = useRef(null);
   useEffect(() => {
     if (divRef.current) L.DomEvent.disableClickPropagation(divRef.current);
@@ -262,102 +273,93 @@ function CustomControl({ worstPretty, bestPretty, setColor }) {
   );
 }
 
-function CustomGeoJSON({ geojson, mode, worstId, bestId }) {
+function CustomGeoJSON({ geojson, mode }) {
   // https://github.com/PaulLeCam/react-leaflet/issues/332
   const geojsonKey = useMemo(() => {
     return Math.random();
   }, [geojson, mode]);
 
   return (
-    <GeoJSON
-      key={geojsonKey}
-      data={geojson}
-      pointToLayer={pointToLayer}
-    />
+    <GeoJSON key={geojsonKey} data={geojson} pointToLayer={pointToLayer} />
   );
 }
 
-function Map(props) {
+function Map({ mode, percentile, filter, state, setState, setUrl }) {
   const clusterRef = useRef(null);
   const [bounds, setBounds] = useState();
   const [geojson, setGeojson] = useState(null);
   let [zoom, lon, lat] = document.location.hash.substr(1).split('/');
   if (!(zoom && lon && lat)) [zoom, lon, lat] = defaultLocation;
-  const [colormap, worstId, worst, bestId, best] = useMemo(() => {
-    const colormap = {};
-    const { getValue } = modes[props.mode];
-    let worst = modes[props.mode].defaultWorstValue;
-    let worstId = null;
-    let best = modes[props.mode].defaultBestValue;
-    let bestId = null;
+  const [colormap, worst, best] = useMemo(() => {
+    const newColormap = {};
+    const { getValue } = modes[mode];
+    let newWorst = modes[mode].defaultWorstValue;
+    let newBest = modes[mode].defaultBestValue;
     let values = [];
     if (geojson) {
-      const { getValue } = modes[props.mode];
       values = geojson.features.map((feature) => getValue(feature));
     }
     if (values.length > 0) {
       const lowest = Math.min(...values);
       const highest = Math.max(...values);
-      const { inverted } = modes[props.mode];
-      worst = !inverted ? lowest : highest;
-      best = !inverted ? highest : lowest;
+      const { inverted } = modes[mode];
+      newWorst = !inverted ? lowest : highest;
+      newBest = !inverted ? highest : lowest;
       const range = highest - lowest;
       geojson.features.forEach((feature) => {
-        const score = Math.abs(worst - getValue(feature)) / range;
+        const score = Math.abs(newWorst - getValue(feature)) / range;
         const color = interpolateViridis(score);
         feature.properties.color = color;
-        colormap[color] = score;
+        newColormap[color] = score;
       });
-      worstId = geojson.features[values.indexOf(worst)].properties.id;
-      bestId = geojson.features[values.indexOf(best)].properties.id;
     }
-    return [colormap, worstId, worst, bestId, best];
-  }, [geojson, props.mode]);
+    return [newColormap, newWorst, newBest];
+  }, [geojson, mode]);
 
-  const worstPretty = modes[props.mode].prettyValue(worst);
-  const bestPretty = modes[props.mode].prettyValue(best);
+  const worstPretty = modes[mode].prettyValue(worst);
+  const bestPretty = modes[mode].prettyValue(best);
 
   // https://github.com/yuzhva/react-leaflet-markercluster/pull/162
   const iconCreateFn = useMemo(() => {
-    return iconCreateFunction.bind(null, props.percentile, colormap);
-  }, [props.percentile, colormap]);
+    return iconCreateFunction.bind(null, percentile, colormap);
+  }, [percentile, colormap]);
 
   useEffect(() => {
     if (clusterRef.current) clusterRef.current.refreshClusters();
-  }, [props.percentile, props.mode, geojson]);
+  }, [percentile, mode, geojson]);
 
-  const params = (new URLSearchParams({
-    mode: props.mode,
-    percentile: props.percentile,
-    filter: props.filter,
-    scale_min: modes[props.mode] ? worst : best,
-    scale_max: modes[props.mode] ? best : worst,
-  })).toString();
+  const params = new URLSearchParams({
+    mode,
+    percentile,
+    filter,
+    scale_min: modes[mode] ? worst : best,
+    scale_max: modes[mode] ? best : worst,
+  }).toString();
 
-  const dataTileURL_with_params = dataTileURL+"?"+params;
+  const dataTileURLWithParams = `${dataTileURL}?${params}`;
 
   const loadAllData = zoom >= 17;
 
-  var url = null;
+  let url = null;
   useEffect(() => {
     if (bounds) {
       url = `/api/getData?minx=${bounds.getWest()}&miny=${bounds.getSouth()}&maxx=${bounds.getEast()}&maxy=${bounds.getNorth()}`;
-      if (props.filter.trim().length > 0) url += `&filter=${props.filter}`;
-      props.setUrl(url);
+      if (filter.trim().length > 0) url += `&filter=${filter}`;
+      setUrl(url);
       if (loadAllData) {
-        props.setState(states.LOADING);
-        loadData(props.setState, url, setGeojson);
+        setState(states.LOADING);
+        loadData(setState, url, setGeojson);
       }
     }
-  }, [url, bounds, props.filter]);
+  }, [url, bounds, filter]);
 
-  const tileRef = useCallback(tileLayer => {
+  const tileRef = useCallback((tileLayer) => {
     if (tileLayer !== null) {
-      tileLayer.on('load', event => {
-        props.setState(states.LOADED);
+      tileLayer.on('load', () => {
+        setState(states.LOADED);
       });
-      tileLayer.on('loading', event => {
-        props.setState(states.LOADING);
+      tileLayer.on('loading', () => {
+        setState(states.LOADING);
       });
     }
   }, []);
@@ -385,45 +387,38 @@ function Map(props) {
       />
       <GetBounds setBounds={setBounds} />
 
-      { loadAllData ? (
+      {loadAllData ? (
         <MarkerClusterGroup
           ref={clusterRef}
           iconCreateFunction={iconCreateFn}
           spiderfyOnMaxZoom={false}
           disableClusteringAtZoom={19}
         >
-          {geojson && (
-            <CustomGeoJSON
-              geojson={geojson}
-              mode={props.mode}
-              worstId={worstId}
-              bestId={bestId}
-            />
-          )}
+          {geojson && <CustomGeoJSON geojson={geojson} mode={mode} />}
         </MarkerClusterGroup>
-        ) : (
+      ) : (
         <TileLayer
           ref={tileRef}
-          key={dataTileURL_with_params}
-          url={dataTileURL_with_params}
+          key={dataTileURLWithParams}
+          url={dataTileURLWithParams}
           tileSize={512}
           zoomOffset={-1}
           opacity={0.5}
           zIndex={1}
-          updateWhenIdle={true}
+          updateWhenIdle
           updateWhenZooming={false}
           className="pixelated"
         />
       )}
-      <CustomControl
-        worstPretty={worstPretty}
-        bestPretty={bestPretty}
-        setColor={setColor}
-      />
+      <CustomControl worstPretty={worstPretty} bestPretty={bestPretty} />
       <AttributionControl position="bottomright" prefix="" />
-      { props.state == states.LOADING && (
+      {state === states.LOADING && (
         <div id="overlay">
-          <div id="spinner" className="spinner-border text-primary" role="status">
+          <div
+            id="spinner"
+            className="spinner-border text-primary"
+            role="status"
+          >
             <span className="sr-only">Loading...</span>
           </div>
         </div>

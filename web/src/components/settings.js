@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 
 function Settings({ setFilter }) {
-  const [text, setText] = useState("");
+  const [text, setText] = useState('');
 
   function handleSubmit(e) {
     e.preventDefault();

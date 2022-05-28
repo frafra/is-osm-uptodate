@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 
-import * as Sentry from "@sentry/react";
-import { BrowserTracing } from "@sentry/tracing";
+import * as Sentry from '@sentry/react';
+import { BrowserTracing } from '@sentry/tracing';
 
 import { states } from './constants';
 
@@ -11,12 +11,13 @@ import Map from './map';
 
 import './main.css';
 
+// eslint-disable-next-line no-undef
 if (SENTRY_DSN) {
   Sentry.init({
-    dsn: SENTRY_DSN,
+    dsn: SENTRY_DSN, // eslint-disable-line no-undef
     integrations: [new BrowserTracing()],
     tracesSampleRate: 1.0,
-    release: RELEASE,
+    release: RELEASE, // eslint-disable-line no-undef
   });
 }
 
@@ -24,10 +25,10 @@ function App() {
   const [state, setState] = useState();
   const [filter, setFilter] = useState('');
   const [mode, setMode] = useState('lastedit');
-  const [percentile, _setPercentile] = useState(50);
-  function setPercentile(value) {
-    value = parseInt(value.slice(9)) * 25;
-    _setPercentile(value);
+  const [percentile, setPercentile] = useState(50);
+  function setQuartile(quartile) {
+    const newPercentile = parseInt(quartile.slice(9), 10) * 25;
+    setPercentile(newPercentile);
   }
   const [url, setUrl] = useState();
 
@@ -47,13 +48,11 @@ function App() {
   return (
     <>
       <Bar
-        state={state}
-        setState={setState}
         setFilter={setFilter}
         mode={mode}
         setMode={setMode}
         percentile={percentile}
-        setPercentile={setPercentile}
+        setQuartile={setQuartile}
         url={url}
       />
       <Map

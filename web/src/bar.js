@@ -33,16 +33,7 @@ function AccordionItem({ title, children }) {
   );
 }
 
-function Bar({
-  state,
-  setState,
-  setFilter,
-  mode,
-  setMode,
-  percentile,
-  setPercentile,
-  url,
-}) {
+function Bar({ setFilter, mode, setMode, percentile, setQuartile, url }) {
   return (
     <div id="bar" className="bg-light accordion">
       <AccordionItem title="Filters">
@@ -53,11 +44,11 @@ function Bar({
           mode={mode}
           setMode={setMode}
           percentile={percentile}
-          setPercentile={setPercentile}
+          setQuartile={setQuartile}
         />
       </AccordionItem>
       <AccordionItem title="Statistics">
-        <Statistics state={state} mode={mode} url={url} />
+        <Statistics mode={mode} url={url} />
       </AccordionItem>
       <AccordionItem title="Save">
         <Download url={url} />
