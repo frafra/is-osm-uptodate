@@ -336,20 +336,20 @@ function Map(props) {
 
   const dataTileURL_with_params = dataTileURL+"?"+params;
 
+  const loadAllData = zoom >= 17;
+
   var url = null;
   useEffect(() => {
     if (bounds) {
       url = `/api/getData?minx=${bounds.getWest()}&miny=${bounds.getSouth()}&maxx=${bounds.getEast()}&maxy=${bounds.getNorth()}`;
       if (props.filter.trim().length > 0) url += `&filter=${props.filter}`;
       props.setUrl(url);
-      if (zoom >= 18) {
+      if (loadAllData) {
         props.setState(states.LOADING);
         loadData(props.setState, url, setGeojson);
       }
     }
   }, [url, bounds, props.filter]);
-
-  const loadAllData = zoom >= 18;
 
   const tileRef = useCallback(tileLayer => {
     if (tileLayer !== null) {
