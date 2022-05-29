@@ -11,6 +11,8 @@ import Map from './map';
 
 import './main.css';
 
+const classNames = require('classnames');
+
 // eslint-disable-next-line no-undef
 if (SENTRY_DSN) {
   Sentry.init({
@@ -31,6 +33,7 @@ function App() {
     setPercentile(newPercentile);
   }
   const [url, setUrl] = useState();
+  const [showBarIfSmall, setShowBarIfSmall] = useState(false);
 
   useEffect(() => {
     switch (state) {
@@ -47,22 +50,45 @@ function App() {
 
   return (
     <>
-      <Bar
-        setFilter={setFilter}
-        mode={mode}
-        setMode={setMode}
-        percentile={percentile}
-        setQuartile={setQuartile}
-        url={url}
-      />
-      <Map
-        state={state}
-        setState={setState}
-        mode={mode}
-        percentile={percentile}
-        filter={filter}
-        setUrl={setUrl}
-      />
+      <ul id="nav" className="nav nav-tabs justify-content-center">
+        <li className="nav-item">
+          <button
+            type="button"
+            className={classNames('nav-link', { active: showBarIfSmall })}
+            onClick={() => setShowBarIfSmall(true)}
+          >
+            Settings
+          </button>
+        </li>
+        <li className="nav-item">
+          <button
+            type="button"
+            className={classNames('nav-link', { active: !showBarIfSmall })}
+            onClick={() => setShowBarIfSmall(false)}
+          >
+            Map
+          </button>
+        </li>
+      </ul>
+      <div id="tab-container">
+        <Bar
+          setFilter={setFilter}
+          mode={mode}
+          setMode={setMode}
+          percentile={percentile}
+          setQuartile={setQuartile}
+          url={url}
+          className={classNames({ 'hide-if-small': !showBarIfSmall })}
+        />
+        <Map
+          state={state}
+          setState={setState}
+          mode={mode}
+          percentile={percentile}
+          filter={filter}
+          setUrl={setUrl}
+        />
+      </div>
     </>
   );
 }

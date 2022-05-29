@@ -33,9 +33,17 @@ function AccordionItem({ title, children }) {
   );
 }
 
-function Bar({ setFilter, mode, setMode, percentile, setQuartile, url }) {
+function Bar({
+  setFilter,
+  mode,
+  setMode,
+  percentile,
+  setQuartile,
+  url,
+  className,
+}) {
   return (
-    <div id="bar" className="bg-light accordion">
+    <div id="bar" className={classNames(className, 'bg-light', 'accordion')}>
       <AccordionItem title="Filters">
         <Settings setFilter={setFilter} />
       </AccordionItem>
