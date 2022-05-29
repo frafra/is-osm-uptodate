@@ -28,7 +28,7 @@ RUN --mount=type=cache,target=/root/.cache/pdm \
     pdm install --production --no-self
 
 COPY --from=builder --chown=app:app /home/app/web/dist/ web/dist/
-COPY --chown=app:app web/dist/index.html web/dist/
+COPY --chown=app:app web/dist/index.html web/dist/robots.txt web/dist/
 
 COPY --chown=app:app is-osm-uptodate.py ./
 COPY --chown=app:app server/ server/
