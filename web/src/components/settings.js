@@ -14,7 +14,7 @@ function Settings({ setFilter }) {
         className="form-control"
         type="text"
         placeholder="example: amenity=*"
-        onChange={(event) => setText(event.target.value)}
+        onChange={(event) => setText(event.target.value.trim())}
       />
       <input className="btn btn-primary" type="submit" value="Set" />
     </form>

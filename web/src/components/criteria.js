@@ -41,51 +41,51 @@ function Mode({ mode, setMode }) {
   );
 }
 
-function Percentile({ percentile, setQuartile, minimumLabel, maximumLabel }) {
+function Percentile({ percentile, setPercentile, minimumLabel, maximumLabel }) {
   const quartile = `quartile-${percentile / 25}`;
   return (
     <div
-      id="percentile"
+      id="quartile"
       className="btn-group-vertical btn-group-toggle"
       role="group"
     >
       <ButtonCheckbox
         id="quartile-0"
         mode={quartile}
-        setMode={setQuartile}
-        name="percentile"
+        setMode={() => setPercentile(0)}
+        name="quartile"
       >
         {minimumLabel}
       </ButtonCheckbox>
       <ButtonCheckbox
         id="quartile-1"
         mode={quartile}
-        setMode={setQuartile}
-        name="percentile"
+        setMode={() => setPercentile(25)}
+        name="quartile"
       >
         1st quartile
       </ButtonCheckbox>
       <ButtonCheckbox
         id="quartile-2"
         mode={quartile}
-        setMode={setQuartile}
-        name="percentile"
+        setMode={() => setPercentile(50)}
+        name="quartile"
       >
         Median
       </ButtonCheckbox>
       <ButtonCheckbox
         id="quartile-3"
         mode={quartile}
-        setMode={setQuartile}
-        name="percentile"
+        setMode={() => setPercentile(75)}
+        name="quartile"
       >
         3rd quartile
       </ButtonCheckbox>
       <ButtonCheckbox
         id="quartile-4"
         mode={quartile}
-        setMode={setQuartile}
-        name="percentile"
+        setMode={() => setPercentile(100)}
+        name="quartile"
       >
         {maximumLabel}
       </ButtonCheckbox>
@@ -93,7 +93,7 @@ function Percentile({ percentile, setQuartile, minimumLabel, maximumLabel }) {
   );
 }
 
-function Criteria({ mode, setMode, percentile, setQuartile }) {
+function Criteria({ mode, setMode, percentile, setPercentile }) {
   return (
     <>
       <Mode mode={mode} setMode={setMode} />
@@ -104,7 +104,7 @@ function Criteria({ mode, setMode, percentile, setQuartile }) {
       </p>
       <Percentile
         percentile={percentile}
-        setQuartile={setQuartile}
+        setPercentile={setPercentile}
         minimumLabel={modes[mode].worstLabel}
         maximumLabel={modes[mode].bestLabel}
       />

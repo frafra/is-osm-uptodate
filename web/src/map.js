@@ -28,13 +28,11 @@ import { interpolateViridis } from 'd3-scale-chromatic';
 import {
   customAttribution,
   tileURL,
-  dataTileURL,
   maxZoom,
   minZoom,
   defaultLocation,
   valuesBlacklist,
   modes,
-  states,
 } from './constants';
 
 import './map.css';
@@ -77,29 +75,6 @@ function iconCreateFunction(percentile, colormap, cluster) {
   content.innerText = markers.length;
   html.appendChild(content);
   return L.divIcon({ html, className: 'mycluster' });
-}
-
-function loadData(setState, url, setGeojson) {
-  fetch(url)
-    .then((response) => {
-      if (response.ok) {
-        return response.json();
-      }
-      return response.text().then((text) => {
-        throw new Error(text);
-      });
-    })
-    .then((parsed) => {
-      setGeojson(parsed);
-      setState(states.LOADED);
-    })
-    .catch((error) => {
-      if (error.message === 'ohsome') {
-        setState(states.ERROR_OHSOME);
-      } else {
-        setState(states.ERROR);
-      }
-    });
 }
 
 function updateBounds(map, setBounds) {
@@ -245,7 +220,7 @@ function setup(map) {
   applyColor();
 }
 
-function CustomControl({ worstPretty, bestPretty }) {
+function CustomControl({ mode, range }) {
   const divRef = useRef(null);
   useEffect(() => {
     if (divRef.current) L.DomEvent.disableClickPropagation(divRef.current);
@@ -254,11 +229,13 @@ function CustomControl({ worstPretty, bestPretty }) {
   return (
     <div className="leaflet-top leaflet-right" ref={divRef}>
       <div className="leaflet-control leaflet-bar" id="info">
-        <div className="bar">
-          <span>{worstPretty}</span>
-          <span className="colors" />
-          <span>{bestPretty}</span>
-        </div>
+        {mode && range && (
+          <div className="bar">
+            <span>{modes[mode].prettyValue(range[0])}</span>
+            <span className="colors" />
+            <span>{modes[mode].prettyValue(range[1])}</span>
+          </div>
+        )}
         <div className="slider">
           Background colour
           <input
@@ -284,40 +261,70 @@ function CustomGeoJSON({ geojson, mode }) {
   );
 }
 
-function Map({ mode, percentile, filter, state, setState, setUrl }) {
-  const clusterRef = useRef(null);
-  const [bounds, setBounds] = useState();
-  const [geojson, setGeojson] = useState(null);
+function Map({
+  bounds,
+  setBounds,
+  mode,
+  filter,
+  percentile,
+  range,
+  loading,
+  setLoading,
+}) {
+  const clusterRef = useRef();
+  const [geojson, setGeojson] = useState();
   let [zoom, lon, lat] = document.location.hash.substr(1).split('/');
   if (!(zoom && lon && lat)) [zoom, lon, lat] = defaultLocation;
-  const [colormap, worst, best] = useMemo(() => {
-    const newColormap = {};
-    const { getValue } = modes[mode];
-    let newWorst = modes[mode].defaultWorstValue;
-    let newBest = modes[mode].defaultBestValue;
-    let values = [];
-    if (geojson) {
-      values = geojson.features.map((feature) => getValue(feature));
+  const loadAllData = zoom >= 17;
+
+  useEffect(() => {
+    if (loadAllData && bounds) {
+      const query = new URLSearchParams({
+        minx: bounds.getWest(),
+        miny: bounds.getSouth(),
+        maxx: bounds.getEast(),
+        maxy: bounds.getNorth(),
+        filter,
+      }).toString();
+      setLoading(true);
+
+      fetch(`/api/getData?${query}`)
+        .then((response) => {
+          if (response.ok) {
+            return response.json();
+          }
+          return response.text().then((text) => {
+            throw new Error(text);
+          });
+        })
+        .then((parsed) => {
+          setGeojson(parsed);
+          setLoading(false);
+        });
+      /* .catch((error) => {
+           if (error.message === 'ohsome') {
+          } else {
+          }
+          setLoading(false);
+        }); */
     }
-    if (values.length > 0) {
-      const lowest = Math.min(...values);
-      const highest = Math.max(...values);
-      const { inverted } = modes[mode];
-      newWorst = !inverted ? lowest : highest;
-      newBest = !inverted ? highest : lowest;
-      const range = highest - lowest;
+  }, [bounds, filter]);
+
+  const colormap = useMemo(() => {
+    const newColormap = {};
+    if (geojson && range) {
+      const rangeDiff = range[1] - range[0];
       geojson.features.forEach((feature) => {
-        const score = Math.abs(newWorst - getValue(feature)) / range;
+        const value = feature.properties[mode];
+        const score = Math.abs(range[0] - value) / rangeDiff;
         const color = interpolateViridis(score);
+        // eslint-disable-next-line no-param-reassign
         feature.properties.color = color;
         newColormap[color] = score;
       });
     }
-    return [newColormap, newWorst, newBest];
-  }, [geojson, mode]);
-
-  const worstPretty = modes[mode].prettyValue(worst);
-  const bestPretty = modes[mode].prettyValue(best);
+    return newColormap;
+  }, [geojson, mode, range]);
 
   // https://github.com/yuzhva/react-leaflet-markercluster/pull/162
   const iconCreateFn = useMemo(() => {
@@ -326,43 +333,64 @@ function Map({ mode, percentile, filter, state, setState, setUrl }) {
 
   useEffect(() => {
     if (clusterRef.current) clusterRef.current.refreshClusters();
-  }, [percentile, mode, geojson]);
+  }, [percentile, mode, geojson, loadAllData]);
 
-  const params = new URLSearchParams({
-    mode,
-    percentile,
-    filter,
-    scale_min: modes[mode] ? worst : best,
-    scale_max: modes[mode] ? best : worst,
-  }).toString();
+  const toBeRemoved = [];
+  const tileRef = useCallback(
+    (tileLayer) => {
+      if (tileLayer !== null) {
+        // eslint-disable-next-line no-underscore-dangle
+        if (!tileLayer._url) {
+          tileLayer.on('load', () => {
+            while (toBeRemoved.length) {
+              L.DomUtil.remove(toBeRemoved.pop().el);
+            }
+            setLoading(false);
+          });
+          tileLayer.on('loading', () => {
+            setLoading(true);
+          });
 
-  const dataTileURLWithParams = `${dataTileURL}?${params}`;
+          // https://github.com/Leaflet/Leaflet/issues/6659
+          // eslint-disable-next-line no-param-reassign, no-underscore-dangle
+          tileLayer._removeTile = (key) => {
+            // https://github.com/Leaflet/Leaflet/blob/8a1ccbe3c821ec501911d7d7b698af4b1636216c/src/layer/tile/GridLayer.js#L774-L788
+            // eslint-disable-next-line no-underscore-dangle
+            const tile = tileLayer._tiles[key];
+            if (!tile) {
+              return;
+            }
 
-  const loadAllData = zoom >= 17;
+            // DomUtil.remove(tile.el);
+            toBeRemoved.push(tile);
+            // eslint-disable-next-line no-param-reassign, no-underscore-dangle
+            delete tileLayer._tiles[key];
 
-  let url = null;
-  useEffect(() => {
-    if (bounds) {
-      url = `/api/getData?minx=${bounds.getWest()}&miny=${bounds.getSouth()}&maxx=${bounds.getEast()}&maxy=${bounds.getNorth()}`;
-      if (filter.trim().length > 0) url += `&filter=${filter}`;
-      setUrl(url);
-      if (loadAllData) {
-        setState(states.LOADING);
-        loadData(setState, url, setGeojson);
+            // @event tileunload: TileEvent
+            // eslint-disable-next-line max-len
+            // Fired when a tile is removed (e.g. when a tile goes off the screen).
+            tileLayer.fire('tileunload', {
+              tile: tile.el,
+              // eslint-disable-next-line no-underscore-dangle
+              coords: tileLayer._keyToTileCoords(key),
+            });
+          };
+          // eslint-enable
+        }
+        if (range) {
+          const query = new URLSearchParams({
+            mode,
+            percentile,
+            filter,
+            scale_min: range[0],
+            scale_max: range[1],
+          }).toString();
+          tileLayer.setUrl(`tiles/{z}/{x}/{y}.png?${query}`);
+        }
       }
-    }
-  }, [url, bounds, filter]);
-
-  const tileRef = useCallback((tileLayer) => {
-    if (tileLayer !== null) {
-      tileLayer.on('load', () => {
-        setState(states.LOADED);
-      });
-      tileLayer.on('loading', () => {
-        setState(states.LOADING);
-      });
-    }
-  }, []);
+    },
+    [mode, percentile, filter, range]
+  );
 
   return (
     <MapContainer
@@ -394,25 +422,24 @@ function Map({ mode, percentile, filter, state, setState, setUrl }) {
           spiderfyOnMaxZoom={false}
           disableClusteringAtZoom={19}
         >
-          {geojson && <CustomGeoJSON geojson={geojson} mode={mode} />}
+          <CustomGeoJSON geojson={geojson} mode={mode} />
         </MarkerClusterGroup>
       ) : (
         <TileLayer
           ref={tileRef}
-          key={dataTileURLWithParams}
-          url={dataTileURLWithParams}
+          url=""
           tileSize={512}
           zoomOffset={-1}
           opacity={0.5}
           zIndex={1}
-          updateWhenIdle
           updateWhenZooming={false}
           className="pixelated"
         />
       )}
-      <CustomControl worstPretty={worstPretty} bestPretty={bestPretty} />
+
+      <CustomControl mode={mode} range={range} />
       <AttributionControl position="bottomright" prefix="" />
-      {state === states.LOADING && (
+      {loading && (
         <div id="overlay">
           <div
             id="spinner"

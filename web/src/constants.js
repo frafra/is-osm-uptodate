@@ -4,55 +4,37 @@ export const defaultLocation = [17, 45.46423, 9.19073];
 
 export const customAttribution = `<a href="https://github.com/frafra/is-osm-uptodate">${document.title}</a> | <a href="https://api.ohsome.org/">ohsome API</a> | &copy; <a href="https://ohsome.org/copyrights">OpenStreetMap contributors</a>`;
 export const tileURL = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
-export const dataTileURL = 'tiles/{z}/{x}/{y}.png';
-
-export const states = {
-  LOADING: 'loading',
-  LOADED: 'loaded',
-  ERROR: 'error',
-  ERROR_OHSOME: 'error_ohsome',
-};
 
 export const modes = {
   lastedit: {
-    defaultWorstValue: Date.parse('01 Jan 2010 00:00:00'),
-    defaultBestValue: new Date().getTime(),
-    getValue: (feature) => new Date(feature.properties.lastedit).getTime(),
-    prettyValue: (date) => new Date(date).toISOString().slice(0, 10),
-    inverted: false,
+    getValue: (date) => date * 1000,
+    prettyValue: (date) => new Date(date * 1000).toISOString().slice(0, 10),
     worstLabel: 'Least recently updated',
     bestLabel: 'Most recently updated',
   },
   creation: {
-    defaultWorstValue: Date.parse('01 Jan 2010 00:00:00'),
-    defaultBestValue: new Date().getTime(),
-    getValue: (feature) => new Date(feature.properties.created).getTime(),
-    prettyValue: (date) => new Date(date).toISOString().slice(0, 10),
-    inverted: false,
+    getValue: (date) => date * 1000,
+    prettyValue: (date) => new Date(date * 1000).toISOString().slice(0, 10),
     worstLabel: 'Oldest',
     bestLabel: 'Newest',
   },
   revisions: {
-    defaultWorstValue: 1,
-    defaultBestValue: 10,
-    getValue: (feature) => feature.properties.version,
-    prettyValue: (value) => value,
-    inverted: false,
+    getValue: (version) => version,
+    prettyValue: (value) => {
+      if (value === 1) {
+        return `${value} revision`;
+      }
+      return `${value} revisions`;
+    },
     worstLabel: 'Fewest revisions',
     bestLabel: 'Most revisions',
   },
   frequency: {
-    defaultWorstValue: 700,
-    defaultBestValue: 7,
-    getValue: (feature) => feature.properties.average_update_days,
+    getValue: (updatefrequency) => updatefrequency,
     prettyValue: (value) => {
-      const days = Math.floor(value);
-      if (days < 1) return 'daily';
-      if (days < 365) return `every ${days} days`;
-      const years = Math.floor(value / 365);
-      return `every ${years} year(s)`;
+      const frequency = value.toFixed(2);
+      return `${frequency} times/year`;
     },
-    inverted: true,
     worstLabel: 'Least frequently updated',
     bestLabel: 'Most frequently updated',
   },

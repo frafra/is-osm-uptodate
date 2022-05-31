@@ -4,8 +4,6 @@ import ReactDOM from 'react-dom';
 import * as Sentry from '@sentry/react';
 import { BrowserTracing } from '@sentry/tracing';
 
-import { states } from './constants';
-
 import Bar from './bar';
 import Map from './map';
 
@@ -24,29 +22,54 @@ if (SENTRY_DSN) {
 }
 
 function App() {
-  const [state, setState] = useState();
+  const [loading, setLoading] = useState(false);
+  const [bounds, setBounds] = useState();
   const [filter, setFilter] = useState('');
   const [mode, setMode] = useState('lastedit');
   const [percentile, setPercentile] = useState(50);
-  function setQuartile(quartile) {
-    const newPercentile = parseInt(quartile.slice(9), 10) * 25;
-    setPercentile(newPercentile);
-  }
   const [url, setUrl] = useState();
+  const [statistics, setStatistics] = useState({});
   const [showBarIfSmall, setShowBarIfSmall] = useState(false);
 
   useEffect(() => {
-    switch (state) {
-      case states.LOADING:
-        break;
-      case states.ERROR:
-        break;
-      case states.LOADED:
-      default:
-        break;
+    if (bounds) {
+      const query = new URLSearchParams({
+        minx: bounds.getWest(),
+        miny: bounds.getSouth(),
+        maxx: bounds.getEast(),
+        maxy: bounds.getNorth(),
+        filter,
+      }).toString();
+      setUrl(`/api/getStats?${query}`);
     }
-    return null;
-  }, [state]);
+  }, [bounds, filter]);
+
+  useEffect(() => {
+    if (!url) return;
+    setLoading(true);
+    fetch(url)
+      .then((response) => {
+        if (response.ok) {
+          return response.json();
+        }
+        return response.text().then((text) => {
+          throw new Error(text);
+        });
+      })
+      .then((parsed) => {
+        setLoading(false);
+        setStatistics(parsed);
+      })
+      .catch((error) => {
+        setLoading(false);
+        throw new Error(error);
+      });
+  }, [url]);
+
+  let range;
+  if (Object.keys(statistics).length && mode) {
+    range = [statistics[mode].min, statistics[mode].max];
+  }
 
   return (
     <>
@@ -76,17 +99,20 @@ function App() {
           mode={mode}
           setMode={setMode}
           percentile={percentile}
-          setQuartile={setQuartile}
+          setPercentile={setPercentile}
+          statistics={statistics}
           url={url}
           className={classNames({ 'hide-if-small': !showBarIfSmall })}
         />
         <Map
-          state={state}
-          setState={setState}
+          bounds={bounds}
+          setBounds={setBounds}
           mode={mode}
-          percentile={percentile}
           filter={filter}
-          setUrl={setUrl}
+          percentile={percentile}
+          range={range}
+          loading={loading}
+          setLoading={setLoading}
         />
       </div>
     </>

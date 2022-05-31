@@ -1,4 +1,4 @@
-import datetime
+import collections
 import statistics
 
 import simplejson as json
@@ -8,10 +8,11 @@ from . import DEFAULT_FILTER
 from .process import generate_raw
 from .utils import generateHeaders, get_updated_metadata, request_to_bbox
 
+params = ["creation", "lastedit", "revisions", "frequency"]
+
 
 async def getStats(request):
     bbox = request_to_bbox(request)
-    param = request.rel_url.query.get("param")
 
     # common
     referer = request.headers.get("REFERER", "http://localhost:8000/")
@@ -22,55 +23,31 @@ async def getStats(request):
 
     features = generate_raw(bbox, start, end, *filters, **headers)
 
-    index = [
-        "lon",
-        "lat",
-        "id",
-        "creation",
-        "lastedit",
-        "revisions",
-        "frequency",
-    ].index(param)
-    if index == -1:
-        pass  # error
-
-    values = []
+    values = collections.defaultdict(list)
     for feature in features:
-        value = feature[index]
-        if value:
-            values.append(value)
+        for param in params:
+            index = ["lon", "lat", "id", *params].index(param)
+            if index == -1:
+                pass  # error
+            value = feature[index]
+            if value:
+                values[param].append(value)
 
-    stats = {}
-    if len(values) > 1:
-        stats.update(
-            {
-                "min": min(values),
-                "mean": statistics.mean(values),
-                "max": max(values),
+    stats = collections.defaultdict(collections.OrderedDict)
+    for param in params:
+        values_p = values[param]
+        if len(values_p) > 1:
+            stats[param] |= {
+                "min": min(values_p),
+                "max": max(values_p),
             }
-        )
-    if len(values) > 2:
-        stats.update(
-            {
-                "stdev": statistics.stdev(values),
+        if len(values_p) > 2:
+            quartiles = statistics.quantiles(values_p, n=4, method="inclusive")
+            stats[param] |= {
+                "1st quartile": quartiles[0],
+                "median": quartiles[1],
+                "3rd quartile": quartiles[2],
             }
-        )
-
-    for key in stats:
-        match [param, key]:
-            case [("creation" | "lastedit"), ("min" | "mean" | "max")]:
-                stats[key] = datetime.datetime.utcfromtimestamp(
-                    stats[key]
-                ).strftime("%Y-%m-%d %H:%M:%S")
-            case [("creation" | "lastedit"), _]:
-                stats[key] = (
-                    str(datetime.timedelta(seconds=stats[key]).days) + " days"
-                )
-            case ["frequency", ("min", "mean", "max")]:
-                stats[key] = f"every {stats[key]:.3f} days"
-            case ["frequency", _]:
-                stats[key] = f"{stats[key]:.3f} days"
-            case [_, _]:
-                stats[key] = f"{stats[key]:.3f}"
+            stats[param].move_to_end("max")
 
     return web.Response(body=json.dumps(stats))

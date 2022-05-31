@@ -51,13 +51,13 @@ async def tile(request):
                 start, "%Y-%m-%dT%H:%M:%SZ"
             ).timestamp()
         else:
-            scale_min = int(scale_min) / 1000
+            scale_min = int(scale_min)
         if not scale_max:
             scale_max = datetime.datetime.strptime(
                 end, "%Y-%m-%dT%H:%M:%SZ"
             ).timestamp()
         else:
-            scale_max = int(scale_max) / 1000
+            scale_max = int(scale_max)
     elif mode == "revisions":
         if not scale_min:
             scale_min = 1

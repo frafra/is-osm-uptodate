@@ -38,7 +38,8 @@ function Bar({
   mode,
   setMode,
   percentile,
-  setQuartile,
+  setPercentile,
+  statistics,
   url,
   className,
 }) {
@@ -52,11 +53,11 @@ function Bar({
           mode={mode}
           setMode={setMode}
           percentile={percentile}
-          setQuartile={setQuartile}
+          setPercentile={setPercentile}
         />
       </AccordionItem>
       <AccordionItem title="Statistics">
-        <Statistics mode={mode} url={url} />
+        <Statistics mode={mode} statistics={statistics} />
       </AccordionItem>
       <AccordionItem title="Save">
         <Download url={url} />

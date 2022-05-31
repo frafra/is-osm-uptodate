@@ -123,9 +123,9 @@ def process(group, end):
     lastedit = datetime.datetime.strptime(
         last["properties"]["@validFrom"], "%Y-%m-%dT%H:%M:%SZ"
     )
-    average_update_days = (
-        datetime.datetime.now().utcnow() - lastedit
-    ).days / last["properties"]["@version"]
+    updatefrequency = last["properties"]["@version"] / (
+        (datetime.datetime.now().utcnow() - firstedit).days / 365
+    )
     return (
         last["geometry"]["coordinates"][0],
         last["geometry"]["coordinates"][1],
@@ -133,7 +133,7 @@ def process(group, end):
         firstedit.timestamp(),
         lastedit.timestamp(),
         last["properties"]["@version"],
-        average_update_days,
+        updatefrequency,
     )
 
 
@@ -147,12 +147,10 @@ def feature_to_geojson(feature):
             },
             "properties": {
                 "id": feature[2],
-                "created": str(datetime.datetime.utcfromtimestamp(feature[3])),
-                "lastedit": str(
-                    datetime.datetime.utcfromtimestamp(feature[4])
-                ),
+                "created": feature[3],
+                "lastedit": feature[4],
                 "version": feature[5],
-                "average_update_days": feature[6],
+                "updatefrequency": feature[6],
             },
         },
         use_decimal=True,
