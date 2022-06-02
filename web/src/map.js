@@ -250,17 +250,6 @@ function CustomControl({ mode, range }) {
   );
 }
 
-function CustomGeoJSON({ geojson, mode }) {
-  // https://github.com/PaulLeCam/react-leaflet/issues/332
-  const geojsonKey = useMemo(() => {
-    return Math.random();
-  }, [geojson, mode]);
-
-  return (
-    <GeoJSON key={geojsonKey} data={geojson} pointToLayer={pointToLayer} />
-  );
-}
-
 function Map({
   bounds,
   setBounds,
@@ -332,8 +321,10 @@ function Map({
   }, [percentile, colormap]);
 
   useEffect(() => {
-    if (clusterRef.current) clusterRef.current.refreshClusters();
-  }, [percentile, mode, geojson, loadAllData]);
+    if (clusterRef.current) {
+      clusterRef.current.refreshClusters();
+    }
+  }, [percentile, mode, geojson]);
 
   const toBeRemoved = [];
   const tileRef = useCallback(
@@ -392,6 +383,11 @@ function Map({
     [mode, percentile, filter, range]
   );
 
+  // https://github.com/PaulLeCam/react-leaflet/issues/332
+  const geojsonKey = useMemo(() => {
+    return Math.random();
+  }, [geojson, mode, range]);
+
   return (
     <MapContainer
       id="map"
@@ -422,7 +418,11 @@ function Map({
           spiderfyOnMaxZoom={false}
           disableClusteringAtZoom={19}
         >
-          <CustomGeoJSON geojson={geojson} mode={mode} />
+          <GeoJSON
+            key={geojsonKey}
+            data={geojson}
+            pointToLayer={pointToLayer}
+          />
         </MarkerClusterGroup>
       ) : (
         <TileLayer
