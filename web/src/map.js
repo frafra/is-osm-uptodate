@@ -312,7 +312,7 @@ function Map({
 
   const colormap = useMemo(() => {
     const newColormap = {};
-    if (geojson && range) {
+    if (loadAllData && geojson && range) {
       const rangeDiff = range[1] - range[0];
       geojson.features.forEach((feature) => {
         const value = feature.properties[mode];
