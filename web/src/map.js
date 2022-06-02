@@ -276,9 +276,10 @@ function Map({
   filter,
   percentile,
   range,
-  loading,
-  setLoading,
+  loadingStats,
 }) {
+  const [loadingDatas, setLoadingDatas] = useState(false);
+  const [loadingTiles, setLoadingTiles] = useState(false);
   const clusterRef = useRef();
   const [geojson, setGeojson] = useState();
   let [zoom, lon, lat] = document.location.hash.substr(1).split('/');
@@ -294,7 +295,7 @@ function Map({
         maxy: bounds.getNorth(),
         filter,
       }).toString();
-      setLoading(true);
+      setLoadingDatas(true);
 
       fetch(`/api/getData?${query}`)
         .then((response) => {
@@ -307,13 +308,13 @@ function Map({
         })
         .then((parsed) => {
           setGeojson(parsed);
-          setLoading(false);
+          setLoadingDatas(false);
         })
         .catch((error) => {
           if (error.message === 'ohsome') {
-            setLoading(false);
+            setLoadingDatas(false);
           } else {
-            setLoading(false);
+            setLoadingDatas(false);
           }
         });
     }
@@ -356,10 +357,10 @@ function Map({
             while (toBeRemoved.length) {
               L.DomUtil.remove(toBeRemoved.pop().el);
             }
-            setLoading(false);
+            setLoadingTiles(false);
           });
           tileLayer.on('loading', () => {
-            setLoading(true);
+            setLoadingTiles(true);
           });
 
           // https://github.com/Leaflet/Leaflet/issues/6659
@@ -459,7 +460,7 @@ function Map({
 
       <CustomControl mode={mode} range={range} />
       <AttributionControl position="bottomright" prefix="" />
-      {loading && (
+      {(loadingStats || loadingDatas || loadingTiles) && (
         <div id="overlay">
           <div
             id="spinner"

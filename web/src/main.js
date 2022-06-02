@@ -22,7 +22,7 @@ if (SENTRY_DSN) {
 }
 
 function App() {
-  const [loading, setLoading] = useState(false);
+  const [loadingStats, setLoadingStats] = useState(false);
   const [bounds, setBounds] = useState();
   const [filter, setFilter] = useState('');
   const [mode, setMode] = useState('lastedit');
@@ -46,7 +46,7 @@ function App() {
 
   useEffect(() => {
     if (!query) return;
-    setLoading(true);
+    setLoadingStats(true);
     fetch(`/api/getStats?${query}`)
       .then((response) => {
         if (response.ok) {
@@ -57,11 +57,11 @@ function App() {
         });
       })
       .then((parsed) => {
-        setLoading(false);
+        setLoadingStats(false);
         setStatistics(parsed);
       })
       .catch((error) => {
-        setLoading(false);
+        setLoadingStats(false);
         throw new Error(error);
       });
   }, [query]);
@@ -111,8 +111,7 @@ function App() {
           filter={filter}
           percentile={percentile}
           range={range}
-          loading={loading}
-          setLoading={setLoading}
+          loadingStats={loadingStats}
         />
       </div>
     </>
