@@ -36,12 +36,12 @@ async def getStats(request):
     stats = collections.defaultdict(collections.OrderedDict)
     for param in params:
         values_p = values[param]
-        if len(values_p) > 1:
+        if len(values_p) >= 1:
             stats[param] |= {
                 "min": min(values_p),
                 "max": max(values_p),
             }
-        if len(values_p) > 2:
+        if len(values_p) >= 2:
             quartiles = statistics.quantiles(values_p, n=4, method="inclusive")
             stats[param] |= {
                 "1st quartile": quartiles[0],
