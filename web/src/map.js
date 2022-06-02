@@ -213,7 +213,7 @@ function pointToLayer(geoJsonPoint, latlng) {
     fillOpacity: 1,
   });
   circle.osmid = geoJsonPoint.properties.id;
-  circle.bindPopup(generatePopup.bind(null, geoJsonPoint));
+  circle.bindPopup(generatePopup.bind(null, geoJsonPoint), { autoPan: false });
   return circle;
 }
 
