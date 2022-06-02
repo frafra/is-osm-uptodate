@@ -215,6 +215,19 @@ function setup(map) {
   const search = new GeoSearchControl({
     provider: new OpenStreetMapProvider(),
     showMarker: false,
+    // https://github.com/smeijer/leaflet-geosearch/issues/323
+    marker: {},
+    maxMarker: 0,
+    position: 'topleft',
+    autoClose: true,
+    autoComplete: true,
+    retainZoomLevel: true,
+    maxSuggestions: 5,
+    keepResult: true,
+    resultFormat(t) {
+      return `${t.result.label}`;
+    },
+    updateMap: !0,
   });
   map.addControl(search);
   applyColor();
