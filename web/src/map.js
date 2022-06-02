@@ -308,13 +308,14 @@ function Map({
         .then((parsed) => {
           setGeojson(parsed);
           setLoading(false);
-        });
-      /* .catch((error) => {
-           if (error.message === 'ohsome') {
+        })
+        .catch((error) => {
+          if (error.message === 'ohsome') {
+            setLoading(false);
           } else {
+            setLoading(false);
           }
-          setLoading(false);
-        }); */
+        });
     }
   }, [bounds, filter]);
 
