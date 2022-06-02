@@ -227,7 +227,7 @@ function setup(map) {
     position: 'topleft',
     autoClose: true,
     autoComplete: true,
-    retainZoomLevel: true,
+    retainZoomLevel: false,
     maxSuggestions: 5,
     keepResult: true,
     resultFormat(t) {
@@ -350,7 +350,9 @@ function Map({
   const toBeRemoved = [];
   const tileRef = useCallback(
     (tileLayer) => {
-      if (tileLayer !== null) {
+      if (tileLayer === null) {
+        setLoadingTiles(false);
+      } else {
         // eslint-disable-next-line no-underscore-dangle
         if (!tileLayer._url) {
           tileLayer.on('load', () => {
