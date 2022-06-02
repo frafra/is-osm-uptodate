@@ -147,10 +147,10 @@ def feature_to_geojson(feature):
             },
             "properties": {
                 "id": feature[2],
-                "created": feature[3],
+                "creation": feature[3],
                 "lastedit": feature[4],
-                "version": feature[5],
-                "updatefrequency": feature[6],
+                "revisions": feature[5],
+                "frequency": feature[6],
             },
         },
         use_decimal=True,
