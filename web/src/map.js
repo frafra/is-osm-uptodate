@@ -112,11 +112,17 @@ function generatePopup(feature, marker) {
       marker.setPopupContent(
         ReactDOMServer.renderToString(
           <>
-            <b>Last edit</b>: {feature.properties.lastedit}
+            <b>First edit</b>:{' '}
+            {modes.creation.prettyValue(feature.properties.creation)}
             <br />
-            <b>Created at</b>: {feature.properties.created}
+            <b>Last edit</b>:{' '}
+            {modes.lastedit.prettyValue(feature.properties.lastedit)}
             <br />
-            <b>Current version</b>: {feature.properties.version}
+            <b>Revisions</b>:{' '}
+            {modes.revisions.prettyValue(feature.properties.revisions)}
+            <br />
+            <b>Update frequency</b>:{' '}
+            {modes.frequency.prettyValue(feature.properties.frequency)}
             <br />
             {node.tags && (
               <>
