@@ -27,27 +27,27 @@ function App() {
   const [filter, setFilter] = useState('');
   const [mode, setMode] = useState('lastedit');
   const [percentile, setPercentile] = useState(50);
-  const [url, setUrl] = useState();
+  const [query, setQuery] = useState();
   const [statistics, setStatistics] = useState({});
   const [showBarIfSmall, setShowBarIfSmall] = useState(false);
 
   useEffect(() => {
     if (bounds) {
-      const query = new URLSearchParams({
+      const params = new URLSearchParams({
         minx: bounds.getWest(),
         miny: bounds.getSouth(),
         maxx: bounds.getEast(),
         maxy: bounds.getNorth(),
         filter,
       }).toString();
-      setUrl(`/api/getStats?${query}`);
+      setQuery(params);
     }
   }, [bounds, filter]);
 
   useEffect(() => {
-    if (!url) return;
+    if (!query) return;
     setLoading(true);
-    fetch(url)
+    fetch(`/api/getStats?${query}`)
       .then((response) => {
         if (response.ok) {
           return response.json();
@@ -64,7 +64,7 @@ function App() {
         setLoading(false);
         throw new Error(error);
       });
-  }, [url]);
+  }, [query]);
 
   let range;
   if (Object.keys(statistics).length && mode) {
@@ -101,7 +101,7 @@ function App() {
           percentile={percentile}
           setPercentile={setPercentile}
           statistics={statistics}
-          url={url}
+          query={query}
           className={classNames({ 'hide-if-small': !showBarIfSmall })}
         />
         <Map

@@ -40,7 +40,7 @@ function Bar({
   percentile,
   setPercentile,
   statistics,
-  url,
+  query,
   className,
 }) {
   return (
@@ -60,7 +60,7 @@ function Bar({
         <Statistics mode={mode} statistics={statistics} />
       </AccordionItem>
       <AccordionItem title="Save">
-        <Download url={url} />
+        <Download query={query} />
       </AccordionItem>
     </div>
   );

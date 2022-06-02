@@ -2,12 +2,13 @@ import React from 'react';
 
 const classNames = require('classnames');
 
-function Download({ url }) {
+function Download({ query }) {
+  const url = `/api/getData?${query}`;
   return (
     <a
       id="download"
       className={classNames('btn', 'btn-primary', {
-        disabled: !url,
+        disabled: !query,
       })}
       type="button"
       href={url}
