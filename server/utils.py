@@ -16,10 +16,10 @@ def generateHeaders(referer):
 
 def timestamp_shortener(timestamp):
     return (
-        timestamp.replace(":", "")
-        .replace("-", "")
+        timestamp.replace("-", "")
         .rstrip("Z")
-        .rstrip("0")
+        .replace(":00", "")
+        .replace(":", "")
         .rstrip("T")
     )
 
