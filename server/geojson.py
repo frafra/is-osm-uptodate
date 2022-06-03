@@ -36,7 +36,7 @@ async def getData(request):
     else:
         bbox_str = "_".join(map(str, bbox))
         filename = (
-            f"is-osm-uptodate_{bbox_str}_{start_short}_{end_short}.json"
+            f"is-osm-uptodate_{bbox_str}_{start_short}_{end_short}.geojson"
         ).replace(":", "")
         response = web.StreamResponse(
             status=200,
