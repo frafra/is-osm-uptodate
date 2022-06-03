@@ -6,7 +6,12 @@ from aiohttp import web
 
 from . import DEFAULT_FILTER
 from .process import generate_raw
-from .utils import generateHeaders, get_updated_metadata, request_to_bbox
+from .utils import (
+    generateHeaders,
+    get_updated_metadata,
+    request_to_bbox,
+    timestamp_shortener,
+)
 
 params = ["creation", "lastedit", "revisions", "frequency"]
 
@@ -50,4 +55,16 @@ async def getStats(request):
             }
             stats[param].move_to_end("max")
 
-    return web.Response(body=json.dumps(stats))
+    start_short = timestamp_shortener(start)
+    end_short = timestamp_shortener(end)
+    bbox_str = "_".join(map(str, bbox))
+    filename = (
+        f"is-osm-uptodate_{bbox_str}_{start_short}_{end_short}.json"
+    ).replace(":", "")
+    return web.Response(
+        body=json.dumps(stats),
+        headers={
+            "Content-Type": "application/json",
+            "Content-Disposition": f'attachment; filename="{filename}',
+        },
+    )
