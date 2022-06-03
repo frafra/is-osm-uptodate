@@ -5,9 +5,9 @@
 
 This application helps you find which nodes have not been edited for a long time, by using on [Ohsome API](https://api.ohsome.org/) and various softwares and libraries, such as [Leaflet](https://leafletjs.com/), [React](https://reactjs.org), [Python](https://www.python.org/), [Redis](https://redis.io/) and others.
 
-Demo: [is-osm-uptodate.frafra.eu](is-osm-uptodate.frafra.eu)
+Demo: [is-osm-uptodate.frafra.eu](https://is-osm-uptodate.frafra.eu/)
 
-Page on OSM wiki: [iki.openstreetmap.org/wiki/Is_OSM_up-to-date](https://wiki.openstreetmap.org/wiki/Is_OSM_up-to-date)
+Page on OSM wiki: [wiki.openstreetmap.org/wiki/Is_OSM_up-to-date](https://wiki.openstreetmap.org/wiki/Is_OSM_up-to-date)
 
 # How to use
 
