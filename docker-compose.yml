@@ -24,8 +24,8 @@ services:
       REDIS_HOST: redis-dev
       GUNICORN_CMD_ARGS: "--reload --log-level debug"
     volumes:
-      - ./server:/home/app/server:ro
-      - ./web:/home/app/web:ro
+      - ./server:/app/server:ro
+      - ./web:/app/web:ro
     ports:
       - 8000:8000
   app-test:
@@ -49,7 +49,7 @@ services:
     environment:
       BACKEND_URL: http://app-dev:8000
     volumes:
-      - ./web:/home/app/web
+      - ./web:/app/web
     ports:
       - 8080:8080
   redis:
@@ -74,4 +74,4 @@ services:
     environment:
       URL: "http://app-test:8000"
     volumes:
-      - ./latest_logs/:/home/app/latest_logs/
+      - ./latest_logs/:/app/latest_logs/

@@ -52,6 +52,8 @@ docker compose --profile prod down
 ## Develop
 
 ```bash
+docker compose --profile dev build \
+    --build-arg UID=$(id -u) --build-arg GID=$(id -g)
 docker compose --profile dev up
 docker compose --profile dev down
 ```
