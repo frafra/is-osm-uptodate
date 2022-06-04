@@ -4,27 +4,36 @@ import urllib.request
 import zlib
 
 import mercantile
+import shapely.geometry
 import simplejson as json
 from jsonslicer import JsonSlicer
 
 from . import API, Z_TARGET, db
-from .utils import get_updated_metadata
+from .utils import get_updated_metadata, lonlat_in_bbox, shape_contains_feature
 
 
-def generate_raw(bbox, start, end, *filters, **headers):
-    bbox = mercantile.Bbox(*bbox)
-    for tile in bbox_tiles(bbox, Z_TARGET):
-        quadkey = mercantile.quadkey(tile)
-        for feature in get_tile_data(quadkey, start, end, *filters, **headers):
-            if lonlat_in_bbox(bbox, feature[0], feature[1]):
-                yield feature
+def generate_raw(multipolygon, start, end, *filters, **headers):
+    if not multipolygon.is_empty:
+        bbox = mercantile.Bbox(*multipolygon.bounds)
+        fast_comparison = multipolygon == shapely.geometry.box(*bbox)
+        for tile in bbox_tiles(bbox, Z_TARGET):
+            quadkey = mercantile.quadkey(tile)
+            for feature in get_tile_data(
+                quadkey, start, end, *filters, **headers
+            ):
+                if fast_comparison:
+                    if lonlat_in_bbox(bbox, feature[0], feature[1]):
+                        yield feature
+                else:
+                    if shape_contains_feature(multipolygon, feature):
+                        yield feature
 
 
-def generate(bbox, start, end, *filters, **headers):
+def generate(multipolygon, start, end, *filters, **headers):
     yield ""  # signal
     yield '{"type": "FeatureCollection", "features": ['
     first = True
-    for feature in generate_raw(bbox, start, end, *filters, **headers):
+    for feature in generate_raw(multipolygon, start, end, *filters, **headers):
         feature_geojson = feature_to_geojson(feature)
         if not first:
             yield ", "
@@ -53,10 +62,6 @@ def bbox_tiles(bbox, z_target, *tiles):
             yield tile
         else:
             yield from bbox_tiles(bbox, z_target, *mercantile.children(tile))
-
-
-def lonlat_in_bbox(bbox, lon, lat):
-    return bbox.left <= lon <= bbox.right and bbox.bottom <= lat <= bbox.top
 
 
 def stream_to_processed(resp):

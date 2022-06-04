@@ -9,7 +9,7 @@ from .process import generate_raw
 from .utils import (
     generateHeaders,
     get_updated_metadata,
-    request_to_bbox,
+    request_to_multipolygon,
     timestamp_shortener,
 )
 
@@ -17,16 +17,15 @@ params = ["creation", "lastedit", "revisions", "frequency"]
 
 
 async def getStats(request):
-    bbox = request_to_bbox(request)
-
     # common
+    multipolygon = await request_to_multipolygon(request)
     referer = request.headers.get("REFERER", "http://localhost:8000/")
     headers = generateHeaders(referer)
     filters = request.rel_url.query.get("filter")
     filters = [filters, DEFAULT_FILTER]
     start, end = get_updated_metadata()
 
-    features = generate_raw(bbox, start, end, *filters, **headers)
+    features = generate_raw(multipolygon, start, end, *filters, **headers)
 
     values = collections.defaultdict(list)
     for feature in features:
@@ -57,10 +56,9 @@ async def getStats(request):
 
     start_short = timestamp_shortener(start)
     end_short = timestamp_shortener(end)
-    bbox_str = "_".join(map(str, bbox))
-    filename = (
-        f"is-osm-uptodate_{bbox_str}_{start_short}_{end_short}.json"
-    ).replace(":", "")
+    filename = (f"is-osm-uptodate_{start_short}_{end_short}.json").replace(
+        ":", ""
+    )
     return web.Response(
         body=json.dumps(stats),
         headers={

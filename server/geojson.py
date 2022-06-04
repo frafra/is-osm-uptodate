@@ -7,14 +7,14 @@ from .process import generate
 from .utils import (
     generateHeaders,
     get_updated_metadata,
-    request_to_bbox,
+    request_to_multipolygon,
     timestamp_shortener,
 )
 
 
 async def getData(request):
-    bbox = request_to_bbox(request)
     # common
+    multipolygon = await request_to_multipolygon(request)
     referer = request.headers.get("REFERER", "http://localhost:8000/")
     headers = generateHeaders(referer)
     filters = request.rel_url.query.get("filter")
@@ -23,7 +23,8 @@ async def getData(request):
 
     start_short = timestamp_shortener(start)
     end_short = timestamp_shortener(end)
-    generated = generate(bbox, start, end, *filters, **headers)
+    generated = generate(multipolygon, start, end, *filters, **headers)
+
     try:
         next(generated)  # peek
     except urllib.error.HTTPError as error:
@@ -34,9 +35,8 @@ async def getData(request):
     except Exception:
         return "", 500
     else:
-        bbox_str = "_".join(map(str, bbox))
         filename = (
-            f"is-osm-uptodate_{bbox_str}_{start_short}_{end_short}.geojson"
+            f"is-osm-uptodate_{start_short}_{end_short}.geojson"
         ).replace(":", "")
         response = web.StreamResponse(
             status=200,

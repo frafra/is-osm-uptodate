@@ -1,6 +1,8 @@
 import urllib.parse
 import urllib.request
 
+import mercantile
+import shapely.geometry
 import simplejson as json
 
 from . import METADATA, __version__, cache
@@ -49,6 +51,49 @@ def ensure_range(value, value_min=0, value_max=1):
 def request_to_bbox(request):
     """Round to 7 decimal https://wiki.openstreetmap.org/wiki/Node#Structure"""
     bbox = []
-    for arg in ("minx", "miny", "maxx", "maxy"):
-        bbox.append(round(float(request.rel_url.query.get(arg)), 7))
+    try:
+        for arg in ("minx", "miny", "maxx", "maxy"):
+            bbox.append(round(float(request.rel_url.query.get(arg)), 7))
+    except TypeError:
+        return None
     return bbox
+
+
+async def request_to_multipolygon(request):
+    multipolygon = shapely.geometry.MultiPolygon()
+
+    # geojson
+    post = await request.post()
+    geojson_text = post.get("geojson")
+    if geojson_text:
+        geojson = json.loads(geojson_text)
+        for feature in geojson["features"]:
+            geometry = shapely.geometry.shape(feature["geometry"])
+            if geometry.type == "Polygon":
+                multipolygon = multipolygon.union(geometry)
+
+    # tile or bbox
+    bbox_polygon = shapely.geometry.Polygon()
+    try:
+        z = int(request.match_info["z"])
+        x = int(request.match_info["x"])
+        y = int(request.match_info["y"])
+    except KeyError:
+        bbox = request_to_bbox(request)
+        if bbox:
+            bbox_polygon = shapely.geometry.box(*bbox)
+    else:
+        tile = mercantile.Tile(x, y, z)
+        bbox_polygon = shapely.geometry.box(*mercantile.bounds(tile))
+
+    if bbox_polygon.is_empty:
+        return multipolygon
+    elif multipolygon.is_empty:
+        return bbox_polygon
+    else:
+        return multipolygon.intersection(bbox_polygon)
+
+
+def shape_contains_feature(shape, feature):
+    point = shapely.geometry.Point(feature[0], feature[1])
+    return shape.contains(point)

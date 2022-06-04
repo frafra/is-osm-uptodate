@@ -25,7 +25,9 @@ async def webapp():
             web.get("/", entry),
             web.get("/api/getFeature", getFeature),
             web.get("/api/getData", getData),
+            web.post("/api/getData", getData),
             web.get("/api/getStats", getStats),
+            web.post("/api/getStats", getStats),
             web.get("/tiles/{z}/{x}/{y}.png", tile),
         ]
     )
