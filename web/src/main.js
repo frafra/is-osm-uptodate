@@ -24,6 +24,7 @@ if (SENTRY_DSN) {
 function App() {
   const [loadingStats, setLoadingStats] = useState(0);
   const [bounds, setBounds] = useState();
+  const [customBoundaries, setCustomBoundaries] = useState();
   const [filter, setFilter] = useState('');
   const [mode, setMode] = useState('lastedit');
   const [percentile, setPercentile] = useState(50);
@@ -32,22 +33,32 @@ function App() {
   const [showBarIfSmall, setShowBarIfSmall] = useState(false);
 
   useEffect(() => {
-    if (bounds) {
-      const params = new URLSearchParams({
+    let params = {};
+    if (bounds && !customBoundaries) {
+      params = {
         minx: bounds.getWest(),
         miny: bounds.getSouth(),
         maxx: bounds.getEast(),
         maxy: bounds.getNorth(),
-        filter,
-      }).toString();
-      setQuery(params);
+      };
     }
-  }, [bounds, filter]);
+    if (filter) {
+      params.filter = filter;
+    }
+    const newQuery = new URLSearchParams(params).toString();
+    if (query !== newQuery) setQuery(newQuery);
+  }, [bounds, filter, customBoundaries]);
 
   useEffect(() => {
-    if (!query) return;
+    if (!(query || customBoundaries)) return;
+    let fetchOptions = {};
+    if (customBoundaries) {
+      const formData = new FormData();
+      formData.append('geojson', JSON.stringify(customBoundaries));
+      fetchOptions = { method: 'POST', body: formData };
+    }
     setLoadingStats((counter) => counter + 1);
-    fetch(`/api/getStats?${query}`)
+    fetch(`/api/getStats?${query}`, fetchOptions)
       .then((response) => {
         if (response.ok) {
           return response.json();
@@ -96,6 +107,8 @@ function App() {
       <div id="tab-container">
         <Bar
           setFilter={setFilter}
+          customBoundaries={customBoundaries}
+          setCustomBoundaries={setCustomBoundaries}
           mode={mode}
           setMode={setMode}
           percentile={percentile}
@@ -107,6 +120,7 @@ function App() {
         <Map
           bounds={bounds}
           setBounds={setBounds}
+          customBoundaries={customBoundaries}
           mode={mode}
           filter={filter}
           percentile={percentile}

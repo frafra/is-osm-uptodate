@@ -30,6 +30,7 @@ import {
   tileURL,
   maxZoom,
   minZoom,
+  zoomLevelSwitch,
   defaultLocation,
   valuesBlacklist,
   modes,
@@ -272,6 +273,7 @@ function CustomControl({ mode, range }) {
 function Map({
   bounds,
   setBounds,
+  customBoundaries,
   mode,
   filter,
   percentile,
@@ -284,10 +286,10 @@ function Map({
   const [geojson, setGeojson] = useState();
   let [zoom, lon, lat] = document.location.hash.substr(1).split('/');
   if (!(zoom && lon && lat)) [zoom, lon, lat] = defaultLocation;
-  const loadAllData = zoom >= 17;
+  const loadAllData = zoom > zoomLevelSwitch;
 
   useEffect(() => {
-    if (loadAllData && bounds) {
+    if (loadAllData && bounds && !loadingStats) {
       const query = new URLSearchParams({
         minx: bounds.getWest(),
         miny: bounds.getSouth(),
@@ -295,9 +297,15 @@ function Map({
         maxy: bounds.getNorth(),
         filter,
       }).toString();
+      const options = {};
+      if (customBoundaries) {
+        const formData = new FormData();
+        formData.append('geojson', JSON.stringify(customBoundaries));
+        options.method = 'POST';
+        options.body = formData;
+      }
       setLoadingDatas(true);
-
-      fetch(`/api/getData?${query}`)
+      fetch(`/api/getData?${query}`, options)
         .then((response) => {
           if (response.ok) {
             return response.json();
@@ -318,7 +326,7 @@ function Map({
           }
         });
     }
-  }, [bounds, filter]);
+  }, [loadingStats, bounds, customBoundaries]);
 
   const colormap = useMemo(() => {
     const newColormap = {};
@@ -351,10 +359,13 @@ function Map({
   const tileRef = useCallback(
     (tileLayer) => {
       if (tileLayer === null) {
-        setLoadingTiles(false);
+        while (toBeRemoved.length) {
+          L.DomUtil.remove(toBeRemoved.pop().el);
+        }
       } else {
         // eslint-disable-next-line no-underscore-dangle
         if (!tileLayer._url) {
+          setLoadingTiles(true);
           tileLayer.on('load', () => {
             while (toBeRemoved.length) {
               L.DomUtil.remove(toBeRemoved.pop().el);
@@ -434,6 +445,7 @@ function Map({
       />
       <GetBounds setBounds={setBounds} />
 
+      {customBoundaries && <GeoJSON data={customBoundaries} />}
       {loadAllData ? (
         <MarkerClusterGroup
           ref={clusterRef}
@@ -455,6 +467,7 @@ function Map({
           zoomOffset={-1}
           opacity={0.5}
           zIndex={1}
+          maxZoom={zoomLevelSwitch}
           updateWhenZooming={false}
           className="pixelated"
         />
