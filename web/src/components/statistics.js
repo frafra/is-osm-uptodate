@@ -11,7 +11,11 @@ function Statistics({ mode, statistics }) {
           Object.keys(statistics[mode]).map((key) => (
             <tr key={key}>
               <th scope="row">{key}</th>
-              <td>{modes[mode].prettyValue(statistics[mode][key])}</td>
+              <td>
+                {key === 'nodes'
+                  ? statistics[mode][key]
+                  : modes[mode].prettyValue(statistics[mode][key])}
+              </td>
             </tr>
           ))}
       </tbody>
