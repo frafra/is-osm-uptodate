@@ -2,7 +2,7 @@ FROM python:3.10-bullseye AS apt
 LABEL maintainer="fraph24@gmail.com"
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update
-WORKDIR /home/app
+WORKDIR /app
 
 RUN --mount=type=cache,sharing=locked,target=/var/cache/apt \
     apt-get -qy install firefox-esr xvfb

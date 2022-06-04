@@ -11,7 +11,7 @@ kill_timeout = 5
   SENTRY_DSN = "https://272ecef41e6748cc8b2e955f3a23d67a@o1253953.ingest.sentry.io/6421667"
 
 [[statics]]
-  guest_path = "/home/app/web/dist/"
+  guest_path = "/app/web/dist/"
   url_prefix = "/"
 
 [[services]]
