@@ -35,6 +35,8 @@ function AccordionItem({ title, children }) {
 
 function Bar({
   setFilter,
+  customBoundaries,
+  setCustomBoundaries,
   mode,
   setMode,
   percentile,
@@ -46,7 +48,10 @@ function Bar({
   return (
     <div id="bar" className={classNames(className, 'bg-light', 'accordion')}>
       <AccordionItem title="Filters">
-        <Settings setFilter={setFilter} />
+        <Settings
+          setFilter={setFilter}
+          setCustomBoundaries={setCustomBoundaries}
+        />
       </AccordionItem>
       <AccordionItem title="Criteria">
         <Criteria
@@ -60,7 +65,7 @@ function Bar({
         <Statistics mode={mode} statistics={statistics} />
       </AccordionItem>
       <AccordionItem title="Save">
-        <Download query={query} />
+        <Download query={query} customBoundaries={customBoundaries} />
       </AccordionItem>
     </div>
   );
