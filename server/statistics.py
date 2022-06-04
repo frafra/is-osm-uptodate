@@ -40,6 +40,7 @@ async def getStats(request):
     stats = collections.defaultdict(collections.OrderedDict)
     for param in params:
         values_p = values[param]
+        stats[param]["nodes"] = len(values[param])
         if len(values_p) >= 1:
             stats[param] |= {
                 "min": min(values_p),
