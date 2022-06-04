@@ -15,10 +15,10 @@ from .utils import get_updated_metadata, lonlat_in_bbox, shape_contains_feature
 def generate_raw(multipolygon, start, end, *filters, **headers):
     if not multipolygon.is_empty:
         bbox = mercantile.Bbox(*multipolygon.bounds)
-        fast_comparison = multipolygon == shapely.geometry.box(*bbox)
         for tile in bbox_tiles(bbox, Z_TARGET):
             tile_box = shapely.geometry.box(*mercantile.bounds(*tile))
             sliced = multipolygon.intersection(tile_box)
+            fast_comparison = sliced.bounds == tile_box.bounds
             quadkey = mercantile.quadkey(tile)
             for feature in get_tile_data(
                 quadkey, start, end, *filters, **headers
