@@ -68,7 +68,6 @@ async def request_to_multipolygon(request):
     post = await request.post()
     geojson = post.get("geojson")
     if geojson:
-        print(type(geojson), flush=True)
         if isinstance(geojson, aiohttp.web_request.FileField):
             geojson = geojson.file.read()
         geometry = pygeos.from_geojson(geojson)

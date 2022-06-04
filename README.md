@@ -21,7 +21,8 @@ Enable the experimental `Tiles` layer to load data grouped by tile.
 Example:
 
 ```
-$ curl 'http://is-osm-uptodate.frafra.eu/api/getData?minx=9.188295196&miny=45.4635324507&maxx=9.1926242813&maxy=45.4649771956' -o milan-duomo.json
+$ curl 'https://is-osm-uptodate.frafra.eu/api/getData?minx=9.188295196&miny=45.4635324507&maxx=9.1926242813&maxy=45.4649771956' -o milan-duomo.json
+$ curl -X POST -F geojson=@boundary.geojson 'https://is-osm-uptodate.frafra.eu/api/getStats' -o stats.json
 ```
 
 # Common issues
