@@ -17,6 +17,7 @@ dependencies = [
     "gunicorn>=20.1.0",
     "sentry-sdk>=1.5.12",
     "shapely>=1.8.2",
+    "pygeos>=0.12.0",
 ]
 requires-python = ">=3.10,<4.0"
 license = {text = "AGPLv3"}
