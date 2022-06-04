@@ -22,7 +22,7 @@ if (SENTRY_DSN) {
 }
 
 function App() {
-  const [loadingStats, setLoadingStats] = useState(false);
+  const [loadingStats, setLoadingStats] = useState(0);
   const [bounds, setBounds] = useState();
   const [filter, setFilter] = useState('');
   const [mode, setMode] = useState('lastedit');
@@ -46,7 +46,7 @@ function App() {
 
   useEffect(() => {
     if (!query) return;
-    setLoadingStats(true);
+    setLoadingStats((counter) => counter + 1);
     fetch(`/api/getStats?${query}`)
       .then((response) => {
         if (response.ok) {
@@ -57,11 +57,11 @@ function App() {
         });
       })
       .then((parsed) => {
-        setLoadingStats(false);
+        setLoadingStats((counter) => counter - 1);
         setStatistics(parsed);
       })
       .catch((error) => {
-        setLoadingStats(false);
+        setLoadingStats((counter) => counter - 1);
         throw new Error(error);
       });
   }, [query]);
