@@ -17,6 +17,8 @@ def generate_raw(multipolygon, start, end, *filters, **headers):
         bbox = mercantile.Bbox(*multipolygon.bounds)
         fast_comparison = multipolygon == shapely.geometry.box(*bbox)
         for tile in bbox_tiles(bbox, Z_TARGET):
+            tile_box = shapely.geometry.box(*mercantile.bounds(*tile))
+            sliced = multipolygon.intersection(tile_box)
             quadkey = mercantile.quadkey(tile)
             for feature in get_tile_data(
                 quadkey, start, end, *filters, **headers
@@ -25,7 +27,7 @@ def generate_raw(multipolygon, start, end, *filters, **headers):
                     if lonlat_in_bbox(bbox, feature[0], feature[1]):
                         yield feature
                 else:
-                    if shape_contains_feature(multipolygon, feature):
+                    if shape_contains_feature(sliced, feature):
                         yield feature
 
 
