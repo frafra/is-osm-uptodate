@@ -1,7 +1,9 @@
 import urllib.parse
 import urllib.request
 
+import aiohttp.web_request
 import mercantile
+import pygeos
 import shapely.geometry
 import simplejson as json
 
@@ -64,13 +66,13 @@ async def request_to_multipolygon(request):
 
     # geojson
     post = await request.post()
-    geojson_text = post.get("geojson")
-    if geojson_text:
-        geojson = json.loads(geojson_text)
-        for feature in geojson["features"]:
-            geometry = shapely.geometry.shape(feature["geometry"])
-            if geometry.type == "Polygon":
-                multipolygon = multipolygon.union(geometry)
+    geojson = post.get("geojson")
+    if geojson:
+        print(type(geojson), flush=True)
+        if isinstance(geojson, aiohttp.web_request.FileField):
+            geojson = geojson.file.read()
+        geometry = pygeos.from_geojson(geojson)
+        multipolygon = pygeos.to_shapely(geometry)
 
     # tile or bbox
     bbox_polygon = shapely.geometry.Polygon()
