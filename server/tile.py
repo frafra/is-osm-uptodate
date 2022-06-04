@@ -13,17 +13,14 @@ from .utils import (
     ensure_range,
     generateHeaders,
     get_updated_metadata,
-    lonlat_in_bbox,
+    request_to_multipolygon,
+    shape_contains_feature,
 )
 
 
 async def tile(request):
-    z = int(request.match_info["z"])
-    x = int(request.match_info["x"])
-    y = int(request.match_info["y"])
-    tile = mercantile.Tile(x, y, z)
-
     # common
+    multipolygon = await request_to_multipolygon(request)
     referer = request.headers.get("REFERER", "http://localhost:8000/")
     headers = generateHeaders(referer)
     filters = request.rel_url.query.get("filter")
@@ -79,12 +76,12 @@ async def tile(request):
         scale_max += 1
 
     subvalues = [[] for _ in range(resolution * resolution)]
-    bbox = mercantile.Bbox(*mercantile.bounds(tile))
+    bbox = mercantile.Bbox(*multipolygon.bounds)
     for btile in bbox_tiles(bbox, Z_TARGET):
         quadkey = mercantile.quadkey(btile)
         tile_data = get_tile_data(quadkey, start, end, *filters, **headers)
         for feature in tile_data:
-            if not lonlat_in_bbox(bbox, feature[0], feature[1]):
+            if not shape_contains_feature(multipolygon, feature):
                 continue
             y_index = ensure_range(
                 math.floor(

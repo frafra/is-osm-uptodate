@@ -14,6 +14,14 @@ Install YAJI library:
 - Debian/Ubuntu users: `apt-get install libyajl-dev`
 - Fedora users: `dnf install yajl-devel`
 
+## GEOS
+
+Shapely requires `geos_c.h`, which is provided by `geos-devel` in Fedora.
+
+## Additional Python dependencies
+
+Python headers could be needed, whic are provided by `python-devel` in Fedora.
+
 ## PDM
 
 [PDM](https://pdm.fming.dev/) is a Python package manager, that can be installed using `pip` or `pipx`:
