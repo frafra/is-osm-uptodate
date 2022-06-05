@@ -1,6 +1,6 @@
 {
   "name": "is-osm-uptodate",
-  "version": "2.2.0-alpha",
+  "version": "2.2.0",
   "description": "",
   "private": true,
   "scripts": {
