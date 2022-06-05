@@ -4,6 +4,7 @@ import math
 import statistics
 
 import mercantile
+import PIL
 import png
 from aiohttp import web
 
@@ -18,6 +19,7 @@ from .utils import (
 
 
 async def tile(request):
+    z = int(request.match_info["z"])
     # common
     multipolygon = await request_to_multipolygon(request)
     referer = request.headers.get("REFERER", "http://localhost:8000/")
@@ -31,7 +33,8 @@ async def tile(request):
     scale_max = request.rel_url.query.get("scale_max")
     percentile = int(request.rel_url.query.get("percentile", "50"))
     resolution = int(request.rel_url.query.get("resolution", "8"))
-    if percentile < 0 or percentile > 100:
+    upscale = int(request.rel_url.query.get("upscale", resolution))
+    if percentile < 0 or percentile > 100 or z < 11:
         return web.Response(
             body=generate_invalid_tile(), content_type="image/png"
         )
@@ -117,6 +120,13 @@ async def tile(request):
     writer = png.Writer(resolution, resolution, greyscale=False)
     writer.write_array(tile, colors)
     tile.seek(0)
+
+    if upscale > resolution:
+        image = PIL.Image.open(tile)
+        scaled = image.resize((upscale, upscale), resample=PIL.Image.BOX)
+        tile = io.BytesIO()
+        scaled.save(tile, "png")
+        tile.seek(0)
 
     return web.Response(body=tile.getvalue(), content_type="image/png")
 
