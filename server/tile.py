@@ -7,14 +7,13 @@ import mercantile
 import png
 from aiohttp import web
 
-from . import DEFAULT_FILTER, Z_TARGET, viridis
-from .process import bbox_tiles, get_tile_data
+from . import DEFAULT_FILTER, viridis
+from .process import generate_raw
 from .utils import (
     ensure_range,
     generateHeaders,
     get_updated_metadata,
     request_to_multipolygon,
-    shape_contains_feature,
 )
 
 
@@ -77,31 +76,25 @@ async def tile(request):
 
     subvalues = [[] for _ in range(resolution * resolution)]
     bbox = mercantile.Bbox(*multipolygon.bounds)
-    for btile in bbox_tiles(bbox, Z_TARGET):
-        quadkey = mercantile.quadkey(btile)
-        tile_data = get_tile_data(quadkey, start, end, *filters, **headers)
-        for feature in tile_data:
-            if not shape_contains_feature(multipolygon, feature):
-                continue
-            y_index = ensure_range(
-                math.floor(
-                    resolution
-                    * (bbox.top - feature[1])
-                    / (bbox.top - bbox.bottom)
-                ),
-                value_max=resolution - 1,
-            )
-            x_index = ensure_range(
-                math.floor(
-                    resolution
-                    * (feature[0] - bbox.left)
-                    / (bbox.right - bbox.left)
-                ),
-                value_max=resolution - 1,
-            )
-            subvalues[y_index * resolution + x_index].append(
-                (feature[feature_index] - scale_min) / (scale_max - scale_min)
-            )
+    features = generate_raw(multipolygon, start, end, *filters, **headers)
+    for feature in features:
+        y_index = ensure_range(
+            math.floor(
+                resolution * (bbox.top - feature[1]) / (bbox.top - bbox.bottom)
+            ),
+            value_max=resolution - 1,
+        )
+        x_index = ensure_range(
+            math.floor(
+                resolution
+                * (feature[0] - bbox.left)
+                / (bbox.right - bbox.left)
+            ),
+            value_max=resolution - 1,
+        )
+        subvalues[y_index * resolution + x_index].append(
+            (feature[feature_index] - scale_min) / (scale_max - scale_min)
+        )
 
     colors = []
     for values in subvalues:
