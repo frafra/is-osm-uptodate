@@ -16,7 +16,7 @@ if (SENTRY_DSN) {
   Sentry.init({
     dsn: SENTRY_DSN, // eslint-disable-line no-undef
     integrations: [new BrowserTracing()],
-    tracesSampleRate: 1.0,
+    tracesSampleRate: 0.1,
     release: RELEASE, // eslint-disable-line no-undef
   });
 }

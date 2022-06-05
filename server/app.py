@@ -13,7 +13,7 @@ if SENTRY_DSN:
     sentry_sdk.init(
         SENTRY_DSN,
         integrations=[AioHttpIntegration()],
-        traces_sample_rate=1.0,
+        traces_sample_rate=0.1,
         release=__version__,
     )
 
