@@ -1,5 +1,5 @@
 export const maxZoom = 19;
-export const minZoom = 13;
+export const minZoom = 12;
 export const zoomLevelSwitch = 16;
 export const defaultLocation = [17, 45.46423, 9.19073];
 
