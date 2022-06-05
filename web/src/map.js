@@ -445,7 +445,16 @@ function Map({
       />
       <GetBounds setBounds={setBounds} />
 
-      {customBoundaries && <GeoJSON data={customBoundaries} />}
+      {customBoundaries && (
+        <GeoJSON
+          data={customBoundaries}
+          style={{
+            color: 'black',
+            fill: false,
+            dashArray: '10',
+          }}
+        />
+      )}
       {loadAllData ? (
         <MarkerClusterGroup
           ref={clusterRef}
