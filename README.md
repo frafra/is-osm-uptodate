@@ -16,6 +16,30 @@ Page on OSM wiki: [wiki.openstreetmap.org/wiki/Is_OSM_up-to-date](https://wiki.o
 Open [is-osm-uptodate.frafra.eu](https://is-osm-uptodate.frafra.eu/) (or your local instance). Try to change the location and click on the refresh button in order to get the nodes for the new bounding box.
 Enable the experimental `Tiles` layer to load data grouped by tile.
 
+## Tiles and QGIS
+
+QGIS supports XYZ/TMS layers natively. Create a new `XYZ Tiles` connection using these parameters:
+
+- `https://is-osm-uptodate.frafra.eu/tiles/{z}/{x}/{y}.png?upscale=256`
+- `min_zoom_level`: 12
+- `max_zoom_level`: 17 (reccomended)
+
+The tiles URL can be also configured with additional parameters, such as:
+- `resolution`: each tile has `resolution x resolution` pixels (deafult: 8)
+- `filter`
+- `mode`, which can be set to:
+  - `creation`
+  - `lastedit` (default)
+  - `revisions`
+  - `frequency`
+- `scale_min`
+- `scale_max`
+
+Here is another example:
+```
+https://is-osm-uptodate.frafra.eu/tiles/{z}/{x}/{y}.png?upscale=256&filter=amenity=*&mode=revisions&scale_max=10
+```
+
 ## Command line
 
 Example:
