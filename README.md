@@ -22,7 +22,7 @@ QGIS supports XYZ/TMS layers natively. Create a new `XYZ Tiles` connection using
 
 - `https://is-osm-uptodate.frafra.eu/tiles/{z}/{x}/{y}.png?upscale=256`
 - `min_zoom_level`: 12
-- `max_zoom_level`: 17 (reccomended)
+- `max_zoom_level`: 17 (recomended)
 
 The tiles URL can be also configured with additional parameters, such as:
 - `resolution`: each tile has `resolution x resolution` pixels (deafult: 8)
