@@ -18,6 +18,8 @@ def generate_raw(multipolygon, start, end, *filters, **headers):
         for tile in bbox_tiles(bbox, Z_TARGET):
             tile_box = shapely.geometry.box(*mercantile.bounds(*tile))
             sliced = multipolygon.intersection(tile_box)
+            if sliced.is_empty:
+                continue
             fast_comparison = sliced.bounds == tile_box.bounds
             quadkey = mercantile.quadkey(tile)
             for feature in get_tile_data(
