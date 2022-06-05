@@ -19,7 +19,7 @@ dependencies = [
     "shapely>=1.8.2",
     "pygeos>=0.12.0",
 ]
-requires-python = ">=3.10,<4.0"
+requires-python = ">=3.9,<4.0"
 license = {text = "AGPLv3"}
 
 [project.optional-dependencies]
@@ -33,7 +33,7 @@ test = [
 test = "pytest --headless --browser=firefox --save_screenshot tests/"
 
 [tool.black]
-target-version = ['py310']
+target-version = ['py39']
 line-length = 79
 
 [tool.isort]
