@@ -12,3 +12,5 @@ tests/geckodriver.log
 
 web/dist/*
 !web/dist/index.html
+
+report.json

@@ -54,6 +54,8 @@ services:
       - 8080:8080
   redis:
     build: redis
+    ports:
+      - 6379:6379
     profiles:
       - prod
       - test

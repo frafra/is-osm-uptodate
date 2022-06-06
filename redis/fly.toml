@@ -1,6 +1,6 @@
 # fly.toml file generated for is-osm-uptodate-redis on 2022-05-11T19:29:49+02:00
 
-app = "is-osm-uptodate-redis"
+app = "is-osm-uptodate-redis-test"
 
 kill_signal = "SIGINT"
 kill_timeout = 5
@@ -13,9 +13,9 @@ processes = []
   auto_rollback = true
 
 # example: flyctl volumes create redis_data --no-encryption -r fra -s 1
-[mounts]
-source = "redis_data"
-destination = "/data"
+#[mounts]
+#source = "redis_data"
+#destination = "/data"
 
 [[services]]
   http_checks = []
