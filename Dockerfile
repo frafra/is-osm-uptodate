@@ -1,26 +1,23 @@
-FROM python:3.10-bullseye AS apt
-LABEL maintainer="fraph24@gmail.com"
-ARG DEBIAN_FRONTEND=noninteractive
-RUN apt-get update
-WORKDIR /app
+FROM node:14-bullseye AS builder
 
-FROM apt AS builder
-RUN --mount=type=cache,sharing=locked,target=/var/cache/apt \
-    apt-get -qy install npm
 WORKDIR /app/web
 COPY web/package.json web/package-lock.json ./
-RUN --mount=type=cache,target=/app/.npm npm ci
+RUN --mount=type=cache,target=/app/web/.npm npm ci
 COPY web/webpack.config.js ./
 COPY web/src ./src
 ARG SENTRY_DSN
 RUN npm run build
 
-FROM apt AS base
+FROM python:3.10-bullseye AS apt
+
+RUN --mount=type=cache,sharing=locked,target=/var/cache/apt \
+    apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get -qy install libyajl-dev
+
+WORKDIR /app
 ARG UID=1000
 ARG GID=1000
-RUN --mount=type=cache,sharing=locked,target=/var/cache/apt \
-    apt-get -qy install libyajl-dev && \
-    groupadd -g ${GID} app && \
+RUN groupadd -g ${GID} app && \
     useradd -u ${UID} -g ${GID} --system --create-home --no-log-init app && \
     chown -R app:app .
 COPY --chown=app:app pyproject.toml pdm.lock ./
@@ -30,11 +27,10 @@ USER app
 RUN --mount=type=cache,target=/app/.cache/pdm \
     pdm install --production --no-self
 
-COPY --from=builder --chown=app:app /app/web/dist/ web/dist/
 COPY --chown=app:app web/dist/index.html web/dist/robots.txt web/dist/
-
 COPY --chown=app:app is-osm-uptodate.py ./
 COPY --chown=app:app server/ server/
+COPY --from=builder --chown=app:app /app/web/dist/ web/dist/
 
 EXPOSE 8000/tcp
 
