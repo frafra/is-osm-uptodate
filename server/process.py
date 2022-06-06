@@ -1,5 +1,6 @@
 import datetime
 import gzip
+import urllib.error
 import urllib.request
 import zlib
 
@@ -12,6 +13,18 @@ from . import API, Z_TARGET, db
 from .utils import get_updated_metadata, lonlat_in_bbox, shape_contains_feature
 
 
+def peek(iterator):
+    """Get the next element from an iterator, twice"""
+    try:
+        first = next(iterator)  # BAD
+    except StopIteration:
+        pass
+    else:
+        yield first
+        yield first
+    yield from iterator
+
+
 def generate_raw(multipolygon, start, end, *filters, **headers):
     if not multipolygon.is_empty:
         bbox = mercantile.Bbox(*multipolygon.bounds)
@@ -22,9 +35,14 @@ def generate_raw(multipolygon, start, end, *filters, **headers):
                 continue
             fast_comparison = sliced.bounds == tile_box.bounds
             quadkey = mercantile.quadkey(tile)
-            for feature in get_tile_data(
-                quadkey, start, end, *filters, **headers
-            ):
+            tiled_data = peek(
+                get_tile_data(quadkey, start, end, *filters, **headers)
+            )
+            try:
+                next(tiled_data)
+            except urllib.error.HTTPError:
+                break
+            for feature in tiled_data:
                 if fast_comparison:
                     if lonlat_in_bbox(bbox, feature[0], feature[1]):
                         yield feature
