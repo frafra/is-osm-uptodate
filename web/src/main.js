@@ -79,7 +79,9 @@ function App() {
 
   let range;
   if (Object.keys(statistics).length && mode) {
-    range = [statistics[mode].min, statistics[mode].max];
+    if (statistics[mode].nodes >= 2) {
+      range = [statistics[mode].min, statistics[mode].max];
+    }
   }
 
   return (

@@ -402,16 +402,14 @@ function Map({
           };
           // eslint-enable
         }
-        if (range) {
-          const query = new URLSearchParams({
-            mode,
-            percentile,
-            filter,
-            scale_min: range[0],
-            scale_max: range[1],
-          }).toString();
-          tileLayer.setUrl(`tiles/{z}/{x}/{y}.png?${query}`);
-        }
+        const query = new URLSearchParams({
+          mode,
+          percentile,
+          filter,
+          scale_min: range ? range[0] : '',
+          scale_max: range ? range[1] : '',
+        }).toString();
+        tileLayer.setUrl(`tiles/{z}/{x}/{y}.png?${query}`);
       }
     },
     [mode, percentile, filter, range]
