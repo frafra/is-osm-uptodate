@@ -1,4 +1,4 @@
-FROM node:14-bullseye AS builder
+FROM node:18-bullseye AS builder
 
 WORKDIR /app/web
 COPY web/package.json web/package-lock.json ./
