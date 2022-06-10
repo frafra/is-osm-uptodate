@@ -16,7 +16,7 @@ from .utils import get_updated_metadata, lonlat_in_bbox, shape_contains_feature
 def peek(iterator):
     """Get the next element from an iterator, twice"""
     try:
-        first = next(iterator)  # BAD
+        first = next(iterator)
     except StopIteration:
         pass
     else:
@@ -40,6 +40,8 @@ def generate_raw(multipolygon, start, end, *filters, **headers):
             )
             try:
                 next(tiled_data)
+            except StopIteration:
+                pass
             except urllib.error.HTTPError:
                 break
             for feature in tiled_data:
