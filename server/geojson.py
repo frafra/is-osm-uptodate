@@ -43,7 +43,7 @@ async def getData(request):
             reason="OK",
             headers={
                 "Content-Type": "application/json",
-                "Content-Disposition": f'attachment; filename="{filename}',
+                "Content-Disposition": f'attachment; filename="{filename}"',
             },
         )
         await response.prepare(request)

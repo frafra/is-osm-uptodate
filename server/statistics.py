@@ -64,6 +64,6 @@ async def getStats(request):
         body=json.dumps(stats),
         headers={
             "Content-Type": "application/json",
-            "Content-Disposition": f'attachment; filename="{filename}',
+            "Content-Disposition": f'attachment; filename="{filename}"',
         },
     )
