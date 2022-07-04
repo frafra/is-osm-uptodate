@@ -13,8 +13,7 @@ Page on OSM wiki: [wiki.openstreetmap.org/wiki/Is_OSM_up-to-date](https://wiki.o
 
 ## Web interface
 
-Open [is-osm-uptodate.frafra.eu](https://is-osm-uptodate.frafra.eu/) (or your local instance). Try to change the location and click on the refresh button in order to get the nodes for the new bounding box.
-Enable the experimental `Tiles` layer to load data grouped by tile.
+Open [is-osm-uptodate.frafra.eu](https://is-osm-uptodate.frafra.eu/) (or your local instance). Move, zoom or find and select a new location in order to get the nodes for the new bounding box.
 
 ## Tiles and QGIS
 
