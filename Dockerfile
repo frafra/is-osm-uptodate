@@ -8,7 +8,7 @@ COPY web/src ./src
 ARG SENTRY_DSN
 RUN npm run build
 
-FROM python:3.10-bullseye AS apt
+FROM python:3.11-bullseye AS apt
 
 RUN --mount=type=cache,sharing=locked,target=/var/cache/apt \
     apt-get update && \
