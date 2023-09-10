@@ -22,7 +22,7 @@ RUN groupadd -g ${GID} app && \
     chown -R app:app .
 COPY --chown=app:app pyproject.toml pdm.lock ./
 RUN --mount=type=cache,target=/root/.cache/pip \
-    pip3 install pdm
+    pip3 install pdm~=2.9
 USER app
 RUN --mount=type=cache,target=/app/.cache/pdm \
     pdm install --production --no-self
@@ -36,6 +36,6 @@ EXPOSE 8000/tcp
 
 ARG SENTRY_DSN
 ENV SENTRY_DSN=$SENTRY_DSN
-ENV PYTHONPATH=/app/__pypackages__/3.10/lib
-ENV PATH=$PATH:/app/__pypackages__/3.10/bin
+ENV PYTHONPATH=/app/.venv/lib
+ENV PATH=$PATH:/app/.venv/bin
 CMD ["gunicorn", "is-osm-uptodate:webapp", "--bind", "0.0.0.0:8000", "--workers", "2", "--worker-class", "aiohttp.GunicornWebWorker", "--timeout", "300"]
